@@ -1,14 +1,39 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
+import { useNavigate } from 'react-router-dom';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleDashboardClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/dashboard' });
+    navigate('/dashboard');
+  };
+
+  const handleEmployeesClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/employees' });
+    
+    navigate('/employees');
+  };
+
+  const handleAttendanceClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/attendance' });
+
+    navigate('/attendance');
+  };
+  
+  const handleLogoutClick = () => {
+    dispatch({ type: 'LOGOUT' });
+    navigate('/login');
   };
 
   return (
@@ -24,14 +49,14 @@ const AdminLayout = () => {
         </div>
         <nav className="mt-4">
           <ul>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+            <li onClick={handleDashboardClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
               Dashboard
             </li>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Users
+            <li onClick={handleEmployeesClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+              Employees
             </li>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Settings
+            <li onClick={handleAttendanceClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+              Attendance
             </li>
           </ul>
         </nav>
