@@ -1,14 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
+import { Bell, ClockFading, LayoutDashboard, UserRound } from 'lucide-react';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setIsUserDropdownOpen(false);
+        setIsNotificationDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -42,21 +58,23 @@ const AdminLayout = () => {
       <div
         className={`${
           isSidebarOpen ? 'w-64' : 'w-0'
-        } bg-gray-800 text-white transition-all duration-300`}
+        } bg-[#255199] text-white transition-all duration-300`}
       >
         <div className="p-4">
-          <h2 className="text-2xl font-semibold">Admin Panel</h2>
+          <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
         </div>
         <nav className="mt-4">
           <ul>
-            <li onClick={handleDashboardClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Dashboard
+            <li onClick={handleDashboardClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] cursor-pointer flex items-center">
+              <LayoutDashboard className="inline-block mr-2" /> Dashboard
             </li>
-            <li onClick={handleEmployeesClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Employees
+            
+
+            <li onClick={handleEmployeesClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] cursor-pointer flex items-center">
+              <UserRound className='inline-block mr-2'/>Employees
             </li>
-            <li onClick={handleAttendanceClick} className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Attendance
+            <li onClick={handleAttendanceClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] cursor-pointer flex items-center">
+              <ClockFading className='inline-block mr-2'/>Attendance
             </li>
           </ul>
         </nav>
@@ -86,23 +104,73 @@ const AdminLayout = () => {
               </svg>
             </button>
             <div className="flex items-center">
-              <span className="mr-4">Welcome, {user?.name}</span>
-              <div className="relative">
-                <button className="flex items-center text-gray-500 hover:text-gray-700">
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+              <span className="mr-4 text-black">Welcome, {user?.name}</span>
+              <div className="flex items-center space-x-2">
+                {/* Notification Bell Dropdown */}
+                <div className="relative">
+                  <button 
+                    className='flex items-center text-gray-500 hover:text-gray-700'
+                    onClick={() => {
+                      setIsNotificationDropdownOpen(!isNotificationDropdownOpen);
+                      setIsUserDropdownOpen(false);
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </button>
+                    <Bell className='inline-block mr-2'/>
+                  </button>
+                  {isNotificationDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <h3 className="text-sm font-semibold">Notifications</h3>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {/* Sample notifications - you can map through actual notifications here */}
+                        <div className="px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <p className="text-sm text-gray-600">New employee registration</p>
+                          <p className="text-xs text-gray-400">2 hours ago</p>
+                        </div>
+                        <div className="px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <p className="text-sm text-gray-600">Attendance update required</p>
+                          <p className="text-xs text-gray-400">3 hours ago</p>
+                        </div>
+                      </div>
+                      <div className="px-4 py-2 border-t border-gray-200">
+                        <button className="text-sm text-blue-600 hover:text-blue-800">
+                          View all notifications
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* User Profile Dropdown */}
+                <div className="relative">
+                  <button 
+                    className="flex items-center text-gray-500 hover:text-gray-700"
+                    onClick={() => {
+                      setIsUserDropdownOpen(!isUserDropdownOpen);
+                      setIsNotificationDropdownOpen(false);
+                    }}
+                  >
+                    <UserRound className='inline-block mr-2'/>
+                  </button>
+                  {isUserDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                      <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                        Profile
+                      </button>
+                      <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                        Settings
+                      </button>
+                      <div className="border-t border-gray-200"></div>
+                      <button 
+                        onClick={handleLogoutClick}
+                        className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -117,4 +185,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout; 
+export default AdminLayout;
