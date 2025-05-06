@@ -73,9 +73,9 @@ const Attendance: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6">
-        <h1 className="text-2xl text-gray-600 flex items-center gap-2">
+        <h1 className="text-2xl text-gray-600 dark:text-gray-200 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -85,9 +85,9 @@ const Attendance: React.FC = () => {
 
       {notification && (
         <div className={`mb-4 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-100 text-green-800' :
-          notification.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-red-100 text-red-800'
+          notification.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
+          notification.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
+          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
         }`}>
           {notification.message}
         </div>
@@ -126,31 +126,31 @@ const Attendance: React.FC = () => {
 
       <div className="overflow-x-auto shadow-md rounded-lg">
         <table className="min-w-full table-auto">
-          <thead className="bg-white border-b-2">
+          <thead className="bg-white dark:bg-gray-800 border-b-2 dark:border-gray-700">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Date</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Employee ID</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Name</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Check In</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Check Out</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Date</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Employee ID</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Name</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Check In</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Check Out</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Status</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
             {attendanceRecords.map((record) => (
-              <tr key={record.key} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.employeeId}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black" >{record.checkIn}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.checkOut}</td>
+              <tr key={record.key} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.date}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.employeeId}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.checkIn}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.checkOut}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                     record.status === 'Present'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
                       : record.status === 'Absent'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
                   }`}>
                     {record.status}
                   </span>

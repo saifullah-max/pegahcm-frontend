@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setCredentials } from '../store/slices/authSlice';
+import { RootState } from '../store';
+import { Moon, Sun } from 'lucide-react';
+import { toggleTheme } from '../store/slices/themeSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const { isDarkMode } = useSelector((state: RootState) => state.theme);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -25,17 +29,32 @@ const Login = () => {
     navigate('/dashboard');
   };
 
+  const handleThemeToggle = () => {
+    dispatch(toggleTheme());
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-black">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-black dark:from-gray-900 dark:to-black relative">
+      <button
+        onClick={handleThemeToggle}
+        className="absolute top-4 right-4 text-white p-2 rounded-full hover:bg-white/10"
+      >
+        {isDarkMode ? (
+          <Sun className="h-5 w-5" />
+        ) : (
+          <Moon className="h-5 w-5" />
+        )}
+      </button>
+      
       <div className="max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">PegaHCM</h1>
           <p className="text-white/80">Sign in to access your dashboard</p>
         </div>
-        <div className="bg-white/90 rounded-lg shadow-slate-50 p-8 h-[420px] w-[320px] mx-auto flex flex-col justify-center">
+        <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-slate-50 dark:shadow-gray-900 p-8 h-[420px] w-[320px] mx-auto flex flex-col justify-center">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email address
               </label>
               <input
@@ -43,14 +62,14 @@ const Login = () => {
                 name="email"
                 type="email"
                 required
-                className="mt-1 p-2 block w-full h-8 rounded-md border-white bg-slate-200 shadow-sm text-gray-900"
+                className="mt-1 p-2 block w-full h-8 rounded-md border-white bg-slate-200 dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
@@ -58,7 +77,7 @@ const Login = () => {
                 name="password"
                 type="password"
                 required
-                className="mt-1 p-2 block w-full h-8 rounded-lg border-white bg-slate-200 shadow-sm focus:border-none focus:ring-0 text-gray-900"
+                className="mt-1 p-2 block w-full h-8 rounded-lg border-white bg-slate-200 dark:bg-gray-800 shadow-sm focus:border-none focus:ring-0 text-gray-900 dark:text-white"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -70,11 +89,11 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 accent-slate-200 opacity-40"
+                  className="h-4 w-4 accent-slate-200 opacity-40 dark:accent-gray-700"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <label htmlFor="remember-me" className="ml-1 block text-xs text-gray-700">
+                <label htmlFor="remember-me" className="ml-1 block text-xs text-gray-700 dark:text-gray-300">
                   Remember me next time
                 </label>
               </div>

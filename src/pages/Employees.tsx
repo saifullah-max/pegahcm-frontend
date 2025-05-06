@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 interface Employee {
   id: number;
@@ -13,6 +14,15 @@ interface Employee {
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [newEmployee, setNewEmployee] = useState<Omit<Employee, 'id'>>({
+    name: '',
+    email: '',
+    department: '',
+    designation: '',
+    status: 'Present',
+  });
+  const navigate = useNavigate();
 
   const columns = [
     {
@@ -99,46 +109,98 @@ const Employees: React.FC = () => {
     fetchEmployees();
   }, []);
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setNewEmployee({
+      name: '',
+      email: '',
+      department: '',
+      designation: '',
+      status: 'Present',
+    });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewEmployee({
+      ...newEmployee,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Generate a new ID (in a real app, this would come from the backend)
+    const newId = employees.length > 0 ? Math.max(...employees.map(emp => emp.id)) + 1 : 1;
+    
+    // Create the new employee with an ID
+    const employeeToAdd: Employee = {
+      id: newId,
+      ...newEmployee
+    };
+    
+    // Add to the employees list
+    setEmployees([...employees, employeeToAdd]);
+    
+    // Close the modal and reset form
+    handleCloseModal();
+  };
+
+  const handleNavigateToAddEmployee = () => {
+    navigate('/add-employee');
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl text-gray-700 flex items-center gap-2">
+    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+      <div className="mb-6 flex justify-between items-center">
+        <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
           <UserOutlined /> Employees
         </h1>
+        <button
+          onClick={handleNavigateToAddEmployee}
+          className="text-white px-4 py-2 rounded-md flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+        >
+          <PlusOutlined /> Add Employee
+        </button>
       </div>
       
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-gray-700 dark:text-gray-300">Loading...</div>
       ) : (
         <div className="overflow-x-auto shadow-md rounded-lg">
           <table className="min-w-full table-auto">
-            <thead className="bg-gray-200 border-b-2">
+            <thead className="bg-gray-200 dark:bg-gray-800 border-b-2 dark:border-gray-700">
               <tr>
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-600 bg-white/90"
+                    className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-900 transition-colors duration-200"
                   >
                     {column.title}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
               {employees.map((employee) => (
-                <tr key={employee.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.department}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.designation}</td>
+                <tr key={employee.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{employee.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{employee.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{employee.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{employee.department}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{employee.designation}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${
                       employee.status === 'Present'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
                         : employee.status === 'Absent'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
                     }`}>
                       {employee.status}
                     </span>
