@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Space, Typography, Tag, message } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 interface AttendanceRecord {
@@ -13,65 +11,27 @@ interface AttendanceRecord {
   status: 'Present' | 'Absent' | 'Half Day';
 }
 
-const { Title } = Typography;
-
 const Attendance: React.FC = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
 
-  const columns = [
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-    },
-    {
-      title: 'Employee ID',
-      dataIndex: 'employeeId',
-      key: 'employeeId',
-    },
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Check In',
-      dataIndex: 'checkIn',
-      key: 'checkIn',
-    },
-    {
-      title: 'Check Out',
-      dataIndex: 'checkOut',
-      key: 'checkOut',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag color={
-          status === 'Present' ? 'success' :
-          status === 'Absent' ? 'error' : 'warning'
-        }>
-          {status}
-        </Tag>
-      ),
-    },
-  ];
+  const showNotification = (type: string, message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const handleCheckIn = () => {
     setLoading(true);
     const currentTime = dayjs().format('HH:mm:ss');
     const today = dayjs().format('YYYY-MM-DD');
 
-    // Check if already checked in
     const todayRecord = attendanceRecords.find(
       record => record.date === today
     );
 
     if (todayRecord) {
-      message.warning('You have already checked in today!');
+      showNotification('warning', 'You have already checked in today!');
       setLoading(false);
       return;
     }
@@ -79,15 +39,15 @@ const Attendance: React.FC = () => {
     const newRecord: AttendanceRecord = {
       key: today,
       date: today,
-      employeeId: 101, // Should come from auth context
-      name: 'John Doe', // Should come from auth context
+      employeeId: 101,
+      name: 'John Doe',
       checkIn: currentTime,
       checkOut: '-',
       status: 'Present',
     };
 
     setAttendanceRecords(prev => [newRecord, ...prev]);
-    message.success('Successfully checked in!');
+    showNotification('success', 'Successfully checked in!');
     setLoading(false);
   };
 
@@ -108,42 +68,99 @@ const Attendance: React.FC = () => {
       })
     );
 
-    message.success('Successfully checked out!');
+    showNotification('success', 'Successfully checked out!');
     setLoading(false);
   };
 
   return (
-    <Card>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Title level={2}>
-          <ClockCircleOutlined /> Attendance
-        </Title>
-        
-        <Space>
-          <Button
-            type="primary"
-            onClick={handleCheckIn}
-            loading={loading}
-          >
-            Check In
-          </Button>
-          <Button
-            onClick={handleCheckOut}
-            loading={loading}
-          >
-            Check Out
-          </Button>
-        </Space>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl text-gray-600 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Attendance
+        </h1>
+      </div>
 
-        <Table
-          columns={columns}
-          dataSource={attendanceRecords}
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          bordered
-        />
-      </Space>
-    </Card>
+      {notification && (
+        <div className={`mb-4 p-4 rounded-lg ${
+          notification.type === 'success' ? 'bg-green-100 text-green-800' :
+          notification.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-red-100 text-red-800'
+        }`}>
+          {notification.message}
+        </div>
+      )}
+
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={handleCheckIn}
+          disabled={loading}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+        >
+          {loading ? (
+            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          )}
+          Check In
+        </button>
+        <button
+          onClick={handleCheckOut}
+          disabled={loading}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+        >
+          {loading ? (
+            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M17 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zM9.293 6.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L10.586 11H3a1 1 0 110-2h7.586L9.293 7.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          )}
+          Check Out
+        </button>
+      </div>
+
+      <div className="overflow-x-auto shadow-md rounded-lg">
+        <table className="min-w-full table-auto">
+          <thead className="bg-white border-b-2">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Date</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Employee ID</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Name</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Check In</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Check Out</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {attendanceRecords.map((record) => (
+              <tr key={record.key} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.date}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.employeeId}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black" >{record.checkIn}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{record.checkOut}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    record.status === 'Present'
+                      ? 'bg-green-100 text-green-800'
+                      : record.status === 'Absent'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {record.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

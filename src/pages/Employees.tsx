@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Card, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
 interface Employee {
@@ -101,18 +100,56 @@ const Employees: React.FC = () => {
   }, []);
 
   return (
-    <Card>
-      <Typography.Title level={2}>
-        <UserOutlined /> Employees
-      </Typography.Title>
-      <Table
-        columns={columns}
-        dataSource={employees}
-        loading={loading}
-        rowKey="id"
-        pagination={{ pageSize: 10 }}
-      />
-    </Card>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl text-gray-700 flex items-center gap-2">
+          <UserOutlined /> Employees
+        </h1>
+      </div>
+      
+      {loading ? (
+        <div className="text-center">Loading...</div>
+      ) : (
+        <div className="overflow-x-auto shadow-md rounded-lg">
+          <table className="min-w-full table-auto">
+            <thead className="bg-gray-200 border-b-2">
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className="px-6 py-4 text-left text-sm font-semibold text-gray-600 bg-white/90"
+                  >
+                    {column.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {employees.map((employee) => (
+                <tr key={employee.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.department}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{employee.designation}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                      employee.status === 'Present'
+                        ? 'bg-green-100 text-green-800'
+                        : employee.status === 'Absent'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {employee.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 };
 

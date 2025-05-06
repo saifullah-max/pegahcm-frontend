@@ -83,7 +83,7 @@ const AdminLayout = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm">
+        <header className="bg-white shadow-md z-10">
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={toggleSidebar}
@@ -177,7 +177,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 shadow-lg p-4">
           <Outlet />
         </main>
       </div>
