@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCredentials } from '../store/slices/authSlice';
-import { RootState } from '../store';
+import { setCredentials } from '../../store/slices/authSlice';
+import { RootState } from '../../store';
 import { Moon, Sun } from 'lucide-react';
-import { toggleTheme } from '../store/slices/themeSlice';
+import { toggleTheme } from '../../store/slices/themeSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,16 +17,35 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mock login - replace with actual API call later
-    const mockUser = {
-      id: '1',
-      email: email,
-      name: 'Admin User',
-    };
-    const mockToken = 'mock-jwt-token';
-
-    dispatch(setCredentials({ user: mockUser, token: mockToken }));
-    navigate('/dashboard');
+    // Check if the entered credentials match admin or user
+    if (email === 'admin@example.com' && password === 'admin123') {
+      const mockAdmin = {
+        id: '1',
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: 'admin'
+      };
+      const mockAdminToken = 'mock-jwt-token-1';
+      
+      dispatch(setCredentials({ user: mockAdmin, token: mockAdminToken }));
+      navigate('/admin/dashboard');
+    } 
+    else if (email === 'user@example.com' && password === 'user123') {
+      const mockUser = {
+        id: '2',
+        email: 'user@example.com',
+        name: 'User',
+        role: 'user'
+      };
+      const mockUserToken = 'mock-jwt-token-2';
+      
+      dispatch(setCredentials({ user: mockUser, token: mockUserToken }));
+      navigate('/user/user-dashboard');
+    }
+    else {
+      // Handle invalid credentials
+      alert('Invalid email or password');
+    }
   };
 
   const handleThemeToggle = () => {

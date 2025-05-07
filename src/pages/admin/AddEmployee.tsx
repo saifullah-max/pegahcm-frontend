@@ -76,7 +76,7 @@ const AddEmployee: React.FC = () => {
     console.log('Employee data to be saved:', newEmployee);
     
     // Navigate back to employees list
-    navigate('/employees');
+    navigate('admin/employees');
   };
 
   return (
