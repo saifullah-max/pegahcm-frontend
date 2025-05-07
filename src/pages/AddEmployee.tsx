@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, UserRound } from 'lucide-react';
 
 interface Employee {
   id: number;
@@ -86,10 +86,10 @@ const AddEmployee: React.FC = () => {
           onClick={() => navigate('/employees')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
-          <ArrowLeftOutlined className="text-xl" />
+          <ArrowLeft className="text-xl" />
         </button>
         <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-          <UserOutlined /> Add New Employee
+          <UserRound /> Add New Employee
         </h1>
       </div>
       

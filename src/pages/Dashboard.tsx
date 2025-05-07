@@ -10,11 +10,11 @@ interface DepartmentData {
 const Dashboard: React.FC = () => {
 
   const departments: DepartmentData[] = [
-    { name: 'IT', attendance: 95, color: 'bg-blue-500' },
-    { name: 'HR', attendance: 88, color: 'bg-green-500' },
-    { name: 'Finance', attendance: 92, color: 'bg-purple-500' },
-    { name: 'Marketing', attendance: 85, color: 'bg-yellow-500' },
-    { name: 'Operations', attendance: 90, color: 'bg-red-500' },
+    { name: 'IT', attendance: 95, color: 'bg-[#255199]' },
+    { name: 'HR', attendance: 88, color: 'bg-[#255199]' },
+    { name: 'Finance', attendance: 92, color: 'bg-[#255199]' },
+    { name: 'Marketing', attendance: 85, color: 'bg-[#255199]' },
+    { name: 'Operations', attendance: 90, color: 'bg-[#255199]' },
   ];
 
   const activities = [
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-green-500 dark:text-green-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] dark:text-[#2F66C1] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.91)}
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-green-600 dark:text-green-400">91%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">91%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">142/156</div>
                 </div>
               </div>
@@ -154,7 +154,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-yellow-500 dark:text-yellow-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] dark:text-[#2F66C1] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.05)}
@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">5%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">5%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">8/156</div>
                 </div>
               </div>
@@ -190,7 +190,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-red-500 dark:text-red-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] dark:text-[#2F66C1] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.04)}
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-red-600 dark:text-red-400">4%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">4%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">6/156</div>
                 </div>
               </div>
@@ -226,7 +226,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-blue-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.12)}
@@ -241,7 +241,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">12%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">12%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">19/156</div>
                 </div>
               </div>
@@ -262,7 +262,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-purple-500 dark:text-purple-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] dark:text-[#2F66C1] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.07)}
@@ -277,7 +277,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-purple-600 dark:text-purple-400">7%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">7%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">11/156</div>
                 </div>
               </div>
@@ -298,7 +298,7 @@ const Dashboard: React.FC = () => {
                     cy="56"
                   />
                   <circle
-                    className="text-indigo-500 dark:text-indigo-400 transition-all duration-1000 ease-in-out"
+                    className="text-[#255199] dark:text-[#2F66C1] transition-all duration-1000 ease-in-out"
                     strokeWidth="8"
                     strokeDasharray={289.0}
                     strokeDashoffset={289.0 * (1 - 0.09)}
@@ -313,7 +313,7 @@ const Dashboard: React.FC = () => {
                   </circle>
                 </svg>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">9%</div>
+                  <div className="text-lg font-bold text-[#255199] dark:text-[#2F66C1]">9%</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">14/156</div>
                 </div>
               </div>
