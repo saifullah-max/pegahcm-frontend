@@ -22,7 +22,7 @@ const Login = () => {
       const mockAdmin = {
         id: '1',
         email: 'admin@example.com',
-        name: 'Admin User',
+        name: 'Admin',
         role: 'admin'
       };
       const mockAdminToken = 'mock-jwt-token-1';
@@ -67,7 +67,7 @@ const Login = () => {
       
       <div className="max-w-md w-full mx-4">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">PegaHCM</h1>
+          <h1 className="text-4xl font-semibold text-white mb-2">PegaHCM</h1>
           <p className="text-white/80">Sign in to access your dashboard</p>
         </div>
         <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-slate-50 dark:shadow-gray-900 p-8 h-[420px] w-[320px] mx-auto flex flex-col justify-center">
