@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UserOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { Plus, UserRound } from 'lucide-react';
 
 interface Employee {
   id: number;
@@ -159,13 +159,13 @@ const Employees: React.FC = () => {
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-          <UserOutlined /> Employees
+          <UserRound /> Employees
         </h1>
         <button
           onClick={handleNavigateToAddEmployee}
           className="text-white px-4 py-2 rounded-md flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
         >
-          <PlusOutlined /> Add Employee
+          <Plus /> Add Employee
         </button>
       </div>
       
