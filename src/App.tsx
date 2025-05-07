@@ -1,13 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import Login from './pages/auth/Login';
+import Dashboard from './pages/admin/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
-import Employees from './pages/Employees';
-import AddEmployee from './pages/AddEmployee';
-import Attendance from './pages/Attendance';
+import UserLayout from './layouts/UserLayout';
+import Employees from './pages/admin/Employees';
+import Attendance from './pages/admin/Attendance';
+import UserDashboard from './pages/user/UserDashboard';
 import ThemeProvider from './components/ThemeProvider';
 
 function App() {
@@ -17,14 +18,25 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedRoute />}>
+            
+            {/* Admin Routes */}
+            <Route element={<ProtectedRoute allowedRole="admin" />}>
               <Route element={<AdminLayout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/employees" element={<Employees />} />
-                <Route path="/add-employee" element={<AddEmployee />} />
-                <Route path="/attendance" element={<Attendance />} />
+                <Route path="admin/dashboard" element={<Dashboard />} />
+                <Route path="admin/employees" element={<Employees />} />
+                <Route path="admin/attendance" element={<Attendance />} />
               </Route>
             </Route>
+
+            {/* User Routes */}
+            <Route element={<ProtectedRoute allowedRole="user" />}>
+              <Route element={<UserLayout />}>
+                <Route path="user/user-dashboard" element={<UserDashboard />} />
+              </Route>
+            </Route>
+
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
       </ThemeProvider>

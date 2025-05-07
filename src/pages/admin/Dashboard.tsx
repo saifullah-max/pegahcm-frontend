@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
         {/* Department Attendance Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors duration-200">
           <h2 className="text-lg text-gray-500 dark:text-gray-300 font-semibold mb-6">Department-wise Attendance</h2>
-          <div className="h-64 flex items-end space-x-4">
+          <div className="h-80 flex items-end space-x-4">
             {departments.map((dept) => (
               <div key={dept.name} className="flex-1 flex flex-col items-center">
                 <div className="relative w-full h-56">

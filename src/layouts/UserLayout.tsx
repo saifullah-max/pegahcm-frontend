@@ -37,22 +37,10 @@ const AdminLayout = () => {
   };
 
   const handleDashboardClick = () => {
-    dispatch({ type: 'NAVIGATE', payload: '/admin/dashboard' });
-    navigate('/admin/dashboard');
+    dispatch({ type: 'NAVIGATE', payload: '/user/user-dashboard' });
+    navigate('/user/user-dashboard');
   };
 
-  const handleEmployeesClick = () => {
-    dispatch({ type: 'NAVIGATE', payload: '/admin/employees' });
-    
-    navigate('/admin/employees');
-  };
-
-  const handleAttendanceClick = () => {
-    dispatch({ type: 'NAVIGATE', payload: '/admin/attendance' });
-
-    navigate('/admin/attendance');
-  };
-  
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
     navigate('/login');
@@ -67,20 +55,12 @@ const AdminLayout = () => {
         } bg-[#255199] text-white transition-all duration-300 dark:bg-gray-900`}
       >
         <div className="p-4">
-          <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
+          <h2 className="text-2xl font-semibold">User Dashboard</h2>
         </div>
         <nav className="mt-4">
           <ul>
             <li onClick={handleDashboardClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
               <LayoutDashboard className="inline-block mr-2" /> Dashboard
-            </li>
-            
-
-            <li onClick={handleEmployeesClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <UserRound className='inline-block mr-2'/>Employees
-            </li>
-            <li onClick={handleAttendanceClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <ClockFading className='inline-block mr-2'/>Attendance
             </li>
           </ul>
         </nav>
