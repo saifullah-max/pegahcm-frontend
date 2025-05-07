@@ -76,14 +76,14 @@ const AddEmployee: React.FC = () => {
     console.log('Employee data to be saved:', newEmployee);
     
     // Navigate back to employees list
-    navigate('admin/employees');
+    navigate('/admin/employees');
   };
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6 flex items-center">
         <button 
-          onClick={() => navigate('/employees')}
+          onClick={() => navigate('/admin/employees')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
           <ArrowLeft className="text-xl" />
@@ -246,9 +246,9 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                 required
               >
-                <option value="Present">Present</option>
-                <option value="Absent">Absent</option>
-                <option value="On Leave">On Leave</option>
+                <option value="Present">Permanent</option>
+                <option value="Absent">Probation</option>
+                <option value="On Leave">Internship</option>
               </select>
             </div>
             
@@ -320,7 +320,7 @@ const AddEmployee: React.FC = () => {
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => navigate('/employees')}
+              onClick={() => navigate('/admin/employees')}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
             >
               Cancel

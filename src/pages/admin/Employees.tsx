@@ -152,7 +152,7 @@ const Employees: React.FC = () => {
   };
 
   const handleNavigateToAddEmployee = () => {
-    navigate('/add-employee');
+    navigate('/admin/add-employee');
   };
 
   return (
@@ -163,7 +163,7 @@ const Employees: React.FC = () => {
         </h1>
         <button
           onClick={handleNavigateToAddEmployee}
-          className="text-white px-4 py-2 rounded-md flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+          className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
         >
           <Plus /> Add Employee
         </button>

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
 import UserLayout from './layouts/UserLayout';
 import Employees from './pages/admin/Employees';
+import AddEmployee from './pages/admin/AddEmployee';
 import Attendance from './pages/admin/Attendance';
 import UserDashboard from './pages/user/UserDashboard';
 import ThemeProvider from './components/ThemeProvider';
@@ -25,6 +26,7 @@ function App() {
                 <Route path="admin/dashboard" element={<Dashboard />} />
                 <Route path="admin/employees" element={<Employees />} />
                 <Route path="admin/attendance" element={<Attendance />} />
+                <Route path="admin/add-employee" element={<AddEmployee />} />
               </Route>
             </Route>
 
