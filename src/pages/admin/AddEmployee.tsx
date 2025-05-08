@@ -327,6 +327,7 @@ const AddEmployee: React.FC = () => {
             </button>
             <button
               type="submit"
+              
               className="px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
             >
               Save Employee
