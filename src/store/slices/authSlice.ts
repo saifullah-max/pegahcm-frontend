@@ -14,7 +14,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: null,
+  token: localStorage.getItem('token'), // Initialize from localStorage if available
   isAuthenticated: false,
 };
 
@@ -34,9 +34,10 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('token'); // Clean up localStorage on logout
     },
   },
 });
 
 export const { setCredentials, logout } = authSlice.actions;
-export default authSlice.reducer; 
+export default authSlice.reducer;

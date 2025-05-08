@@ -5,56 +5,61 @@ import { setCredentials } from '../../store/slices/authSlice';
 import { RootState } from '../../store';
 import { Moon, Sun } from 'lucide-react';
 import { toggleTheme } from '../../store/slices/themeSlice';
+import { loginUser } from '../../services/authService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { isDarkMode } = useSelector((state: RootState) => state.theme);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-  
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Check if the entered credentials match admin or user
-    if (email === 'admin@example.com' && password === 'admin123') {
-      const mockAdmin = {
-        id: '1',
-        email: 'admin@example.com',
-        name: 'Admin',
-        role: 'admin'
-      };
-      const mockAdminToken = 'mock-jwt-token-1';
-      
-      dispatch(setCredentials({ user: mockAdmin, token: mockAdminToken }));
-      navigate('/admin/dashboard');
-    } 
-    else if (email === 'user@example.com' && password === 'user123') {
-      const mockUser = {
-        id: '2',
-        email: 'user@example.com',
-        name: 'User',
-        role: 'user'
-      };
-      const mockUserToken = 'mock-jwt-token-2';
-      
-      dispatch(setCredentials({ user: mockUser, token: mockUserToken }));
-      navigate('/user/user-dashboard');
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
     }
-    else {
-      // Handle invalid credentials
-      alert('Invalid email or password');
-    }
-  };
+  }, []);
 
   const handleThemeToggle = () => {
     dispatch(toggleTheme());
   };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await loginUser({ email, password });
+      dispatch(setCredentials({
+        user: response.user,
+        token: response.token
+      }));
+
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+        localStorage.setItem('token', response.token);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('token');
+      }
+
+      navigate('/admin/dashboard');
+      
+    } catch (error) {
+      setError('Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-black dark:from-gray-900 dark:to-black relative">
@@ -75,7 +80,12 @@ const Login = () => {
           <p className="text-white/80">Sign in to access your dashboard</p>
         </div>
         <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-slate-50 dark:shadow-gray-900 p-8 h-[420px] w-[320px] mx-auto flex flex-col justify-center">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6" onSubmit={handleLogin}>
+            {error && (
+              <div className="text-red-500 text-sm text-center">
+                {error}
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email address
@@ -110,7 +120,6 @@ const Login = () => {
               <div className="flex items-center">
                 <input
                   id="remember-me"
-                  name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 accent-slate-200 opacity-40 dark:accent-gray-700"
                   checked={rememberMe}
@@ -125,9 +134,10 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#255199] hover:bg-[#2F66C1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#255199] hover:bg-[#2F66C1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                Sign in
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
               <div className="text-sm">
                 <a href="#" 
