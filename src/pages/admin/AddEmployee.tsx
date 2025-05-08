@@ -18,6 +18,8 @@ interface Employee {
   emergencyContact?: string;
   bloodGroup?: string;
   skills?: string[];
+  documents?: File[];
+  workLocationType?: 'Onsite' | 'Remote' | 'Hybrid';
 }
 
 const AddEmployee: React.FC = () => {
@@ -38,6 +40,8 @@ const AddEmployee: React.FC = () => {
     emergencyContact: '',
     bloodGroup: '',
     skills: [],
+    documents: [],
+    workLocationType: undefined,
   });
 
   const [skillInput, setSkillInput] = useState('');
@@ -49,6 +53,23 @@ const AddEmployee: React.FC = () => {
     setNewEmployee({
       ...newEmployee,
       [name]: name === 'salary' ? (value ? parseFloat(value) : undefined) : value,
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setNewEmployee({
+        ...newEmployee,
+        documents: [...(newEmployee.documents || []), ...files],
+      });
+    }
+  };
+
+  const handleRemoveDocument = (index: number) => {
+    setNewEmployee({
+      ...newEmployee,
+      documents: newEmployee.documents?.filter((_, i) => i !== index),
     });
   };
 
@@ -308,6 +329,68 @@ const AddEmployee: React.FC = () => {
                       type="button"
                       onClick={() => handleRemoveSkill(skill)}
                       className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Work Location Section */}
+            <div className="md:col-span-2 mt-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+                Work Location
+              </h2>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">Work Location Type*</label>
+              <select
+                name="workLocationType"
+                value={newEmployee.workLocationType || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                required
+              >
+                <option value="">Select Work Location Type</option>
+                <option value="Onsite">Onsite</option>
+                <option value="Remote">Remote</option>
+                <option value="Hybrid">Hybrid</option>
+              </select>
+            </div>
+
+            {/* Documents Section */}
+            <div className="md:col-span-2 mt-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+                Documents
+              </h2>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload Documents (Images)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Supported formats: JPG, PNG, GIF, etc.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-3">
+                {newEmployee.documents?.map((file, index) => (
+                  <div 
+                    key={index}
+                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full flex items-center dark:bg-gray-700 dark:text-gray-200"
+                  >
+                    {file.name}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDocument(index)}
+                      className="ml-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       &times;
                     </button>
