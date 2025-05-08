@@ -1,5 +1,6 @@
+import { Check, X } from 'lucide-react';
 import React, { useState } from 'react';
-import dayjs from 'dayjs';
+
 
 interface AttendanceRecord {
   key: string;
@@ -68,47 +69,6 @@ const Attendance: React.FC = () => {
           </svg>
           Attendance
         </h1>
-      </div>
-
-      {notification && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-          notification.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
-          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-        }`}>
-          {notification.message}
-        </div>
-      )}
-
-      <div className="flex gap-4 mb-8">
-        <button
-          onClick={handleCheckIn}
-          disabled={loading}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? (
-            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-          )}
-          Check In
-        </button>
-        <button
-          onClick={handleCheckOut}
-          disabled={loading}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? (
-            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M17 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zM9.293 6.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L10.586 11H3a1 1 0 110-2h7.586L9.293 7.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          )}
-          Check Out
-        </button>
       </div>
 
       <div className="overflow-x-auto shadow-md rounded-lg">
