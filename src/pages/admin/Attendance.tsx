@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-
-import dayjs from 'dayjs';
-import { ClockFading, LogIn, LogOut, Check, X } from 'lucide-react';
+import { ClockFading, Check, X } from 'lucide-react';
 
 interface AttendanceRecord {
   key: string;
@@ -31,66 +29,12 @@ const Attendance: React.FC = () => {
       reason: 'Traffic delay',
       approvalStatus: 'Pending'
     },
-    // Add more sample records as needed
   ]);
-  const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
 
-  const showNotification = (type: string, message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
-  };
 
-  const handleCheckIn = () => {
-    setLoading(true);
-    const currentTime = dayjs().format('HH:mm:ss');
-    const today = dayjs().format('YYYY-MM-DD');
+  const showNotification = (type: 'success' | 'error', message: string) => {
 
-    const todayRecord = attendanceRecords.find(
-      record => record.date === today
-    );
-
-    if (todayRecord) {
-      showNotification('warning', 'You have already checked in today!');
-      setLoading(false);
-      return;
-    }
-
-    const newRecord: AttendanceRecord = {
-      key: today,
-      date: today,
-      employeeId: 101,
-      name: 'John Doe',
-      checkIn: currentTime,
-      checkOut: '-',
-      status: 'Present',
-      approvalStatus: 'Pending',
-    };
-
-    setAttendanceRecords(prev => [newRecord, ...prev]);
-    showNotification('success', 'Successfully checked in!');
-    setLoading(false);
-  };
-
-  const handleCheckOut = () => {
-    setLoading(true);
-    const currentTime = dayjs().format('HH:mm:ss');
-    const today = dayjs().format('YYYY-MM-DD');
-
-    setAttendanceRecords(prev =>
-      prev.map(record => {
-        if (record.date === today && record.checkOut === '-') {
-          return {
-            ...record,
-            checkOut: currentTime,
-          };
-        }
-        return record;
-      })
-    );
-
-    showNotification('success', 'Successfully checked out!');
-    setLoading(false);
+    console.log(`${type}: ${message}`);
   };
 
   const handleApprove = (key: string) => {
