@@ -14,6 +14,10 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  useEffect(() => {
+  
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -126,7 +130,9 @@ const Login = () => {
                 Sign in
               </button>
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-500 hover:text-blue-600 flex justify-center mt-2">
+                <a href="#" 
+                  onClick={() => navigate('/forgot-password')}
+                    className="font-medium text-blue-500 hover:text-blue-600 flex justify-center mt-2">
                   Forgot your password?
                 </a>
               </div>

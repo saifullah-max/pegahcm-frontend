@@ -11,6 +11,7 @@ import AddEmployee from './pages/admin/AddEmployee';
 import Attendance from './pages/admin/Attendance';
 import UserDashboard from './pages/user/UserDashboard';
 import ThemeProvider from './components/ThemeProvider';
+import ForgotPassword from './pages/auth/ForgotPassword';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRole="admin" />}>
