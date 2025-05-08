@@ -69,7 +69,7 @@ const LeavesSummary: React.FC = () => {
       <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center text-sm">
           <span className="text-gray-600 dark:text-gray-300">Last updated: Today</span>
-          <button className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors">
+          <button className="text-[#255199] dark:text-indigo-400 hover:text-blue-800 dark:hover:text-indigo-300 font-medium transition-colors">
             View Details →
           </button>
         </div>

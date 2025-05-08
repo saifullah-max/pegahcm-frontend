@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 
 const PayslipDetails: React.FC = () => {
   const [showDetails, setShowDetails] = useState(true);
@@ -26,7 +26,7 @@ const PayslipDetails: React.FC = () => {
     ],
     totalEarnings: 6100,
     totalDeductions: 1300,
-    netSalary: 4800
+    netSalary: 1000
   };
 
   // Previous months for the dropdown selector
@@ -76,7 +76,7 @@ const PayslipDetails: React.FC = () => {
                     key={month}
                     onClick={() => handleMonthChange(month)}
                     className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors ${
-                      month === currentMonth ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'
+                      month === currentMonth ? 'bg-indigo-50 text-[#255199]' : 'text-slate-700'
                     }`}
                   >
                     {month}
@@ -114,7 +114,7 @@ const PayslipDetails: React.FC = () => {
           <div className="flex space-x-2">
             <button 
               onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center space-x-1 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+              className="flex items-center space-x-1 text-sm text-[#255199] hover:text-[#2F66C1] font-medium transition-colors"
             >
               <Eye className="h-4 w-4" />
               <span>{showDetails ? 'Hide Details' : 'Show Details'}</span>
@@ -125,7 +125,7 @@ const PayslipDetails: React.FC = () => {
               <Printer className="h-4 w-4" />
               <span>Print</span>
             </button>
-            <button className="flex items-center space-x-1 bg-indigo-500 px-3 py-1.5 rounded-lg text-sm text-white hover:bg-indigo-600 transition-colors">
+            <button className="flex items-center space-x-1 bg-[#255199] px-3 py-1.5 rounded-lg text-sm text-white hover:bg-[#2F66C1] transition-colors">
               <Download className="h-4 w-4" />
               <span>Download</span>
             </button>
@@ -147,7 +147,7 @@ const PayslipDetails: React.FC = () => {
                     <span className="font-medium text-slate-800">${item.amount.toLocaleString()}</span>
                   </div>
                 ))}
-                <div className="flex justify-between items-center py-2 text-indigo-600 font-semibold">
+                <div className="flex justify-between items-center py-2 text-[#255199] font-semibold">
                   <span>Total Earnings</span>
                   <span>${payslipData.totalEarnings.toLocaleString()}</span>
                 </div>

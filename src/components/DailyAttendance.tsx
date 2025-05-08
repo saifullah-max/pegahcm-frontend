@@ -231,7 +231,7 @@ const DailyAttendance: React.FC = () => {
                 <div className="relative w-16 h-full flex items-end">
                   {/* Check-in bar */}
                   <div 
-                    className="w-6 bg-blue-400 rounded-t absolute left-0"
+                    className="w-6 bg-[#255199] rounded-t absolute left-0"
                     style={{ 
                       height: `${getBarHeight(parseInt(day.checkIn.split(':')[0]))}px`,
                       bottom: 0 
@@ -243,7 +243,7 @@ const DailyAttendance: React.FC = () => {
                   </div>
                   {/* Check-out bar */}
                   <div 
-                    className="w-6 bg-green-400 rounded-t absolute right-0"
+                    className="w-6 bg-green-500 rounded-t absolute right-0"
                     style={{ 
                       height: `${getBarHeight(parseInt(day.checkOut.split(':')[0]))}px`,
                       bottom: 0 
@@ -263,11 +263,11 @@ const DailyAttendance: React.FC = () => {
         {/* Simple Legend just for check-in/out */}
         <div className="mt-4 flex items-center justify-center space-x-6">
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-400 rounded mr-2"></div>
+            <div className="w-4 h-4 bg-[#255199] rounded mr-2"></div>
             <span className="text-sm text-gray-600">Check-in</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-400 rounded mr-2"></div>
+            <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
             <span className="text-sm text-gray-600">Check-out</span>
           </div>
         </div>
