@@ -10,6 +10,7 @@ import Employees from './pages/admin/Employees';
 import AddEmployee from './pages/admin/AddEmployee';
 import Attendance from './pages/admin/Attendance';
 import UserDashboard from './pages/user/UserDashboard';
+import UserAttendance from './pages/user/UserAttendance';
 import ThemeProvider from './components/ThemeProvider';
 import ForgotPassword from './pages/auth/ForgotPassword';
 
@@ -36,6 +37,7 @@ function App() {
             <Route element={<ProtectedRoute allowedRole="user" />}>
               <Route element={<UserLayout />}>
                 <Route path="user/user-dashboard" element={<UserDashboard />} />
+                <Route path="user/user-attendance" element={<UserAttendance />} />
               </Route>
             </Route>
 
