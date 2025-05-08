@@ -84,7 +84,7 @@ const AttendanceProgress: React.FC = () => {
           <button 
             onClick={() => switchPeriod('current')}
             className={`px-3 py-1 text-sm rounded-full ${activeTab === 'current' 
-              ? 'bg-indigo-600 text-white' 
+              ? 'bg-[#255199] text-white' 
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
             Current
@@ -92,7 +92,7 @@ const AttendanceProgress: React.FC = () => {
           <button 
             onClick={() => switchPeriod('lastMonth')}
             className={`px-3 py-1 text-sm rounded-full ${activeTab === 'lastMonth' 
-              ? 'bg-indigo-600 text-white' 
+              ? 'bg-[#255199] text-white' 
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
             Last Month
@@ -100,7 +100,7 @@ const AttendanceProgress: React.FC = () => {
           <button 
             onClick={() => switchPeriod('quarter')}
             className={`px-3 py-1 text-sm rounded-full ${activeTab === 'quarter' 
-              ? 'bg-indigo-600 text-white' 
+              ? 'bg-[#255199] text-white' 
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
             Quarter
@@ -136,7 +136,7 @@ const AttendanceProgress: React.FC = () => {
             <div className="space-y-1">
               <div className="flex justify-between">
                 <p className="text-sm font-medium text-gray-700">Attendance Rate</p>
-                <p className="text-sm font-bold text-indigo-600">{percentage}%</p>
+                <p className="text-sm font-bold text-[#255199]">{percentage}%</p>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 

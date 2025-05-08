@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {Check, LogIn, LogOut } from 'lucide-react';
 
 const AttendanceMarker: React.FC = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -38,7 +39,7 @@ const AttendanceMarker: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl  text-slate-800">Attendance Portal</h2>
+        <h2 className="text-2xl  text-slate-800">Attendance</h2>
         <div className="text-right">
           <p className="text-slate-600 font-medium">{currentDate}</p>
           <p className="text-slate-500 text-sm">{currentTime}</p>
@@ -48,31 +49,27 @@ const AttendanceMarker: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className={`p-5 rounded-lg transition-all duration-300 ${
           isCheckedIn 
-            ? 'bg-green-50 border-2 border-green-500 shadow-md' 
+            ? 'bg-blue-50 border-2 border-blue-600 shadow-md' 
             : 'bg-white border border-slate-200 hover:shadow-md'
         }`}>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1 text-slate-700">Check In</h3>
               {checkInTime && (
-                <p className="text-sm text-green-600 font-medium">Recorded at {checkInTime}</p>
+                <p className="text-sm text-blue-600 font-medium">Recorded at {checkInTime}</p>
               )}
             </div>
             <div className="ml-4">
               {isCheckedIn ? (
-                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <LogIn/>
                 </div>
               ) : (
                 <button
                   onClick={handleCheckIn}
-                  className="h-10 w-10 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg"
+                  className="h-10 w-10 rounded-full text-white bg-[#255199] hover:bg-[#2F66C1] flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
+                  <LogOut/>
                 </button>
               )}
             </div>
@@ -80,11 +77,9 @@ const AttendanceMarker: React.FC = () => {
           {!isCheckedIn && (
             <button
               onClick={handleCheckIn}
-              className="mt-4 w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow flex items-center justify-center"
+              className="mt-4 w-full py-2 bg-[#255199] hover:bg-[#2F66C1] text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow flex items-center justify-center"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
+              <LogIn className="h-5 w-5 mr-2" />
               Check In Now
             </button>
           )}
@@ -105,9 +100,7 @@ const AttendanceMarker: React.FC = () => {
             <div className="ml-4">
               {isCheckedOut ? (
                 <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check/>
                 </div>
               ) : (
                 <button
@@ -147,7 +140,7 @@ const AttendanceMarker: React.FC = () => {
         <h3 className="text-lg font-semibold mb-3 text-slate-700">Today's Status</h3>
         <div className="space-y-2">
           <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedIn ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedIn ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
             <span className="text-sm text-slate-600">Check-in status: {isCheckedIn ? 'Completed' : 'Pending'}</span>
           </div>
           <div className="flex items-center">
