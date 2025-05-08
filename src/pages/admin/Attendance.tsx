@@ -1,4 +1,4 @@
-import { Check, X } from 'lucide-react';
+import { Check, ClockFading, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 
@@ -64,9 +64,7 @@ const Attendance: React.FC = () => {
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <div className="mb-6">
         <h1 className="text-2xl text-gray-600 dark:text-gray-200 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+        <ClockFading/>
           Attendance
         </h1>
       </div>
