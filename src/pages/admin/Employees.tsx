@@ -1,38 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, UserRound } from "lucide-react";
-
-interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  department: string;
-  designation: string;
-  status: "Present" | "Absent" | "On Leave";
-}
+import { Employee, getEmployees } from "../../services/employeeService";
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [newEmployee, setNewEmployee] = useState<Omit<Employee, "id">>({
-    name: "",
-    email: "",
-    department: "",
-    designation: "",
-    status: "Present",
-  });
   const navigate = useNavigate();
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: "Employee ID",
+      dataIndex: "employeeNumber",
+      key: "employeeNumber",
     },
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "fullName",
+      key: "fullName",
     },
     {
       title: "Email",
@@ -57,9 +42,9 @@ const Employees: React.FC = () => {
         <span
           style={{
             color:
-              status === "Present"
+              status === "active"
                 ? "green"
-                : status === "Absent"
+                : status === "inactive"
                 ? "red"
                 : "orange",
           }}
@@ -71,89 +56,21 @@ const Employees: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Replace this with your actual API call
     const fetchEmployees = async () => {
       try {
-        // Simulated data - replace with actual API call
-        const data: Employee[] = [
-          {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            department: "IT",
-            designation: "Software Engineer",
-            status: "Present",
-          },
-
-          {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            department: "HR",
-            designation: "HR Manager",
-            status: "Absent",
-          },
-
-          {
-            id: 3,
-            name: "Alice Johnson",
-            email: "alice@example.com",
-            department: "Finance",
-            designation: "Financial Analyst",
-            status: "On Leave",
-          },
-
-        ];
+        setLoading(true);
+        const data = await getEmployees();
+        console.log(data);
         setEmployees(data);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching employees:", error);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchEmployees();
   }, []);
-
-  const handleCloseModal = () => {
-    setNewEmployee({
-      name: "",
-      email: "",
-      department: "",
-      designation: "",
-      status: "Present",
-    });
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewEmployee({
-      ...newEmployee,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Generate a new ID (in a real app, this would come from the backend)
-    const newId =
-      employees.length > 0
-        ? Math.max(...employees.map((emp) => emp.id)) + 1
-        : 1;
-    // Create the new employee with an ID
-    const employeeToAdd: Employee = {
-      id: newId,
-      ...newEmployee,
-    };
-
-    // Add to the employees list
-    setEmployees([...employees, employeeToAdd]);
-
-    // Close the modal and reset form
-    handleCloseModal();
-  };
 
   const handleNavigateToAddEmployee = () => {
     navigate("/admin/add-employee");
@@ -199,10 +116,10 @@ const Employees: React.FC = () => {
                   className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                    {employee.id}
+                    {employee.employeeNumber}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                    {employee.name}
+                    {employee.fullName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                     {employee.email}
@@ -216,9 +133,9 @@ const Employees: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
                       className={`px-2 py-1 rounded-lg text-xs font-semibold ${
-                        employee.status === "Present"
+                        employee.status === "active"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                          : employee.status === "Absent"
+                          : employee.status === "inactive"
                           ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
                       }`}
