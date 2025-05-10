@@ -13,6 +13,9 @@ import UserDashboard from './pages/user/UserDashboard';
 import UserAttendance from './pages/user/UserAttendance';
 import ThemeProvider from './components/ThemeProvider';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import Shifts from './pages/admin/Shifts';
+import AddShifts from './pages/admin/AddSifts';
+import EditShift from './pages/admin/EditShift';
 
 function App() {
   return (
@@ -30,6 +33,9 @@ function App() {
                 <Route path="admin/employees" element={<Employees />} />
                 <Route path="admin/attendance" element={<Attendance />} />
                 <Route path="admin/add-employee" element={<AddEmployee />} />
+                <Route path="admin/shifts" element={<Shifts />} />
+                <Route path="admin/add-shifts" element={<AddShifts />} />
+                <Route path="admin/edit-shift/:id" element={<EditShift />} />
               </Route>
             </Route>
 

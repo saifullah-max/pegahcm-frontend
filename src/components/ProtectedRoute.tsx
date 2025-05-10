@@ -9,9 +9,13 @@ interface ProtectedRouteProps {
 const ProtectedRoute = (
   { allowedRole }: ProtectedRouteProps
 ) => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, token } = useSelector((state: RootState) => state.auth);
+  
+  // Check both Redux state and localStorage for authentication
+  const localStorageToken = localStorage.getItem('token');
+  const isUserAuthenticated = isAuthenticated || !!localStorageToken;
 
-  if (!isAuthenticated) {
+  if (!isUserAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
