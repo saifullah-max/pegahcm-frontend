@@ -36,18 +36,20 @@ const Login = () => {
 
     try {
       const response = await loginUser({ email, password });
+      console.log('Login response:', response);
       dispatch(setCredentials({
-        user: response.user,
-        token: response.token
+        user: response.data.user,
+        token: response.data.token
       }));
 
-      // Handle remember me
+      // Always store token in localStorage for API calls
+      localStorage.setItem('token', response.data.token);
+      
+      // Handle remember me for email only
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
-        localStorage.setItem('token', response.token);
       } else {
         localStorage.removeItem('rememberedEmail');
-        localStorage.removeItem('token');
       }
 
       navigate('/admin/dashboard');
