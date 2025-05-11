@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
+import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
 
 const AdminLayout = () => {
@@ -53,8 +53,13 @@ const AdminLayout = () => {
   };
 
   const handleShiftsClick = () => {
-    dispatch({ type: 'NAVIGATE', payload: '/admin/profile' });
+    dispatch({ type: 'NAVIGATE', payload: '/admin/shifts' });
     navigate('/admin/shifts');
+  };
+  
+  const handleDepartmentsClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/admin/departments' });
+    navigate('/admin/departments');
   };
   
   const handleLogoutClick = () => {
@@ -88,6 +93,9 @@ const AdminLayout = () => {
             </li>
             <li onClick={handleShiftsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
               <CalendarSync className='inline-block mr-2'/>Shifts
+            </li>
+            <li onClick={handleDepartmentsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
+              <Building2 className='inline-block mr-2'/>Departments
             </li>
           </ul>
         </nav>
