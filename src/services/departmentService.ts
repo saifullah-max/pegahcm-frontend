@@ -10,12 +10,6 @@ export interface Department {
   subDepartments: SubDepartment[];
 }
 
-interface DepartmentResponse {
-  data: {
-    departments: Department[];
-  };
-}
-
 // Helper function to handle authentication errors
 const handleAuthError = (error: any) => {
   if (error.message?.includes('invalid token') || error.message?.includes('expired token')) {
@@ -57,10 +51,34 @@ export const getDepartments = async (): Promise<Department[]> => {
       throw new Error('Failed to fetch departments');
     }
 
-    const data: DepartmentResponse = await response.json();
-    return data.data.departments;
+    const data = await response.json();
+    let departmentsArray: any[] = [];
+    
+    // Handle the specific structure from the API
+    if (data.success && Array.isArray(data.data)) {
+      departmentsArray = data.data;
+    } else if (data.data && data.data.departments) {
+      departmentsArray = data.data.departments;
+    } else if (Array.isArray(data)) {
+      departmentsArray = data;
+    } else if (data.departments && Array.isArray(data.departments)) {
+      departmentsArray = data.departments;
+    } else {
+      return [];
+    }
+    
+    // Ensure each department has the expected structure
+    return departmentsArray.map(dept => {
+      // Make sure subDepartments is always an array
+      if (!dept.subDepartments) {
+        dept.subDepartments = [];
+      } else if (!Array.isArray(dept.subDepartments)) {
+        dept.subDepartments = [];
+      }
+      
+      return dept as Department;
+    });
   } catch (error) {
-    console.error('Error fetching departments:', error);
     return handleAuthError(error);
   }
 };
@@ -84,7 +102,6 @@ export const getDepartmentById = async (id: string): Promise<Department> => {
     const data = await response.json();
     return data.data.department;
   } catch (error) {
-    console.error(`Error fetching department with ID ${id}:`, error);
     return handleAuthError(error);
   }
 };
@@ -106,9 +123,22 @@ export const getSubDepartmentsByDepartmentId = async (departmentId: string): Pro
     }
 
     const data = await response.json();
-    return data.data.subDepartments;
+    
+    // Handle the specific structure from the API
+    if (data.success && Array.isArray(data.data)) {
+      return data.data;
+    } else if (data.data && data.data.subDepartments) {
+      return data.data.subDepartments;
+    } else if (Array.isArray(data)) {
+      return data;
+    } else if (data.subDepartments && Array.isArray(data.subDepartments)) {
+      return data.subDepartments;
+    } else if (data.success && data.data && data.data.subDepartments && Array.isArray(data.data.subDepartments)) {
+      return data.data.subDepartments;
+    } else {
+      return [];
+    }
   } catch (error) {
-    console.error(`Error fetching sub-departments for department ID ${departmentId}:`, error);
     return handleAuthError(error);
   }
 };
@@ -133,7 +163,6 @@ export const createDepartment = async (name: string): Promise<Department> => {
     const data = await response.json();
     return data.data.department;
   } catch (error) {
-    console.error('Error creating department:', error);
     return handleAuthError(error);
   }
 };
@@ -158,7 +187,6 @@ export const createSubDepartment = async (departmentId: string, name: string): P
     const data = await response.json();
     return data.data.subDepartment;
   } catch (error) {
-    console.error('Error creating sub-department:', error);
     return handleAuthError(error);
   }
 };
