@@ -16,6 +16,9 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import Shifts from './pages/admin/Shifts';
 import AddShifts from './pages/admin/AddSifts';
 import EditShift from './pages/admin/EditShift';
+import Departments from './pages/admin/Departments';
+import AddDepartment from './pages/admin/AddDepartment';
+import EditDepartment from './pages/admin/EditDepartment';
 
 function App() {
   return (
@@ -36,6 +39,9 @@ function App() {
                 <Route path="admin/shifts" element={<Shifts />} />
                 <Route path="admin/add-shifts" element={<AddShifts />} />
                 <Route path="admin/edit-shift/:id" element={<EditShift />} />
+                <Route path="admin/departments" element={<Departments />} />
+                <Route path="admin/add-department" element={<AddDepartment />} />
+                <Route path="admin/edit-department/:id" element={<EditDepartment />} />
               </Route>
             </Route>
 

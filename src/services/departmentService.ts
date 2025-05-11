@@ -191,5 +191,69 @@ export const createSubDepartment = async (departmentId: string, name: string): P
   }
 };
 
+// Update an existing department
+export const updateDepartment = async (id: string, name: string): Promise<Department> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/departments/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ name })
+    });
+
+    if (response.status === 401) {
+      throw new Error('invalid or expired token');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to update department');
+    }
+
+    const data = await response.json();
+    return data.data.department;
+  } catch (error) {
+    return handleAuthError(error);
+  }
+};
+
+// Delete a department
+export const deleteDepartment = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/departments/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (response.status === 401) {
+      throw new Error('invalid or expired token');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to delete department');
+    }
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// Delete a sub-department
+export const deleteSubDepartment = async (departmentId: string, subDepartmentId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/departments/${departmentId}/sub-departments/${subDepartmentId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (response.status === 401) {
+      throw new Error('invalid or expired token');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to delete sub-department');
+    }
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
 // Export the SubDepartment interface for reuse
 export type { SubDepartment };
