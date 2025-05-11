@@ -3,33 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
 import { createEmployee, CreateEmployeeData } from '../../services/employeeService';
 import { getShifts } from '../../services/ShiftService';
-import { getDepartments, getSubDepartmentsByDepartmentId, Department, SubDepartment } from '../../services/departmentService';
-
-interface EmployeeData {
-  data: {
-    employees: Employee[];
-  };
-}
-
-interface Employee {
-  id: string;
-  employeeNumber: string;
-  fullName: string;
-  email: string;
-  designation: string;
-  department: string;
-  subDepartment: string;
-  status: string;
-  profileImage: string;
-  workLocation: string;
-  gender: string;
-  address: string;
-  emergencyContact: EmergencyContact;
-  salary: string;
-  skills: string[];
-  documents: Document[];
-  shiftId?: string;
-}
+import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
 
 interface Shift {
   id: string;
@@ -44,13 +18,6 @@ interface EmergencyContact {
   phone: string;
 }
 
-interface Document {
-  name: string;
-  url: string;
-  type: string;
-}
-
-// Define interface for form data that includes confirmPassword which isn't in the API interface
 interface EmployeeFormData {
   fullName: string;
   email: string;
@@ -118,7 +85,7 @@ const AddEmployee: React.FC = () => {
         const shiftsData = await getShifts();
         setShifts(shiftsData);
       } catch (error) {
-        console.error('Error fetching shifts:', error);
+        // Handle error appropriately
       } finally {
         setShiftsLoading(false);
       }
@@ -130,7 +97,7 @@ const AddEmployee: React.FC = () => {
         const departmentsData = await getDepartments();
         setDepartments(departmentsData);
       } catch (error) {
-        console.error('Error fetching departments:', error);
+        // Handle error appropriately
       } finally {
         setDepartmentsLoading(false);
       }
@@ -151,12 +118,18 @@ const AddEmployee: React.FC = () => {
       setSubDepartmentsLoading(true);
       try {
         const selectedDepartment = departments.find(dept => dept.id === newEmployee.department);
+        
         if (selectedDepartment) {
-          const subDepartmentsData = await getSubDepartmentsByDepartmentId(selectedDepartment.id);
-          setSubDepartments(subDepartmentsData);
+          if (selectedDepartment.subDepartments && Array.isArray(selectedDepartment.subDepartments)) {
+            setSubDepartments(selectedDepartment.subDepartments);
+          } else {
+            setSubDepartments([]);
+          }
+        } else {
+          setSubDepartments([]);
         }
       } catch (error) {
-        console.error('Error fetching sub-departments:', error);
+        setSubDepartments([]);
       } finally {
         setSubDepartmentsLoading(false);
       }
@@ -267,7 +240,6 @@ const AddEmployee: React.FC = () => {
     setLoading(true);
     
     try {
-      // Get department and sub-department names for the API
       let departmentName = '';
       let subDepartmentName = '';
       
@@ -285,7 +257,6 @@ const AddEmployee: React.FC = () => {
         }
       }
       
-      // Convert form data to API format
       const apiData: CreateEmployeeData = {
         fullName: newEmployee.fullName,
         email: newEmployee.email,
@@ -305,15 +276,9 @@ const AddEmployee: React.FC = () => {
         shiftId: newEmployee.shiftId
       };
       
-      // Log the data being sent to the API
-      console.log('Submitting employee data:', apiData);
-      
-      const result = await createEmployee(apiData);
-      console.log('Employee created successfully:', result);
+      await createEmployee(apiData);
       navigate('/admin/employees');
     } catch (error: any) {
-      console.error('Error creating employee:', error);
-      // Display error to user
       alert(`Failed to create employee: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
@@ -485,11 +450,11 @@ const AddEmployee: React.FC = () => {
                 {departmentsLoading ? (
                   <option disabled>Loading departments...</option>
                 ) : (
-                  departments.map((department) => (
+                  departments && departments.length > 0 ? departments.map((department) => (
                     <option key={department.id} value={department.id}>
                       {department.name}
                     </option>
-                  ))
+                  )) : <option disabled>No departments available</option>
                 )}
               </select>
             </div>
@@ -508,11 +473,11 @@ const AddEmployee: React.FC = () => {
                 {subDepartmentsLoading ? (
                   <option disabled>Loading sub-departments...</option>
                 ) : (
-                  subDepartments.map((subDepartment) => (
+                  subDepartments && subDepartments.length > 0 ? subDepartments.map((subDepartment) => (
                     <option key={subDepartment.id} value={subDepartment.id}>
                       {subDepartment.name}
                     </option>
-                  ))
+                  )) : <option disabled>No sub-departments available</option>
                 )}
               </select>
             </div>
@@ -643,11 +608,11 @@ const AddEmployee: React.FC = () => {
                 {shiftsLoading ? (
                   <option disabled>Loading shifts...</option>
                 ) : (
-                  shifts.map((shift) => (
+                  shifts && shifts.length > 0 ? shifts.map((shift) => (
                     <option key={shift.id} value={shift.id}>
                       {shift.name}
                     </option>
-                  ))
+                  )) : <option disabled>No shifts available</option>
                 )}
               </select>
             </div>
