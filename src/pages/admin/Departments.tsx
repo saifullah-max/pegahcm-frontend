@@ -25,9 +25,8 @@ const Departments: React.FC = () => {
 
     const columns = [
         {
-            title: "ID",
-            dataIndex: "id",
-            key: "id",
+            title: "S.No",
+            key: "serialNumber",
         },
         {
             title: "Name",
@@ -100,19 +99,19 @@ const Departments: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                            {departments.map((dept) => (
+                            {departments.map((dept, index) => (
                                 <tr
                                     key={dept.id}
                                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                                        {dept.id}
+                                        {index + 1}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                                         {dept.name}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                                        {dept.subDepartments?.length || 0}
+                                        {dept.subDepartments.map((subDept: any) => subDept.name).join(', ')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
                                         <Edit
