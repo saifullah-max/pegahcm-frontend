@@ -6,8 +6,7 @@ import {
   updateDepartment, 
   createSubDepartment,
   deleteSubDepartment,
-  Department, 
-  SubDepartment 
+  Department,  
 } from '../../services/departmentService';
 
 const EditDepartment: React.FC = () => {

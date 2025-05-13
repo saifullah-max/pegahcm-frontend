@@ -4,6 +4,13 @@ import { ArrowLeft, UserRound } from 'lucide-react';
 import { createEmployee, CreateEmployeeData } from '../../services/employeeService';
 import { getShifts } from '../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
+import { 
+  registerUser,  
+  RegisterUserData, 
+  ValidationError,
+  RegistrationError 
+} from '../../services/RegisterService';
+import { getRoles, Role } from '../../services/roleService';
 
 interface Shift {
   id: string;
@@ -39,6 +46,7 @@ interface EmployeeFormData {
   documents?: File[];
   profileImage?: File;
   shiftId?: string;
+  role: string;
 }
 
 const AddEmployee: React.FC = () => {
@@ -66,6 +74,7 @@ const AddEmployee: React.FC = () => {
     skills: [],
     workLocation: 'Onsite',
     shiftId: '',
+    role: 'employee',
   });
 
   const [loading, setLoading] = useState(false);
@@ -77,6 +86,10 @@ const AddEmployee: React.FC = () => {
   const [subDepartments, setSubDepartments] = useState<SubDepartment[]>([]);
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
   const [subDepartmentsLoading, setSubDepartmentsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [registering, setRegistering] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
 
   useEffect(() => {
     const fetchShifts = async () => {
@@ -103,8 +116,21 @@ const AddEmployee: React.FC = () => {
       }
     };
 
+    const fetchRoles = async () => {
+      setRolesLoading(true);
+      try {
+        const rolesData = await getRoles();
+        setRoles(rolesData);
+      } catch (error) {
+        // Handle error appropriately
+      } finally {
+        setRolesLoading(false);
+      }
+    };
+
     fetchShifts();
     fetchDepartments();
+    fetchRoles();
   }, []);
 
   // Fetch sub-departments when department changes
@@ -142,6 +168,9 @@ const AddEmployee: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    
+    // Clear validation errors when the user edits a field
+    setValidationErrors(prev => prev.filter(error => error.field !== name));
     
     // Check password confirmation
     if (name === 'confirmPassword') {
@@ -232,12 +261,16 @@ const AddEmployee: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear previous validation errors
+    setValidationErrors([]);
+    
     if (newEmployee.password !== newEmployee.confirmPassword) {
       setPasswordError('Passwords do not match');
       return;
     }
     
     setLoading(true);
+    setRegistering(true);
     
     try {
       let departmentName = '';
@@ -257,32 +290,65 @@ const AddEmployee: React.FC = () => {
         }
       }
       
-      const apiData: CreateEmployeeData = {
+      // First register the user
+      const registerData: RegisterUserData = {
+        username: newEmployee.fullName,
         fullName: newEmployee.fullName,
         email: newEmployee.email,
         password: newEmployee.password,
-        designation: newEmployee.designation,
-        department: departmentName,
-        subDepartment: subDepartmentName,
-        workLocation: newEmployee.workLocation,
-        gender: newEmployee.gender,
-        address: newEmployee.address,
-        emergencyContact: newEmployee.emergencyContact,
-        salary: newEmployee.salary,
-        skills: newEmployee.skills,
-        status: newEmployee.status,
-        documents: newEmployee.documents,
-        profileImage: newEmployee.profileImage,
-        shiftId: newEmployee.shiftId
+        roleId: newEmployee.role
       };
       
-      await createEmployee(apiData);
-      navigate('/admin/employees');
+      try {
+        // Register the user first - pass true to preserve admin token
+        await registerUser(registerData, true);
+        setRegistering(false);
+        
+        // If user registration is successful, proceed with employee creation
+        const apiData: CreateEmployeeData = {
+          fullName: newEmployee.fullName,
+          email: newEmployee.email,
+          password: newEmployee.password,
+          designation: newEmployee.designation,
+          department: departmentName,
+          subDepartment: subDepartmentName,
+          workLocation: newEmployee.workLocation,
+          gender: newEmployee.gender,
+          address: newEmployee.address,
+          emergencyContact: newEmployee.emergencyContact,
+          salary: newEmployee.salary,
+          skills: newEmployee.skills,
+          status: newEmployee.status,
+          documents: newEmployee.documents,
+          profileImage: newEmployee.profileImage,
+          shiftId: newEmployee.shiftId
+        };
+        
+        await createEmployee(apiData);
+        navigate('/admin/employees');
+      } catch (registrationError: any) {
+        setRegistering(false);
+        
+        // Handle validation errors
+        if (registrationError instanceof RegistrationError && registrationError.validationErrors) {
+          setValidationErrors(registrationError.validationErrors);
+        } else {
+          // If registration fails with other error, show alert
+          alert(`User registration failed: ${registrationError.message || 'Unknown error'}`);
+        }
+      }
     } catch (error: any) {
       alert(`Failed to create employee: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
+      setRegistering(false);
     }
+  };
+
+  // Helper function to get field error message
+  const getFieldError = (fieldName: string): string | undefined => {
+    const error = validationErrors.find(err => err.field === fieldName);
+    return error?.message;
   };
 
   return (
@@ -316,9 +382,12 @@ const AddEmployee: React.FC = () => {
                 name="fullName"
                 value={newEmployee.fullName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                className={`w-full px-3 py-2 border ${getFieldError('fullName') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
                 required
               />
+              {getFieldError('fullName') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('fullName')}</p>
+              )}
             </div>
             
             <div className="mb-4">
@@ -328,9 +397,12 @@ const AddEmployee: React.FC = () => {
                 name="email"
                 value={newEmployee.email}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                className={`w-full px-3 py-2 border ${getFieldError('email') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
                 required
               />
+              {getFieldError('email') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('email')}</p>
+              )}
             </div>
             
             <div className="mb-4">
@@ -428,6 +500,41 @@ const AddEmployee: React.FC = () => {
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               ></textarea>
+            </div>
+            
+            {/* Add this new section before the "Employment Information Section" */}
+            <div className="md:col-span-3 mt-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+                User Role
+              </h2>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">Role*</label>
+              <select
+                name="role"
+                value={newEmployee.role}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                required
+              >
+                <option value="">Select Role</option>
+                {rolesLoading ? (
+                  <option disabled>Loading roles...</option>
+                ) : (
+                  roles && roles.length > 0 ? roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  )) : <option value="employee">Employee</option>
+                )}
+              </select>
+              {getFieldError('role') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('role')}</p>
+              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                This will determine what permissions the user has in the system.
+              </p>
             </div>
             
             {/* Employment Information Section */}
@@ -689,10 +796,10 @@ const AddEmployee: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={loading || !!passwordError}
+              disabled={loading || !!passwordError || validationErrors.length > 0}
               className="px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1] disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {loading ? 'Saving...' : 'Save Employee'}
+              {loading ? (registering ? 'Registering User...' : 'Creating Employee...') : 'Save Employee'}
             </button>
           </div>
         </form>
