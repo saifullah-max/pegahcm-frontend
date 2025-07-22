@@ -1,4 +1,4 @@
-interface SubDepartment {
+export interface SubDepartment {
   id: string;
   name: string;
   departmentId: string;
@@ -168,12 +168,12 @@ export const createDepartment = async (name: string): Promise<Department> => {
 };
 
 // Create a new sub-department
-export const createSubDepartment = async (departmentId: string, name: string): Promise<SubDepartment> => {
+export const createSubDepartment = async (departmentId: string, name: string,): Promise<SubDepartment> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/departments/${departmentId}/sub-departments`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/sub-departments`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, departmentId })
     });
 
     if (response.status === 401) {
@@ -185,6 +185,8 @@ export const createSubDepartment = async (departmentId: string, name: string): P
     }
 
     const data = await response.json();
+    console.log('Updated subDepartments:', data.subDepartment);
+
     return data.data.subDepartment;
   } catch (error) {
     return handleAuthError(error);
@@ -238,7 +240,7 @@ export const deleteDepartment = async (id: string): Promise<void> => {
 // Delete a sub-department
 export const deleteSubDepartment = async (departmentId: string, subDepartmentId: string): Promise<void> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/departments/${departmentId}/sub-departments/${subDepartmentId}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/sub-departments/${subDepartmentId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -255,5 +257,37 @@ export const deleteSubDepartment = async (departmentId: string, subDepartmentId:
   }
 };
 
-// Export the SubDepartment interface for reuse
-export type { SubDepartment };
+// Get All Sub-Departments
+export const getAllSubDepartments = async (): Promise<SubDepartment[]> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/sub-departments`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+
+    if (response.status === 401) {
+      throw new Error('invalid or expired token');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch sub-departments');
+    }
+
+    const data = await response.json();
+    
+    // Handle the specific structure from the API
+    if (data.success && Array.isArray(data.data)) {
+      return data.data;
+    } else if (data.data && data.data.subDepartments) {
+      return data.data.subDepartments;
+    } else if (Array.isArray(data)) {
+      return data;
+    } else if (data.subDepartments && Array.isArray(data.subDepartments)) {
+      return data.subDepartments;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}

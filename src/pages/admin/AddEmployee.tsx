@@ -4,12 +4,12 @@ import { ArrowLeft, UserRound } from 'lucide-react';
 import { createEmployee, CreateEmployeeData } from '../../services/employeeService';
 import { getShifts } from '../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
-import { 
-  registerUser,  
-  RegisterUserData, 
+import {
+  registerUser,
+  RegisterUserData,
   ValidationError,
-  RegistrationError 
-} from '../../services/RegisterService';
+  RegistrationError
+} from '../../services/registerService';
 import { getRoles, Role } from '../../services/roleService';
 
 interface Shift {
@@ -30,17 +30,19 @@ interface EmployeeFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  fatherName: string;
   designation: string;
   department: string;
   subDepartment: string;
   workLocation: string;
   gender: string;
   address: string;
-  emergencyContact: EmergencyContact;
+  emergencyContactName: EmergencyContact["name"];
+  emergencyContactPhone: EmergencyContact["phone"];
   salary: string;
   skills: string[];
   status: string;
-  phone?: string;
+  phone?: number;
   dateOfBirth?: string;
   dateOfJoining?: string;
   documents?: File[];
@@ -51,26 +53,25 @@ interface EmployeeFormData {
 
 const AddEmployee: React.FC = () => {
   const navigate = useNavigate();
-  
+
   const [newEmployee, setNewEmployee] = useState<EmployeeFormData>({
     fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    fatherName: '',
     department: '',
     subDepartment: '',
     designation: '',
     status: 'active',
-    phone: '',
+    phone: 0,
     address: '',
     dateOfBirth: '',
     dateOfJoining: '',
     salary: '',
     gender: 'Other',
-    emergencyContact: {
-      name: '',
-      phone: ''
-    },
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     skills: [],
     workLocation: 'Onsite',
     shiftId: '',
@@ -140,11 +141,11 @@ const AddEmployee: React.FC = () => {
         setSubDepartments([]);
         return;
       }
-      
+
       setSubDepartmentsLoading(true);
       try {
         const selectedDepartment = departments.find(dept => dept.id === newEmployee.department);
-        
+
         if (selectedDepartment) {
           if (selectedDepartment.subDepartments && Array.isArray(selectedDepartment.subDepartments)) {
             setSubDepartments(selectedDepartment.subDepartments);
@@ -168,10 +169,10 @@ const AddEmployee: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
+
     // Clear validation errors when the user edits a field
     setValidationErrors(prev => prev.filter(error => error.field !== name));
-    
+
     // Check password confirmation
     if (name === 'confirmPassword') {
       if (value !== newEmployee.password) {
@@ -180,7 +181,7 @@ const AddEmployee: React.FC = () => {
         setPasswordError('');
       }
     }
-    
+
     // If changing password, check if it matches confirmation
     if (name === 'password') {
       if (newEmployee.confirmPassword && value !== newEmployee.confirmPassword) {
@@ -189,7 +190,7 @@ const AddEmployee: React.FC = () => {
         setPasswordError('');
       }
     }
-    
+
     setNewEmployee({
       ...newEmployee,
       [name]: value,
@@ -237,113 +238,83 @@ const AddEmployee: React.FC = () => {
     });
   };
 
-  const handleEmergencyContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'emergencyContactName') {
-      setNewEmployee({
-        ...newEmployee,
-        emergencyContact: {
-          ...newEmployee.emergencyContact,
-          name: value
-        }
-      });
-    } else if (name === 'emergencyContactPhone') {
-      setNewEmployee({
-        ...newEmployee,
-        emergencyContact: {
-          ...newEmployee.emergencyContact,
-          phone: value
-        }
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Clear previous validation errors
     setValidationErrors([]);
-    
-    if (newEmployee.password !== newEmployee.confirmPassword) {
-      setPasswordError('Passwords do not match');
-      return;
-    }
-    
+    setPasswordError('');
     setLoading(true);
     setRegistering(true);
-    
+
+    if (newEmployee.password !== newEmployee.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      setLoading(false);
+      setRegistering(false);
+      return;
+    }
+
+    const registerData: RegisterUserData = {
+      fullName: newEmployee.fullName,
+      email: newEmployee.email,
+      password: newEmployee.password,
+      roleId: newEmployee.role,
+    };
+
     try {
-      let departmentName = '';
-      let subDepartmentName = '';
-      
-      if (newEmployee.department) {
-        const selectedDepartment = departments.find(dept => dept.id === newEmployee.department);
-        if (selectedDepartment) {
-          departmentName = selectedDepartment.name;
-        }
-      }
-      
-      if (newEmployee.subDepartment) {
-        const selectedSubDepartment = subDepartments.find(subDept => subDept.id === newEmployee.subDepartment);
-        if (selectedSubDepartment) {
-          subDepartmentName = selectedSubDepartment.name;
-        }
-      }
-      
-      // First register the user
-      const registerData: RegisterUserData = {
-        username: newEmployee.fullName,
+      // Register the user (preserve admin token = true)
+      // try {
+      //   console.log("Registering new user");
+      //   await registerUser(registerData, true);
+      //   console.log("User registered successfully");
+      // } catch (error: any) {
+      //   if (error.response?.status === 400) {
+      //     alert("User already exists. Please use a different email.");
+      //     return;
+      //   }
+      // }
+
+      const apiData: CreateEmployeeData = {
         fullName: newEmployee.fullName,
         email: newEmployee.email,
+        phoneNumber: Number(newEmployee.phone || 0),
         password: newEmployee.password,
-        roleId: newEmployee.role
+        gender: newEmployee.gender,
+        dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : new Date(),
+        emergencyContactName: newEmployee.emergencyContactName,
+        emergencyContactPhone: newEmployee.emergencyContactPhone,
+        address: newEmployee.address,
+        fatherName: newEmployee.fatherName,
+        roleId: newEmployee.role,
+        departmentId: newEmployee.department,
+        subDepartmentId: newEmployee.subDepartment,
+        designation: newEmployee.designation,
+        joiningDate: newEmployee.dateOfJoining ? new Date(newEmployee.dateOfJoining) : new Date(),
+        status: newEmployee.status,
+        salary: parseFloat(newEmployee.salary || '0'),
+        skills: newEmployee.skills,
+        workLocation: newEmployee.workLocation,
+        shiftId: newEmployee.shiftId,
+        documents: newEmployee.documents,
+        profileImage: newEmployee.profileImage,
       };
-      
-      try {
-        // Register the user first - pass true to preserve admin token
-        await registerUser(registerData, true);
-        setRegistering(false);
-        
-        // If user registration is successful, proceed with employee creation
-        const apiData: CreateEmployeeData = {
-          fullName: newEmployee.fullName,
-          email: newEmployee.email,
-          password: newEmployee.password,
-          designation: newEmployee.designation,
-          department: departmentName,
-          subDepartment: subDepartmentName,
-          workLocation: newEmployee.workLocation,
-          gender: newEmployee.gender,
-          address: newEmployee.address,
-          emergencyContact: newEmployee.emergencyContact,
-          salary: newEmployee.salary,
-          skills: newEmployee.skills,
-          status: newEmployee.status,
-          documents: newEmployee.documents,
-          profileImage: newEmployee.profileImage,
-          shiftId: newEmployee.shiftId
-        };
-        
-        await createEmployee(apiData);
-        navigate('/admin/employees');
-      } catch (registrationError: any) {
-        setRegistering(false);
-        
-        // Handle validation errors
-        if (registrationError instanceof RegistrationError && registrationError.validationErrors) {
-          setValidationErrors(registrationError.validationErrors);
-        } else {
-          // If registration fails with other error, show alert
-          alert(`User registration failed: ${registrationError.message || 'Unknown error'}`);
-        }
-      }
+      console.log("Creating employee");
+      await createEmployee(apiData);
+      console.log("New employee added");
+      navigate('/admin/employees');
+
     } catch (error: any) {
-      alert(`Failed to create employee: ${error.message || 'Unknown error'}`);
+      setRegistering(false);
+
+      if (error instanceof RegistrationError && error.validationErrors) {
+        setValidationErrors(error.validationErrors);
+      } else {
+        alert(`Operation failed: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
       setRegistering(false);
     }
   };
+
 
   // Helper function to get field error message
   const getFieldError = (fieldName: string): string | undefined => {
@@ -354,7 +325,7 @@ const AddEmployee: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6 flex items-center">
-        <button 
+        <button
           onClick={() => navigate('/admin/employees')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
@@ -364,17 +335,18 @@ const AddEmployee: React.FC = () => {
           <UserRound /> Add New Employee
         </h1>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
             {/* Personal Information Section */}
             <div className="md:col-span-3">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 Personal Information
               </h2>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Full Name*</label>
               <input
@@ -389,7 +361,7 @@ const AddEmployee: React.FC = () => {
                 <p className="text-red-500 text-sm mt-1">{getFieldError('fullName')}</p>
               )}
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Email Address*</label>
               <input
@@ -404,7 +376,7 @@ const AddEmployee: React.FC = () => {
                 <p className="text-red-500 text-sm mt-1">{getFieldError('email')}</p>
               )}
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
               <input
@@ -415,7 +387,7 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Password*</label>
               <input
@@ -427,7 +399,7 @@ const AddEmployee: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Confirm Password*</label>
               <input
@@ -442,7 +414,7 @@ const AddEmployee: React.FC = () => {
                 <p className="text-red-500 text-sm mt-1">{passwordError}</p>
               )}
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Gender</label>
               <select
@@ -457,7 +429,7 @@ const AddEmployee: React.FC = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
               <input
@@ -468,29 +440,31 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Emergency Contact Name</label>
               <input
                 type="text"
                 name="emergencyContactName"
-                value={newEmployee.emergencyContact.name}
-                onChange={handleEmergencyContactChange}
+                value={newEmployee.emergencyContactName}
+                // onChange={handleEmergencyContactChange}
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Emergency Contact Phone</label>
               <input
                 type="tel"
                 name="emergencyContactPhone"
-                value={newEmployee.emergencyContact.phone}
-                onChange={handleEmergencyContactChange}
+                value={newEmployee.emergencyContactPhone}
+                onChange={handleInputChange}
+                // onChange={handleEmergencyContactChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             <div className="md:col-span-3 mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Address</label>
               <textarea
@@ -501,14 +475,14 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               ></textarea>
             </div>
-            
+
             {/* Add this new section before the "Employment Information Section" */}
             <div className="md:col-span-3 mt-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 User Role
               </h2>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Role*</label>
               <select
@@ -536,14 +510,14 @@ const AddEmployee: React.FC = () => {
                 This will determine what permissions the user has in the system.
               </p>
             </div>
-            
+
             {/* Employment Information Section */}
             <div className="md:col-span-3 mt-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 Employment Information
               </h2>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Department*</label>
               <select
@@ -565,7 +539,7 @@ const AddEmployee: React.FC = () => {
                 )}
               </select>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Sub Department*</label>
               <select
@@ -588,7 +562,7 @@ const AddEmployee: React.FC = () => {
                 )}
               </select>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Designation*</label>
               <input
@@ -600,7 +574,7 @@ const AddEmployee: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Date of Joining</label>
               <input
@@ -611,7 +585,7 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Status*</label>
               <select
@@ -626,7 +600,7 @@ const AddEmployee: React.FC = () => {
                 <option value="onLeave">On Leave</option>
               </select>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Salary</label>
               <input
@@ -637,13 +611,13 @@ const AddEmployee: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
               />
             </div>
-            
+
             {/* Skills Section */}
             <div className="md:col-span-3 mt-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 Skills
               </h2>
-              
+
               <div className="flex mb-2">
                 <input
                   type="text"
@@ -660,10 +634,10 @@ const AddEmployee: React.FC = () => {
                   Add
                 </button>
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mt-3">
                 {newEmployee.skills?.map((skill) => (
-                  <div 
+                  <div
                     key={skill}
                     className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center dark:bg-blue-900 dark:text-blue-100"
                   >
@@ -729,7 +703,7 @@ const AddEmployee: React.FC = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 Profile Image
               </h2>
-              
+
               <div className="mb-4">
                 <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload Profile Image</label>
                 <input
@@ -750,7 +724,7 @@ const AddEmployee: React.FC = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                 Documents
               </h2>
-              
+
               <div className="mb-4">
                 <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload Documents</label>
                 <input
@@ -768,7 +742,7 @@ const AddEmployee: React.FC = () => {
 
               <div className="flex flex-wrap gap-2 mt-3">
                 {newEmployee.documents?.map((file, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full flex items-center dark:bg-gray-700 dark:text-gray-200"
                   >
@@ -785,7 +759,7 @@ const AddEmployee: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"
