@@ -6,6 +6,8 @@ import { getDepartments, deleteDepartment } from "../../services/departmentServi
 const Departments: React.FC = () => {
     const [departments, setDepartments] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -46,16 +48,23 @@ const Departments: React.FC = () => {
     ];
 
     const handleDelete = async (id: string) => {
-        if (window.confirm("Are you sure you want to delete this department?")) {
-            try {
-                await deleteDepartment(id);
-                // Refresh the list
-                setDepartments(departments.filter(dept => dept.id !== id));
-            } catch (error) {
-                console.error("Error deleting department:", error);
-            }
+        if (!window.confirm("Are you sure you want to delete this department?")) return;
+
+        try {
+            await deleteDepartment(id);
+            setDepartments((prev) => prev.filter((dept) => dept.id !== id));
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'Failed to delete department';
+            setError(message);
+
+            // Auto-dismiss after 4 seconds
+            setTimeout(() => {
+                setError(null);
+            }, 4000);
         }
     };
+
 
     const handleEdit = (id: string) => {
         navigate(`/admin/edit-department/${id}`);
@@ -78,6 +87,11 @@ const Departments: React.FC = () => {
                     <Plus /> Add Department
                 </button>
             </div>
+            {error && (
+                <div className="text-red-500 mt-2">
+                    {error}
+                </div>
+            )}
 
             {loading ? (
                 <div className="text-center text-gray-700 dark:text-gray-300">
