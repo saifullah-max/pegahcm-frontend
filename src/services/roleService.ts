@@ -31,7 +31,7 @@ const getAuthHeaders = () => {
     window.location.href = '/login';
     throw new Error('Authentication token not found');
   }
-  
+
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ export const getRoles = async (): Promise<Role[]> => {
     }
 
     const data: RoleResponse = await response.json();
-    
+
     // Handle different API response formats
     if (data.data && Array.isArray(data.data.roles)) {
       return data.data.roles;

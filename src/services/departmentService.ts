@@ -28,7 +28,7 @@ const getAuthHeaders = () => {
     window.location.href = '/login';
     throw new Error('Authentication token not found');
   }
-  
+
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ export const getDepartments = async (): Promise<Department[]> => {
 
     const data = await response.json();
     let departmentsArray: any[] = [];
-    
+
     // Handle the specific structure from the API
     if (data.success && Array.isArray(data.data)) {
       departmentsArray = data.data;
@@ -66,7 +66,7 @@ export const getDepartments = async (): Promise<Department[]> => {
     } else {
       return [];
     }
-    
+
     // Ensure each department has the expected structure
     return departmentsArray.map(dept => {
       // Make sure subDepartments is always an array
@@ -75,7 +75,7 @@ export const getDepartments = async (): Promise<Department[]> => {
       } else if (!Array.isArray(dept.subDepartments)) {
         dept.subDepartments = [];
       }
-      
+
       return dept as Department;
     });
   } catch (error) {
@@ -123,7 +123,7 @@ export const getSubDepartmentsByDepartmentId = async (departmentId: string): Pro
     }
 
     const data = await response.json();
-    
+
     // Handle the specific structure from the API
     if (data.success && Array.isArray(data.data)) {
       return data.data;
@@ -228,6 +228,9 @@ export const deleteDepartment = async (id: string): Promise<void> => {
     if (response.status === 401) {
       throw new Error('invalid or expired token');
     }
+    if (response.status === 400) {
+      alert('This department cannot be deleted because it is associated with employees.');
+    }
 
     if (!response.ok) {
       throw new Error('Failed to delete department');
@@ -248,12 +251,16 @@ export const deleteSubDepartment = async (departmentId: string, subDepartmentId:
     if (response.status === 401) {
       throw new Error('invalid or expired token');
     }
+    if (response.status === 400) {
+      alert('This sub-department cannot be deleted because it is associated with employees.');
+    }
 
     if (!response.ok) {
       throw new Error('Failed to delete sub-department');
     }
   } catch (error) {
     handleAuthError(error);
+    console.error('Error deleting sub-department:', error);
   }
 };
 
@@ -274,7 +281,7 @@ export const getAllSubDepartments = async (): Promise<SubDepartment[]> => {
     }
 
     const data = await response.json();
-    
+
     // Handle the specific structure from the API
     if (data.success && Array.isArray(data.data)) {
       return data.data;

@@ -1,4 +1,6 @@
 import React from "react";
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface DepartmentData {
   name: string;
@@ -7,6 +9,8 @@ interface DepartmentData {
 }
 
 const Dashboard: React.FC = () => {
+  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const role = user?.role;
   const departments: DepartmentData[] = [
     { name: "IT", attendance: 95, color: "bg-[#255199]" },
     { name: "HR", attendance: 88, color: "bg-[#255199]" },
@@ -107,9 +111,8 @@ const Dashboard: React.FC = () => {
                     className={`${dept.color} rounded-t-lg w-full absolute bottom-0 hover:brightness-110 shadow-lg transition-all duration-700 ease-out transform hover:scale-105`}
                     style={{
                       height: `${dept.attendance}%`,
-                      animation: `growBar 1.5s ease-out forwards ${
-                        departments.indexOf(dept) * 0.2
-                      }s`,
+                      animation: `growBar 1.5s ease-out forwards ${departments.indexOf(dept) * 0.2
+                        }s`,
                     }}
                     data-attendance={dept.attendance}
                   />
