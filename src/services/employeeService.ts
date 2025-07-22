@@ -37,20 +37,90 @@ interface EmployeeResponse {
 export interface CreateEmployeeData {
   fullName: string;
   email: string;
+  phoneNumber: number;
   password: string;
-  designation: string;
-  department: string;
-  subDepartment: string;
-  workLocation: string;
   gender: string;
+  dateOfBirth: Date;
+  emergencyContactName: EmergencyContact["name"];
+  emergencyContactPhone: EmergencyContact["phone"];
+
+  designation: string;
+  fatherName: string;
+  departmentId: string;
+  subDepartmentId: string;
+  workLocation: string;
+  roleId: string;
   address: string;
-  emergencyContact: EmergencyContact;
-  salary: string;
+  salary: number;
   skills: string[];
   status: string;
   documents?: File[];
   profileImage?: File;
   shiftId?: string;
+  joiningDate: Date
+}
+export interface UpdateEmployeeData {
+  fullName: string;
+  email: string;
+  phoneNumber: number;
+  password: string;
+  gender: string;
+  dateOfBirth: Date;
+  emergencyContactName: EmergencyContact["name"];
+  emergencyContactPhone: EmergencyContact["phone"];
+
+  designation: string;
+  fatherName: string;
+  departmentId: string;
+  subDepartmentId: string;
+  workLocation: string;
+  roleId: string;
+  address: string;
+  salary: number;
+  skills: string[];
+  status: string;
+  documents?: File[];
+  profileImage?: File;
+  shiftId?: string;
+  shift: string;
+  joiningDate: Date
+}
+
+
+interface UserData {
+  id: string;
+  fullName: string;
+  email: string;
+  roleId: string;
+  status: string;
+  dateJoined: string;
+  phoneNumber?: number;
+}
+
+interface EmployeeData {
+  id: string;
+  employeeNumber: string;
+  designation: string;
+  departmentId: string;
+  subDepartmentId: string;
+  gender: string;
+  fatherName: string;
+  address: string;
+  salary: string;
+  dateOfBirth: string;
+  hireDate: string;
+  profileImage: string | null;
+  skills: string[];
+  workLocation: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  documents: any[];
+  shiftId?: string;
+}
+
+export interface SingleEmployeeResponse {
+  user: UserData;
+  employee: EmployeeData;
 }
 
 // Also export the EmergencyContact interface for reuse
@@ -74,7 +144,7 @@ const getAuthHeaders = () => {
     window.location.href = '/login';
     throw new Error('Authentication token not found');
   }
-  
+
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
@@ -98,6 +168,7 @@ export const getEmployees = async (): Promise<Employee[]> => {
     }
 
     const data: EmployeeResponse = await response.json();
+    console.log("Employee: ", data.data.employees);
     return data.data.employees;
   } catch (error) {
     console.error('Error fetching employees:', error);
@@ -105,8 +176,7 @@ export const getEmployees = async (): Promise<Employee[]> => {
   }
 };
 
-// Get employee by ID
-export const getEmployeeById = async (id: string): Promise<Employee> => {
+export const getEmployeeById = async (id: string): Promise<SingleEmployeeResponse> => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/${id}`, {
       method: 'GET',
@@ -122,94 +192,56 @@ export const getEmployeeById = async (id: string): Promise<Employee> => {
     }
 
     const data = await response.json();
-    return data.data.employee;
+    return data.data; // ✅ return both user and employee
   } catch (error) {
     console.error(`Error fetching employee with ID ${id}:`, error);
     return handleAuthError(error);
   }
 };
 
+
 // Create a new employee
 export const createEmployee = async (employeeData: CreateEmployeeData): Promise<Employee> => {
   try {
-    console.log('Creating employee with data:', employeeData);
-    
+    // console.log('Creating employee with data:', employeeData);
+
     // Try JSON approach first as the server might be expecting JSON
     const useFormData = false; // Set to false to use JSON approach
-    
+
     let response;
-    
-    if (useFormData) {
-      // FormData approach
-      const formData = new FormData();
-      
-      // Add all basic employee data
-      Object.entries(employeeData).forEach(([key, value]) => {
-        if (key !== 'documents' && key !== 'profileImage' && key !== 'emergencyContact' && key !== 'skills' && value !== undefined) {
-          formData.append(key, value as string);
-        }
-      });
-      
-      // Handle emergency contact
-      if (employeeData.emergencyContact) {
-        formData.append('emergencyContact.name', employeeData.emergencyContact.name);
-        formData.append('emergencyContact.phone', employeeData.emergencyContact.phone);
-      }
-      
-      // Handle skills array
-      if (employeeData.skills && employeeData.skills.length > 0) {
-        employeeData.skills.forEach((skill, index) => {
-          formData.append(`skills[${index}]`, skill);
-        });
-      } else {
-        formData.append('skills', JSON.stringify([]));
-      }
-      
-      // Handle profile image if provided
-      if (employeeData.profileImage) {
-        formData.append('profileImage', employeeData.profileImage);
-      }
-      
-      // Handle documents if provided
-      if (employeeData.documents && employeeData.documents.length > 0) {
-        employeeData.documents.forEach((doc) => {
-          formData.append('documents', doc);
-        });
-      }
-      
-      const headers: Record<string, string> = getAuthHeaders();
-      // Remove Content-Type as FormData will set it with the correct boundary
-      delete headers['Content-Type'];
-      
-      console.log('Using FormData approach');
-      
-      response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
-        method: 'POST',
-        headers: headers,
-        body: formData
-      });
-    } else {
-    
+
+    {
+
       const jsonData = {
         fullName: employeeData.fullName,
         email: employeeData.email,
         password: employeeData.password,
         designation: employeeData.designation,
-        department: employeeData.department,
-        subDepartment: employeeData.subDepartment,
+        departmentId: employeeData.departmentId,
+        subDepartmentId: employeeData.subDepartmentId,
         workLocation: employeeData.workLocation,
         gender: employeeData.gender,
         address: employeeData.address,
-        emergencyContact: employeeData.emergencyContact,
+        emergencyContactName: employeeData.emergencyContactName,
+        emergencyContactPhone: employeeData.emergencyContactPhone,
         salary: employeeData.salary,
         skills: employeeData.skills,
         status: employeeData.status,
-        shiftId: employeeData.shiftId
+        shiftId: employeeData.shiftId,
+        phoneNumber: employeeData.phoneNumber,
+        fatherName: employeeData.fatherName,
+        dateOfBirth: employeeData.dateOfBirth,
+        joiningDate: employeeData.joiningDate,
+        roleId: employeeData.roleId,
+        // Only include these two if you're sending FormData or handling file uploads properly
+        // profileImage: employeeData.profileImage,
+        // documents: employeeData.documents,
       };
-      
+
+
       const headers = getAuthHeaders();
       console.log('Using JSON approach with data:', jsonData);
-      
+
       response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
         method: 'POST',
         headers: headers,
@@ -240,43 +272,43 @@ export const createEmployee = async (employeeData: CreateEmployeeData): Promise<
 export const updateEmployee = async (id: string, employeeData: Partial<CreateEmployeeData>): Promise<Employee> => {
   try {
     const formData = new FormData();
-    
+
     // Add all basic employee data
     Object.entries(employeeData).forEach(([key, value]) => {
       if (value !== undefined && key !== 'documents' && key !== 'profileImage' && key !== 'emergencyContact' && key !== 'skills') {
         formData.append(key, value as string);
       }
     });
-    
-    // Handle emergency contact if provided
-    if (employeeData.emergencyContact) {
-      formData.append('emergencyContact.name', employeeData.emergencyContact.name);
-      formData.append('emergencyContact.phone', employeeData.emergencyContact.phone);
-    }
-    
+
+    // // Handle emergency contact if provided
+    // if (employeeData.emergencyContact) {
+    //   formData.append('emergencyContact.name', employeeData.emergencyContact.name);
+    //   formData.append('emergencyContact.phone', employeeData.emergencyContact.phone);
+    // }
+
     // Handle skills array if provided
     if (employeeData.skills) {
       employeeData.skills.forEach((skill, index) => {
         formData.append(`skills[${index}]`, skill);
       });
     }
-    
+
     // Handle profile image if provided
     if (employeeData.profileImage) {
       formData.append('profileImage', employeeData.profileImage);
     }
-    
+
     // Handle documents if provided
     if (employeeData.documents && employeeData.documents.length > 0) {
       employeeData.documents.forEach((doc) => {
         formData.append('documents', doc);
       });
     }
-    
+
     const headers: Record<string, string> = getAuthHeaders();
     // Remove Content-Type as FormData will set it with the correct boundary
     delete headers['Content-Type'];
-    
+
     const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/${id}`, {
       method: 'PUT',
       headers: headers,
