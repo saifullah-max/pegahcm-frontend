@@ -1,9 +1,14 @@
 interface RegisterUserData {
-  username: string;
   fullName: string;
   email: string;
   password: string;
   roleId?: string;
+}
+interface UpdateUserData {
+  fullName: string;
+  email: string;
+  roleId?: string;
+  password?: string; // Optional for updates, but required for registration
 }
 
 interface RegisterResponse {
@@ -155,4 +160,4 @@ export const registerUserAsEmployee = async (
 };
 
 // Export types for reuse, but exclude RegistrationError as it's exported directly
-export type { RegisterUserData, RegisterResponse, ValidationError };
+export type { RegisterUserData, RegisterResponse, ValidationError, UpdateUserData };

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, UserRound } from "lucide-react";
-import { Employee, getEmployees } from "../../services/employeeService";
+import { data, useNavigate } from "react-router-dom";
+import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
+import { deleteEmployee, Employee, getEmployees } from "../../services/employeeService";
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const navigate = useNavigate();
 
   const columns = [
@@ -45,23 +46,31 @@ const Employees: React.FC = () => {
               status === "active"
                 ? "green"
                 : status === "inactive"
-                ? "red"
-                : "orange",
+                  ? "red"
+                  : "orange",
           }}
         >
           {status}
         </span>
       ),
     },
+    {
+      title: "Actions",
+      dataIndex: "actions",
+      key: "actions",
+    }
   ];
 
   useEffect(() => {
+    if (hasFetched) return;
+
     const fetchEmployees = async () => {
       try {
         setLoading(true);
         const data = await getEmployees();
-        console.log(data);
+        // console.log("DATA:", data);
         setEmployees(data);
+        setHasFetched(true);
       } catch (error) {
         console.error("Error fetching employees:", error);
       } finally {
@@ -70,11 +79,33 @@ const Employees: React.FC = () => {
     };
 
     fetchEmployees();
-  }, []);
+  }, [hasFetched, data]);
 
   const handleNavigateToAddEmployee = () => {
     navigate("/admin/add-employee");
   };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/edit-employee/${id}`);
+  }
+  const handleDelete = async (id: string) => {
+    if (!id) {
+      console.error("Invalid employee ID for deletion");
+      return;
+    }
+
+    const confirmed = window.confirm("Are you sure you want to delete this employee?");
+    if (!confirmed) return; // Cancel deletion if user clicks "Cancel"
+
+    try {
+      await deleteEmployee(id);
+      setEmployees((prev) => prev.filter((employee) => employee.id !== id));
+      console.log(`Deleted employee with ID: ${id}`);
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+    }
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900  transition-colors duration-200">
@@ -132,17 +163,35 @@ const Employees: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
-                      className={`px-2 py-1 rounded-lg text-xs font-semibold ${
-                        employee.status === "active"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                          : employee.status === "inactive"
+                      className={`px-2 py-1 rounded-lg text-xs font-semibold ${employee.status === "active"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                        : employee.status === "inactive"
                           ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                      }`}
+                        }`}
                     >
                       {employee.status}
                     </span>
                   </td>
+                  <td>
+                    <div className="flex items-center gap-3 mx-5">
+                      <button
+                        onClick={() => handleEdit(employee.id)}
+                        className="text-blue-600 hover:text-blue-800 transition"
+                        title="Edit"
+                      >
+                        <PencilLine size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(employee.id)}
+                        className="text-red-600 hover:text-red-800 transition"
+                        title="Delete"
+                      >
+                        <Trash size={18} />
+                      </button>
+                    </div>
+                  </td>
+
                 </tr>
               ))}
             </tbody>
