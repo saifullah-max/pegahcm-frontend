@@ -4,6 +4,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  role: 'admin' | 'user' | 'hr' | string; // add other roles as needed
 }
 
 interface AuthState {
@@ -29,6 +30,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      localStorage.setItem('token', action.payload.token); // optional: persist token
     },
     logout: (state) => {
       state.user = null;

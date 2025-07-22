@@ -97,10 +97,19 @@ const EditDepartment: React.FC = () => {
         ...prev,
         subDepartments: prev.subDepartments.filter((s) => s.id !== subDepartmentId),
       }));
+      navigate(`/admin/departments`);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to delete sub-department');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to delete sub-department';
+      setError(errorMessage);
+
+      // Auto-dismiss after 4 seconds
+      setTimeout(() => {
+        setError(null);
+      }, 4000);
     }
   };
+
 
   if (loading) {
     return (

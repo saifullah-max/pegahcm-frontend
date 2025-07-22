@@ -199,7 +199,6 @@ export const getEmployeeById = async (id: string): Promise<SingleEmployeeRespons
   }
 };
 
-
 // Create a new employee
 export const createEmployee = async (employeeData: CreateEmployeeData): Promise<Employee> => {
   try {
