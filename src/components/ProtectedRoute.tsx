@@ -20,8 +20,9 @@ const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   // Now check role
   if (!user || user.role !== allowedRole) {
     // Redirect to their respective dashboard or unauthorized page
+    console.log("user:", user);
     if (user?.role === 'admin') {
-      return <Navigate to="/admin/dashboard" replace />;
+      return <Navigate to="admin/dashboard" replace />;
     } else if (user?.role === 'user') {
       return <Navigate to="/user/user-dashboard" replace />;
     } else {

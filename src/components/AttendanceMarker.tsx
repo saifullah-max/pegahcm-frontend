@@ -1,39 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import {Check, LogIn, LogOut } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { checkInAttendance, checkOutAttendance, getEmployeeById, getTodayAttendance } from '../services/userService';
+import { LogIn, LogOut, Check } from 'lucide-react';
 
 const AttendanceMarker: React.FC = () => {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<string | null>(null);
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [checkOutTime, setCheckOutTime] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(new Date().toLocaleTimeString());
-  const [currentDate, setCurrentDate] = useState<string>(new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }));
+  const [currentDate, setCurrentDate] = useState<string>(
+    new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  );
+
+  const [shiftId, setShiftId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      setUserId(decoded.userId || decoded.id);
+    }
+
+    const fetchEmployee = async () => {
+      try {
+        if (!userId) return;
+        const { employee } = await getEmployeeById(userId);
+        if (employee.shiftId) setShiftId(employee.shiftId);
+      } catch (error) {
+        console.error("Failed to fetch employee shiftId");
+      }
+    };
+
+    fetchEmployee();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchTodayAttendance = async () => {
+      if (!userId) return;
+
+      try {
+        const today = await getTodayAttendance();
+
+        if (today.checkedIn) {
+          setIsCheckedIn(true);
+          if (today.attendance?.clockIn) {
+            const clockInTime = new Date(today.attendance.clockIn).toLocaleTimeString();
+            setCheckInTime(clockInTime);
+          }
+        }
+
+        if (today.checkedOut) {
+          setIsCheckedOut(true);
+          if (today.attendance?.clockOut) {
+            const clockOutTime = new Date(today.attendance.clockOut).toLocaleTimeString();
+            setCheckOutTime(clockOutTime);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching today attendance:', error);
+      }
+    };
+
+    fetchTodayAttendance();
+  }, [userId]);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
     const now = new Date();
     const formattedTime = now.toLocaleTimeString();
-    setCheckInTime(formattedTime);
-    setIsCheckedIn(true);
+    try {
+      setErrorMessage(null); // clear old errors
+      if (!userId || !shiftId) throw new Error("Missing userId or shiftId");
+      await checkInAttendance(userId, shiftId);
+      setCheckInTime(formattedTime);
+      setIsCheckedIn(true);
+    } catch (error: any) {
+      console.error("Check-in failed:", error);
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage("Already checked in today");
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 4000);
+      }
+    }
   };
 
-  const handleCheckOut = () => {
+
+  const handleCheckOut = async () => {
     const now = new Date();
     const formattedTime = now.toLocaleTimeString();
-    setCheckOutTime(formattedTime);
-    setIsCheckedOut(true);
+    try {
+      await checkOutAttendance();
+      setCheckOutTime(formattedTime);
+      setIsCheckedOut(true);
+    } catch (error) {
+      console.error("Check-out failed:", error);
+    }
   };
 
   return (
@@ -47,11 +125,16 @@ const AttendanceMarker: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className={`p-5 rounded-lg transition-all duration-300 ${
-          isCheckedIn 
-            ? 'bg-blue-50 border-2 border-blue-600 shadow-md' 
-            : 'bg-white border border-slate-200 hover:shadow-md'
-        }`}>
+        {errorMessage && (
+          <div className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+            {errorMessage}
+          </div>
+        )}
+
+        <div className={`p-5 rounded-lg transition-all duration-300 ${isCheckedIn
+          ? 'bg-blue-50 border-2 border-blue-600 shadow-md'
+          : 'bg-white border border-slate-200 hover:shadow-md'
+          }`}>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1 text-slate-700">Check In</h3>
@@ -62,14 +145,14 @@ const AttendanceMarker: React.FC = () => {
             <div className="ml-4">
               {isCheckedIn ? (
                 <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <LogIn/>
+                  <LogIn />
                 </div>
               ) : (
                 <button
                   onClick={handleCheckIn}
                   className="h-10 w-10 rounded-full text-white bg-[#255199] hover:bg-[#2F66C1] flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg"
                 >
-                  <LogOut/>
+                  <LogOut />
                 </button>
               )}
             </div>
@@ -85,11 +168,10 @@ const AttendanceMarker: React.FC = () => {
           )}
         </div>
 
-        <div className={`p-5 rounded-lg transition-all duration-300 ${
-          isCheckedOut 
-            ? 'bg-amber-50 border-2 border-amber-500 shadow-md' 
-            : 'bg-white border border-slate-200 hover:shadow-md'
-        }`}>
+        <div className={`p-5 rounded-lg transition-all duration-300 ${isCheckedOut
+          ? 'bg-amber-50 border-2 border-amber-500 shadow-md'
+          : 'bg-white border border-slate-200 hover:shadow-md'
+          }`}>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-1 text-slate-700">Check Out</h3>
@@ -100,17 +182,16 @@ const AttendanceMarker: React.FC = () => {
             <div className="ml-4">
               {isCheckedOut ? (
                 <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Check/>
+                  <Check />
                 </div>
               ) : (
                 <button
                   onClick={handleCheckOut}
                   disabled={!isCheckedIn || isCheckedOut}
-                  className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors duration-200 shadow-md ${
-                    !isCheckedIn || isCheckedOut 
-                      ? 'bg-gray-300 cursor-not-allowed' 
-                      : 'bg-amber-500 hover:bg-amber-600 hover:shadow-lg'
-                  }`}
+                  className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors duration-200 shadow-md ${!isCheckedIn || isCheckedOut
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-amber-500 hover:bg-amber-600 hover:shadow-lg'
+                    }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${!isCheckedIn || isCheckedOut ? 'text-gray-500' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -122,11 +203,10 @@ const AttendanceMarker: React.FC = () => {
           <button
             onClick={handleCheckOut}
             disabled={!isCheckedIn || isCheckedOut}
-            className={`mt-4 w-full py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center ${
-              !isCheckedIn || isCheckedOut 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow'
-            }`}
+            className={`mt-4 w-full py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center ${!isCheckedIn || isCheckedOut
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow'
+              }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -153,10 +233,27 @@ const AttendanceMarker: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span className="text-sm text-slate-600">
-                Session: {isCheckedOut ? `${checkInTime} - ${checkOutTime}` : `Started at ${checkInTime}`}
+                Session: {isCheckedOut
+                  ? (() => {
+                    const [h1, m1, s1] = checkInTime.split(":").map(Number);
+                    const [h2, m2, s2] = checkOutTime!.split(":").map(Number);
+
+                    const start = new Date();
+                    start.setHours(h1, m1, s1, 0);
+                    const end = new Date();
+                    end.setHours(h2, m2, s2, 0);
+
+                    const diffMs = end.getTime() - start.getTime();
+                    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                    return `${checkInTime} - ${checkOutTime} (${diffHrs} hrs ${diffMins} mins)`;
+                  })()
+                  : `Started at ${checkInTime}`}
               </span>
             </div>
           )}
+
         </div>
       </div>
     </div>

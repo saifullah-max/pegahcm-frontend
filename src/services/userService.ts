@@ -19,6 +19,9 @@ interface EmployeeData {
     address: string;
     salary: string;
     dateOfBirth: string;
+    phoneNumber: string;
+    status: string;
+    shift: string | null;
     hireDate: string;
     profileImage: string | null;
     skills: string[];
@@ -75,9 +78,78 @@ export const getEmployeeById = async (id: string): Promise<SingleEmployeeRespons
         }
 
         const data = await response.json();
+        console.log(data);
         return data.data; // ✅ return both user and employee
     } catch (error) {
         console.error(`Error fetching employee with ID ${id}:`, error);
+        return handleAuthError(error);
+    }
+};
+
+// attendance check in
+export const checkInAttendance = async (userId: string, shiftId: string): Promise<void> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/check-in`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ shiftId })
+        });
+
+        if (response.status === 401) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to check in attendance');
+        }
+    } catch (error) {
+        console.error(`Error checking in attendance for employee ID ${userId}:`, error);
+        return handleAuthError(error);
+    }
+};
+
+// attendance check out
+export const checkOutAttendance = async (): Promise<void> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/check-out`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        });
+
+        if (response.status === 401) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to check out attendance');
+        }
+    } catch (error) {
+        console.error('Error checking out attendance:', error);
+        return handleAuthError(error);
+    }
+};
+
+// attendance check for today
+// get today's attendance
+export const getTodayAttendance = async (): Promise<{ checkedIn: boolean; checkedOut: boolean; attendance?: any; }> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/today`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (response.status === 401) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch today\'s attendance');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching today\'s attendance:', error);
         return handleAuthError(error);
     }
 };

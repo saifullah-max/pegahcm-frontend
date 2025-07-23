@@ -20,6 +20,7 @@ import Departments from './pages/admin/Departments';
 import AddDepartment from './pages/admin/AddDepartment';
 import EditDepartment from './pages/admin/EditDepartment';
 import EditEmployee from './pages/admin/EditEmployee';
+import AddLeaveType from './pages/admin/AddLeaveType';
 
 function App() {
   return (
@@ -29,13 +30,14 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            
+
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRole="admin" />}>
               <Route element={<AdminLayout />}>
                 <Route path="admin/dashboard" element={<Dashboard />} />
                 <Route path="admin/employees" element={<Employees />} />
                 <Route path="admin/attendance" element={<Attendance />} />
+                <Route path='admin/add-leave-type' element={<AddLeaveType />} />
                 <Route path="admin/add-employee" element={<AddEmployee />} />
                 <Route path='admin/edit-employee/:id' element={<EditEmployee />} />
                 <Route path="admin/shifts" element={<Shifts />} />
