@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ClockFading, X } from 'lucide-react';
+import { Check, ClockFading, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLeaveRequest, getAllAdminLeaveRequests } from '../../services/attendanceService';
+import { AdminLeaveRequest, getAllAdminLeaveRequests, updateLeaveStatus } from '../../services/attendanceService';
 
 interface LeaveRequest {
   id: string;
@@ -24,7 +24,7 @@ interface LeaveRequest {
   requestedAt: string;
 }
 
-const LeaveRequests: React.FC = () => {
+const Attendance: React.FC = () => {
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<AdminLeaveRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,22 +43,28 @@ const LeaveRequests: React.FC = () => {
     };
     fetchRequests();
   }, []);
-  const handleApprove = (id: string) => {
-    setLeaveRequests(prev =>
-      prev.map(req => (req.id === id ? { ...req, status: 'Approved' } : req))
-    );
-    // Call backend PATCH / PUT API to approve
-    console.log(`Approved leave ID: ${id}`);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await updateLeaveStatus(id, 'Approved');
+      setLeaveRequests(prev =>
+        prev.map(req => (req.id === id ? { ...req, status: 'Approved' } : req))
+      );
+    } catch (err) {
+      console.error('Failed to approve leave request', err);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setLeaveRequests(prev =>
-      prev.map(req => (req.id === id ? { ...req, status: 'Rejected' } : req))
-    );
-    // Call backend PATCH / PUT API to reject
-    console.log(`Rejected leave ID: ${id}`);
+  const handleReject = async (id: string) => {
+    try {
+      await updateLeaveStatus(id, 'Rejected');
+      setLeaveRequests(prev =>
+        prev.map(req => (req.id === id ? { ...req, status: 'Rejected' } : req))
+      );
+    } catch (err) {
+      console.error('Failed to reject leave request', err);
+    }
   };
-
 
   const formatDate = (isoDate: string): string => {
     const [year, month, day] = isoDate.split('T')[0].split('-');
@@ -70,11 +76,23 @@ const LeaveRequests: React.FC = () => {
     });
   };
 
+  const handleNavigateToAddLeaveType = () => {
+    navigate("/admin/add-leave-type");
+  };
+
   return (
     <div className="mt-10">
-      <h2 className="text-xl mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
-        <ClockFading /> Leave Requests
-      </h2>
+      <div className="mb-6 flex justify-between items-center">
+        <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <ClockFading /> Attendance
+        </h1>
+        <button
+          onClick={handleNavigateToAddLeaveType}
+          className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+        >
+          <Plus /> Add Leave type
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-gray-500">Loading...</p>
@@ -142,4 +160,6 @@ const LeaveRequests: React.FC = () => {
   );
 };
 
-export default LeaveRequests;
+export default Attendance;
+
+
