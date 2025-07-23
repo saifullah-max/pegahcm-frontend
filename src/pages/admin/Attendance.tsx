@@ -108,6 +108,8 @@ const Attendance: React.FC = () => {
                 <th className="px-4 py-2 text-left">End</th>
                 <th className="px-4 py-2 text-left">Reason</th>
                 <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-left">is Paid?</th>
+                <th className="px-4 py-2 text-left">Reviewed by</th>
                 <th className="px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
@@ -128,6 +130,16 @@ const Attendance: React.FC = () => {
                         : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
                       }`}>
                       {req.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${req.leaveType.isPaid ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}`}>
+                      {req.leaveType.isPaid ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-2'>
+                    <span className="text-gray-600">
+                      {req.approvedBy ? req.approvedBy.fullName : 'N/A'}
                     </span>
                   </td>
                   <td className="px-4 py-2">
