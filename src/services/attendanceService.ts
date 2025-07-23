@@ -183,3 +183,23 @@ export const getAllAdminLeaveRequests = async (): Promise<AdminLeaveRequest[]> =
         return handleAuthError(error);
     }
 };
+
+// approve - reject leave request
+export const updateLeaveStatus = async (id: string, status: 'Approved' | 'Rejected') => {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/leave-requests/${id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to update leave request status');
+    }
+
+    return res.json();
+};
