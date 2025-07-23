@@ -1,133 +1,145 @@
+import React, { useEffect, useState } from 'react';
 import { Check, ClockFading, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AdminLeaveRequest, getAllAdminLeaveRequests } from '../../services/attendanceService';
 
-
-interface AttendanceRecord {
-  key: string;
-  date: string;
-  employeeId: number;
-  name: string;
-  checkIn: string;
-  checkOut: string;
-  status: 'Present' | 'Absent' | 'Half Day';
-  requestType?: 'Leave' | 'WFH' | 'Late' | 'Early Departure';
-  reason?: string;
-  approvalStatus: 'Pending' | 'Approved' | 'Rejected';
+interface LeaveRequest {
+  id: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  leaveType: {
+    name: string;
+  };
+  employee: {
+    id: string;
+    user: {
+      fullName: string;
+    };
+  };
+  approvedBy?: {
+    fullName: string;
+  };
+  requestedAt: string;
 }
 
-const Attendance: React.FC = () => {
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([
-    // Sample data
-    {
-      key: '2025-05-08',
-      date: '2025-05-08',
-      employeeId: 102,
-      name: 'Jane Smith',
-      checkIn: '09:30:00',
-      checkOut: '17:30:00',
-      status: 'Present',
-      requestType: 'Late',
-      reason: 'Traffic delay',
-      approvalStatus: 'Pending'
-    },
-  ]);
+const LeaveRequests: React.FC = () => {
+  const navigate = useNavigate();
+  const [leaveRequests, setLeaveRequests] = useState<AdminLeaveRequest[]>([]);
+  const [loading, setLoading] = useState(false);
 
 
-  const showNotification = (type: 'success' | 'error', message: string) => {
-
-    console.log(`${type}: ${message}`);
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const data = await getAllAdminLeaveRequests();
+        setLeaveRequests(data);
+      } catch (error) {
+        console.error('Failed to fetch leave requests');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequests();
+  }, []);
+  const handleApprove = (id: string) => {
+    setLeaveRequests(prev =>
+      prev.map(req => (req.id === id ? { ...req, status: 'Approved' } : req))
+    );
+    // Call backend PATCH / PUT API to approve
+    console.log(`Approved leave ID: ${id}`);
   };
 
-  const handleApprove = (key: string) => {
-    setAttendanceRecords(prev =>
-      prev.map(record =>
-        record.key === key
-          ? { ...record, approvalStatus: 'Approved' }
-          : record
-      )
+  const handleReject = (id: string) => {
+    setLeaveRequests(prev =>
+      prev.map(req => (req.id === id ? { ...req, status: 'Rejected' } : req))
     );
-    showNotification('success', 'Request approved successfully!');
+    // Call backend PATCH / PUT API to reject
+    console.log(`Rejected leave ID: ${id}`);
   };
 
-  const handleReject = (key: string) => {
-    setAttendanceRecords(prev =>
-      prev.map(record =>
-        record.key === key
-          ? { ...record, approvalStatus: 'Rejected' }
-          : record
-      )
-    );
-    showNotification('success', 'Request rejected successfully!');
+
+  const formatDate = (isoDate: string): string => {
+    const [year, month, day] = isoDate.split('T')[0].split('-');
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="mb-6">
-        <h1 className="text-2xl text-gray-600 dark:text-gray-200 flex items-center gap-2">
-        <ClockFading/>
-          Attendance
-        </h1>
-      </div>
+    <div className="mt-10">
+      <h2 className="text-xl mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+        <ClockFading /> Leave Requests
+      </h2>
 
-      <div className="overflow-x-auto shadow-md rounded-lg">
-        <table className="min-w-full table-auto">
-          <thead className="bg-white dark:bg-gray-800 border-b-2 dark:border-gray-700">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Date</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Employee ID</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Name</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Request Type</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Reason</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Status</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-            {attendanceRecords.map((record) => (
-              <tr key={record.key} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.employeeId}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.requestType}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">{record.reason}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    record.approvalStatus === 'Approved'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                      : record.approvalStatus === 'Rejected'
-                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
-                  }`}>
-                    {record.approvalStatus}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {record.approvalStatus === 'Pending' && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleApprove(record.key)}
-                        className="p-1 text-green-600 hover:bg-green-100 rounded-full"
-                        title="Approve"
-                      >
-                        <Check size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleReject(record.key)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded-full"
-                        title="Reject"
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                  )}
-                </td>
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border dark:border-gray-700">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100 dark:bg-gray-800">
+              <tr>
+                <th className="px-4 py-2 text-left">Date</th>
+                <th className="px-4 py-2 text-left">Employee</th>
+                <th className="px-4 py-2 text-left">Leave Type</th>
+                <th className="px-4 py-2 text-left">Start</th>
+                <th className="px-4 py-2 text-left">End</th>
+                <th className="px-4 py-2 text-left">Reason</th>
+                <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-left">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900">
+              {leaveRequests.map(req => (
+                <tr key={req.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-4 py-2">{new Date(req.requestedAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">{req.employee.user.fullName}</td>
+                  <td className="px-4 py-2">{req.leaveType.name}</td>
+                  <td className="px-4 py-2">{formatDate(req.startDate)}</td>
+                  <td className="px-4 py-2">{formatDate(req.endDate)}</td>
+                  <td className="px-4 py-2">{req.reason}</td>
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${req.status === 'Approved'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                      : req.status === 'Rejected'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                      }`}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    {req.status === 'Pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApprove(req.id)}
+                          className="p-1 text-green-600 hover:bg-green-100 rounded-full"
+                          title="Approve"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleReject(req.id)}
+                          className="p-1 text-red-600 hover:bg-red-100 rounded-full"
+                          title="Reject"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Attendance;
+export default LeaveRequests;

@@ -9,135 +9,157 @@ import {
   Phone,
   MapPin,
   Calendar,
+  Clock,
 } from 'lucide-react';
-
-interface EmployeeData {
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  position: string;
-  departmentId: string;
-  status: string;
-  employeeNumber: string;
-  workLocation: string;
-  gender: string;
-  hireDate: string;
-  dateOfBirth: string;
-  address: string;
-  skills: string;
-  salary: string;
-  avatar?: string;
-}
+import { getEmployeeById } from '../services/userService';
+import { getShifts } from '../services/ShiftService';
+import { getDepartments } from '../services/departmentService';
 
 const statusColors = {
-  'Active': 'bg-emerald-500',
-  'On Leave': 'bg-amber-500',
-  'Inactive': 'bg-red-500',
+  active: 'bg-emerald-500',
+  onLeave: 'bg-amber-500',
+  inactive: 'bg-red-500',
 };
 
+type StatusKey = keyof typeof statusColors;
+
 const UserInfo: React.FC = () => {
-  const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [employee, setEmployee] = useState<any>(null);
+  const [shifts, setShifts] = useState<any[]>([]);
+  const [shiftsLoading, setShiftsLoading] = useState<boolean>(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [departmentName, setDepartmentName] = useState<string>('N/A');
+  const [subDepartmentName, setSubDepartmentName] = useState<string>('N/A');
+
+  const fetchShifts = async () => {
+    setShiftsLoading(true);
+    try {
+      const shiftsData = await getShifts();
+      console.log(shiftsData);
+      setShifts(shiftsData);
+    } catch (error) {
+      console.error('Failed to fetch shifts:', error);
+    } finally {
+      setShiftsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    try {
-      const root = localStorage.getItem('persist:root');
-      if (!root) return;
+    const fetchAllData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        const userId = decoded.userId || decoded.id;
 
-      const parsedRoot = JSON.parse(root);
-      const auth = parsedRoot.auth;
-      if (!auth) return;
+        const { user, employee } = await getEmployeeById(userId);
+        const allShifts = await getShifts();
+        const allDepartments = await getDepartments();
 
-      const parsedAuth = JSON.parse(auth);
-      const user = parsedAuth.user;
-      if (!user || !user.employee) return;
+        setEmployee({ ...employee, user });
+        setShifts(allShifts);
+        setDepartments(allDepartments);
 
-      const employee = user.employee;
+        // ✅ Match department
+        const matchedDept = allDepartments.find((dept) => dept.id === employee.departmentId);
+        if (matchedDept) {
+          setDepartmentName(matchedDept.name || 'N/A');
 
-      const fullEmployee: EmployeeData = {
-        fullName: user.fullName,
-        email: user.email,
-        phoneNumber: employee.phoneNumber,
-        position: employee.position,
-        departmentId: employee.departmentId,
-        status: employee.status,
-        employeeNumber: employee.employeeNumber,
-        workLocation: employee.workLocation,
-        gender: employee.gender,
-        hireDate: employee.hireDate,
-        dateOfBirth: employee.dateOfBirth,
-        address: employee.address,
-        skills: employee.skills,
-        salary: employee.salary,
-        avatar: user.avatar || '', // optional fallback
-      };
+          // ✅ Match sub-department
+          const matchedSubDept = matchedDept.subDepartments?.find(
+            (sub: any) => sub.id === employee.subDepartmentId
+          );
+          if (matchedSubDept) {
+            setSubDepartmentName(matchedSubDept.name || 'N/A');
+          }
+        }
 
-      setEmployeeData(fullEmployee);
-    } catch (err) {
-      console.error('Error parsing user data from localStorage:', err);
-    }
+      } catch (err) {
+        console.error('Error fetching employee/departments:', err);
+      }
+    };
+
+    fetchAllData();
   }, []);
 
-  const toggleEdit = () => setIsEditing(!isEditing);
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime())
+      ? 'Invalid Time'
+      : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
 
-  if (!employeeData) return <p>Loading user info...</p>;
+  if (!employee) return <p>Loading user info...</p>;
+
+  const fullName = employee.user?.fullName ?? 'Unknown';
+  const avatar = employee.user?.avatar || '/default-avatar.png';
+  const status: StatusKey = employee.status || 'Inactive';
+  const shift = employee.shift;
+  const matchedShift = shifts.find(
+    (s) => s.name === employee?.shift // 👈 employee.shift is a string like "Shift 01"
+  );
+
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
       <div className="p-5 relative">
-        {/* Avatar and Name */}
         <div className="flex items-center space-x-4">
           <div className="relative">
             <img
-              src={employeeData.avatar || '/default-avatar.png'}
-              alt={employeeData.fullName}
+              src={avatar}
+              alt={fullName}
               className="w-16 h-16 rounded-full border-4 border-white shadow-md"
             />
             <div
-              className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[employeeData.status as keyof typeof statusColors]
+              className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[status] || 'bg-gray-400'
                 }`}
             ></div>
           </div>
           <div className="text-black">
-            <h2 className="text-xl font-bold">{employeeData.fullName}</h2>
-            <p className="text-sm">{employeeData.position}</p>
+            <h2 className="text-xl font-bold">{fullName}</h2>
+            <p className="text-sm">{employee.designation ?? 'N/A'}</p>
           </div>
         </div>
       </div>
 
-      {/* Info Grid */}
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             {
               label: 'Employee ID',
               icon: <IdCard className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.employeeNumber,
+              value: employee.employeeNumber ?? 'N/A',
             },
             {
               label: 'Email',
               icon: <Mail className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.email,
+              value: employee.user?.email ?? 'N/A',
             },
             {
               label: 'Designation',
               icon: <Briefcase className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.position,
+              value: employee.designation ?? 'N/A',
             },
             {
               label: 'Phone',
               icon: <Phone className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.phoneNumber,
+              value: employee.phoneNumber ?? '-',
             },
             {
               label: 'Department',
               icon: <Building2 className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.departmentId,
+              value: departmentName,
+            },
+            {
+              label: 'Sub-Department',
+              icon: <Building2 className="h-5 w-5 text-[#255199]" />,
+              value: subDepartmentName,
             },
             {
               label: 'Location',
               icon: <MapPin className="h-5 w-5 text-[#255199]" />,
-              value: employeeData.workLocation,
+              value: employee.workLocation ?? 'N/A',
             },
             {
               label: 'Status',
@@ -145,17 +167,31 @@ const UserInfo: React.FC = () => {
               value: (
                 <div className="flex items-center">
                   <div
-                    className={`h-2 w-2 rounded-full ${statusColors[employeeData.status as keyof typeof statusColors]
+                    className={`h-2 w-2 rounded-full ${statusColors[status] || 'bg-gray-400'
                       } mr-2`}
                   ></div>
-                  <span>{employeeData.status}</span>
+                  <span>{status}</span>
                 </div>
               ),
             },
             {
               label: 'Join Date',
               icon: <Calendar className="h-5 w-5 text-[#255199]" />,
-              value: new Date(employeeData.hireDate).toDateString(),
+              value: employee.hireDate
+                ? new Date(employee.hireDate).toUTCString().slice(0, 16) // "Mon, 01 Jan 2024"
+                : 'N/A',
+            },
+            {
+              label: 'Shift',
+              icon: <Clock className="h-5 w-5 text-[#255199]" />,
+              value: matchedShift
+                ? `${matchedShift.name} (${formatTime(matchedShift.startTime)} - ${formatTime(matchedShift.endTime)})`
+                : 'N/A',
+            },
+            {
+              label: 'Skills',
+              icon: <User className="h-5 w-5 text-[#255199]" />,
+              value: employee.skills ?? 'N/A',
             },
           ].map(({ label, icon, value }) => (
             <div

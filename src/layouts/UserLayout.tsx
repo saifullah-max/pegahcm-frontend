@@ -14,8 +14,22 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+  const [fullName, setFullName] = useState<string | null>(null);
 
   useEffect(() => {
+    const persistRoot = localStorage.getItem('persist:root');
+
+    if (persistRoot) {
+      const parsedRoot = JSON.parse(persistRoot);
+      const authString = parsedRoot.auth;
+
+      if (authString) {
+        const parsedAuth = JSON.parse(authString);
+        const fullName = parsedAuth.user?.fullName;
+        setFullName(fullName);
+      }
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.relative')) {
@@ -57,9 +71,8 @@ const AdminLayout = () => {
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
       {/* Sidebar */}
       <div
-        className={`${
-          isSidebarOpen ? 'w-64' : 'w-0'
-        } bg-[#255199] text-white transition-all duration-300 dark:bg-gray-900`}
+        className={`${isSidebarOpen ? 'w-64' : 'w-0'
+          } bg-[#255199] text-white transition-all duration-300 dark:bg-gray-900`}
       >
         <div className="p-4">
           <h2 className="text-2xl font-semibold">User Dashboard</h2>
@@ -100,10 +113,10 @@ const AdminLayout = () => {
               </svg>
             </button>
             <div className="flex items-center">
-              <span className="mr-4 text-black dark:text-white">Welcome, {user?.name}</span>
+              <span className="mr-4 text-black dark:text-white">Welcome, <strong>{fullName}</strong></span>
               <div className="flex items-center space-x-4">
                 {/* Theme Toggle Button */}
-                <button 
+                <button
                   onClick={handleThemeToggle}
                   className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
@@ -113,17 +126,17 @@ const AdminLayout = () => {
                     <Moon className="h-5 w-5" />
                   )}
                 </button>
-                
+
                 {/* Notification Bell Dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     className='flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     onClick={() => {
                       setIsNotificationDropdownOpen(!isNotificationDropdownOpen);
                       setIsUserDropdownOpen(false);
                     }}
                   >
-                    <Bell className='inline-block mr-2'/>
+                    <Bell className='inline-block mr-2' />
                   </button>
                   {isNotificationDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-800">
@@ -152,14 +165,14 @@ const AdminLayout = () => {
 
                 {/* User Profile Dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     className="flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                     onClick={() => {
                       setIsUserDropdownOpen(!isUserDropdownOpen);
                       setIsNotificationDropdownOpen(false);
                     }}
                   >
-                    <UserRound className='inline-block mr-2'/>
+                    <UserRound className='inline-block mr-2' />
                   </button>
                   {isUserDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-800">
@@ -170,7 +183,7 @@ const AdminLayout = () => {
                         Settings
                       </button>
                       <div className="border-t border-gray-200 dark:border-gray-800"></div>
-                      <button 
+                      <button
                         onClick={handleLogoutClick}
                         className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left"
                       >
