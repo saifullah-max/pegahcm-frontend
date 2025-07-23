@@ -39,6 +39,7 @@ export interface AdminLeaveRequest {
     status: 'Pending' | 'Approved' | 'Rejected';
     leaveType: {
         name: string;
+        isPaid: boolean;
     };
     employee: {
         user: {
