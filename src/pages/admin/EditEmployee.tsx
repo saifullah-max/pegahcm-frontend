@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, getEmployeeById, updateEmployee, UpdateEmployeeData } from '../../services/employeeService';
+import { createEmployee, CreateEmployeeData, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../services/employeeService';
 import { getShifts } from '../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
 import {
@@ -271,6 +271,47 @@ const EditEmployee: React.FC = () => {
             }
         }
     };
+
+    // image upload handler
+    const handleImageUpload = async () => {
+        if (!newEmployee.profileImage) {
+            alert('Please select a profile image');
+            return;
+        }
+
+        try {
+            if (id === undefined) {
+                alert('Employee ID is undefined. Cannot upload image.');
+                return;
+            }
+            const result = await uploadProfileImage(id, newEmployee.profileImage);
+            console.log('Upload Success:', result);
+            alert('Image uploaded successfully!');
+        } catch (err) {
+            alert('Image upload failed');
+        }
+    };
+
+    // docs upload handler
+    const handleDocumentUpload = async () => {
+        if (!newEmployee.documents || newEmployee.documents.length === 0) {
+            alert('Please select one or more documents');
+            return;
+        }
+
+        try {
+            if (id === undefined) {
+                alert('Employee ID is undefined. Cannot upload image.');
+                return;
+            }
+            const uploaded = await uploadDocuments(id, newEmployee.documents);
+            console.log('Uploaded Documents:', uploaded);
+            alert('Documents uploaded successfully!');
+        } catch (err) {
+            alert('Failed to upload documents');
+        }
+    };
+
 
     const handleRemoveDocument = (index: number) => {
         setNewEmployee({
@@ -747,6 +788,13 @@ const EditEmployee: React.FC = () => {
                                     Supported formats: JPG, PNG, GIF, etc.
                                 </p>
                             </div>
+                            <button
+                                onClick={handleImageUpload}
+                                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                            >
+                                Upload Image
+                            </button>
+
                         </div>
 
                         {/* Documents Section */}
@@ -788,6 +836,13 @@ const EditEmployee: React.FC = () => {
                                 ))}
                             </div>
                         </div>
+                        <button
+                            onClick={handleDocumentUpload}
+                            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-green-700 transition"
+                        >
+                            Upload Documents
+                        </button>
+
                     </div>
 
                     <div className="mt-8 flex justify-end gap-2">
