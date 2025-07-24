@@ -55,7 +55,7 @@ const UserInfo: React.FC = () => {
         const { user, employee } = await getEmployeeById(userId);
         const allShifts = await getShifts();
         const allDepartments = await getDepartments();
-
+        console.log("Image url:", employee.profileImage);
         setEmployee({ ...employee, user });
         setShifts(allShifts);
         setDepartments(allDepartments);
