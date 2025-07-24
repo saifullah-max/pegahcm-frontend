@@ -350,3 +350,66 @@ export const deleteEmployee = async (id: string): Promise<void> => {
     handleAuthError(error);
   }
 };
+
+// upload image
+export const uploadProfileImage = async (employeeId: string, file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    formData.append('employeeId', employeeId);
+
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Unauthorized');
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}` // Don't set 'Content-Type' — browser sets it automatically for FormData
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to upload image');
+    }
+
+    return data; // success message + saved DB record
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+// uplaod docs
+export const uploadDocuments = async (employeeId: string, files: File[]) => {
+  try {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('documents', file));
+    formData.append('employeeId', employeeId);
+
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Unauthorized');
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/documents`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // Do NOT manually set Content-Type for FormData
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to upload documents');
+    }
+
+    return data.savedDocuments;
+  } catch (error) {
+    console.error('Error uploading documents:', error);
+    throw error;
+  }
+};
