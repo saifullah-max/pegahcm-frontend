@@ -37,6 +37,18 @@ export interface SingleEmployeeResponse {
     employee: EmployeeData;
 }
 
+interface AttendanceRecord {
+    id: string;
+    employeeId: string;
+    date: Date;
+    status: string;
+    clockIn: string;
+    clockOut: string;
+    shiftId: string;
+    absenceReason: string
+    // Add other fields if needed
+}
+
 // Helper function to get auth headers
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -151,5 +163,32 @@ export const getTodayAttendance = async (): Promise<{ checkedIn: boolean; checke
     } catch (error) {
         console.error('Error fetching today\'s attendance:', error);
         return handleAuthError(error);
+    }
+};
+
+// get all todays attendances
+export const fetchTodayPresentCount = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/all`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+        const data = await res.json();
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        const presentStatuses = ["Present", "Late Arrival", "Early Departure"];
+
+        const presentToday = data.filter((record: AttendanceRecord) => {
+            const recordDate = new Date(record.date).toISOString().slice(0, 10); // ✅ fix here
+            return (
+                recordDate === today && presentStatuses.includes(record.status)
+            );
+        });
+
+        console.log("Employees Present Today:", presentToday.length);
+        return presentToday;
+    } catch (error) {
+        console.error("Error fetching attendance:", error);
     }
 };
