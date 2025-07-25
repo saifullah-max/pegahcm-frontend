@@ -217,3 +217,20 @@ export const getAllMyAttendanceRecords = async (): Promise<AttendanceRecord[]> =
         return handleAuthError(error);
     }
 };
+
+// Total hours summary
+export const getEmployeeHours = async (): Promise<Record<string, { weekly: number; monthly: number }>> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/hours-lock`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch employee hours");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching employee hours:", error);
+    return {};
+  }
+};
