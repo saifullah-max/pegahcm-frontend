@@ -192,3 +192,28 @@ export const fetchTodayPresentCount = async () => {
         console.error("Error fetching attendance:", error);
     }
 };
+
+// Get all attendance records of the logged-in employee
+export const getAllMyAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/employee/all`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (response.status === 401) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch attendance records');
+        }
+
+        const data = await response.json();
+        console.log("All attendance records:", data.records);
+        return data.records; // ✅ Return only the attendance array
+    } catch (error) {
+        console.error('Error fetching all attendance records:', error);
+        return handleAuthError(error);
+    }
+};
