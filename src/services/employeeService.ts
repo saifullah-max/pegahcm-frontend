@@ -26,6 +26,7 @@ export interface Employee {
   salary: string;
   skills: string[];
   documents: Document[];
+  hireDate: Date;
 }
 
 interface EmployeeResponse {
@@ -97,7 +98,7 @@ interface UserData {
   phoneNumber?: number;
 }
 
-interface EmployeeData {
+export interface EmployeeData {
   id: string;
   employeeNumber: string;
   designation: string;

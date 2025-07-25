@@ -83,6 +83,7 @@ const EditDepartment: React.FC = () => {
         subDepartments: [...prev.subDepartments, newSubDepartment],
       }));
       setNewSubDepartmentName('');
+      navigate('/admin/departments')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to add sub-department');
     }
@@ -142,7 +143,7 @@ const EditDepartment: React.FC = () => {
           </div>
         )}
         <form onSubmit={handleSubmit}>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-gray-700  mb-2">
             Department Name*
           </label>
           <input
