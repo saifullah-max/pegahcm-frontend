@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import { data, useNavigate } from "react-router-dom";
 import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
 import { deleteEmployee, Employee, getEmployees } from "../../services/employeeService";
+import { getEmployeeHours } from "../../services/userService";
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const [employeeHours, setEmployeeHours] = useState<Record<string, { weekly: number; monthly: number }>>({});
+
   const navigate = useNavigate();
 
   const columns = [
@@ -55,6 +58,22 @@ const Employees: React.FC = () => {
       ),
     },
     {
+      title: "Hours / Week",
+      dataIndex: "weeklyHours",
+      key: "weeklyHours",
+      render: (_: any, record: Employee) => (
+        <span>{employeeHours[record.id]?.weekly?.toFixed(1) || "0"} hrs</span>
+      ),
+    },
+    {
+      title: "Hours / Month",
+      dataIndex: "monthlyHours",
+      key: "monthlyHours",
+      render: (_: any, record: Employee) => (
+        <span>{employeeHours[record.id]?.monthly?.toFixed(1) || "0"} hrs</span>
+      ),
+    },
+    {
       title: "Actions",
       dataIndex: "actions",
       key: "actions",
@@ -67,9 +86,12 @@ const Employees: React.FC = () => {
     const fetchEmployees = async () => {
       try {
         setLoading(true);
-        const data = await getEmployees();
-        // console.log("DATA:", data);
-        setEmployees(data);
+        const [empData, hoursData] = await Promise.all([
+          getEmployees(),
+          getEmployeeHours(),
+        ]);
+        setEmployees(empData);
+        setEmployeeHours(hoursData);
         setHasFetched(true);
       } catch (error) {
         console.error("Error fetching employees:", error);
@@ -77,6 +99,7 @@ const Employees: React.FC = () => {
         setLoading(false);
       }
     };
+
 
     fetchEmployees();
   }, [hasFetched, data]);
@@ -173,6 +196,27 @@ const Employees: React.FC = () => {
                       {employee.status}
                     </span>
                   </td>
+
+                  {/* ✅ Weekly Hours */}
+                  <td
+                    className={`px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 ${employeeHours[employee.id]?.weekly < 35
+                      ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"
+                      : "text-black dark:text-gray-200"
+                      }`}
+                  >
+                    {employeeHours[employee.id]?.weekly?.toFixed(1) || "0"} hrs
+                  </td>
+
+                  {/* ✅ Monthly Hours */}
+                  <td
+                    className={`px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 ${employeeHours[employee.id]?.monthly < 150
+                        ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"
+                        : "text-black dark:text-gray-200"
+                      }`}
+                  >
+                    {employeeHours[employee.id]?.monthly?.toFixed(1) || "0"} hrs
+                  </td>
+
                   <td>
                     <div className="flex items-center gap-3 mx-5">
                       <button
@@ -191,10 +235,10 @@ const Employees: React.FC = () => {
                       </button>
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       )}
