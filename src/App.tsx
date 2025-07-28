@@ -27,6 +27,8 @@ import Employees_HR from './pages/hr/Employees';
 import Attendance_HR from './pages/hr/Attendance';
 import Departments_HR from './pages/hr/Departments';
 import EditDepartment_HR from './pages/hr/EditDepartment';
+import OnBoardingProcess from './pages/hr/OnBoardingProcess';
+import OnboardingForm from './pages/hr/OnBoardingForm';
 
 function App() {
   return (
@@ -63,6 +65,8 @@ function App() {
                 <Route path='/hr/attendance' element={<Attendance_HR />} />
                 <Route path='/hr/departments' element={<Departments_HR />} />
                 <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
+                <Route path='/hr/onboarding' element={<OnBoardingProcess />} />
+                <Route path='/hr/onboarding/create' element={<OnboardingForm />} />
               </Route>
             </Route>
 

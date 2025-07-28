@@ -169,7 +169,6 @@ export const getEmployees = async (): Promise<Employee[]> => {
     }
 
     const data: EmployeeResponse = await response.json();
-    console.log("Employee: ", data.data.employees);
     return data.data.employees;
   } catch (error) {
     console.error('Error fetching employees:', error);
