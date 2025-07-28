@@ -21,6 +21,12 @@ import AddDepartment from './pages/admin/AddDepartment';
 import EditDepartment from './pages/admin/EditDepartment';
 import EditEmployee from './pages/admin/EditEmployee';
 import AddLeaveType from './pages/admin/AddLeaveType';
+import HRDashboard from './pages/hr/HRDashboard';
+import HRLayout from './layouts/HRLayout';
+import Employees_HR from './pages/hr/Employees';
+import Attendance_HR from './pages/hr/Attendance';
+import Departments_HR from './pages/hr/Departments';
+import EditDepartment_HR from './pages/hr/EditDepartment';
 
 function App() {
   return (
@@ -46,6 +52,17 @@ function App() {
                 <Route path="admin/departments" element={<Departments />} />
                 <Route path="admin/add-department" element={<AddDepartment />} />
                 <Route path="admin/edit-department/:id" element={<EditDepartment />} />
+              </Route>
+            </Route>
+
+            {/* HR Routes */}
+            <Route element={<ProtectedRoute allowedRole="hr" />}>
+              <Route element={<HRLayout />}>
+                <Route path='/hr/dashboard' element={<HRDashboard />} />
+                <Route path='/hr/employees' element={<Employees_HR />} />
+                <Route path='/hr/attendance' element={<Attendance_HR />} />
+                <Route path='/hr/departments' element={<Departments_HR />} />
+                <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
               </Route>
             </Route>
 
