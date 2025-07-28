@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { data, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
 import { deleteEmployee, Employee, getEmployees } from "../../services/employeeService";
 import { getEmployeeHours } from "../../services/userService";
@@ -102,7 +102,7 @@ const Employees: React.FC = () => {
 
 
     fetchEmployees();
-  }, [hasFetched, data]);
+  }, [hasFetched]);
 
   const handleNavigateToAddEmployee = () => {
     navigate("/admin/add-employee");
@@ -197,7 +197,7 @@ const Employees: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* ✅ Weekly Hours */}
+                  {/* Weekly Hours */}
                   <td
                     className={`px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 ${employeeHours[employee.id]?.weekly < 35
                       ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"
@@ -207,7 +207,7 @@ const Employees: React.FC = () => {
                     {employeeHours[employee.id]?.weekly?.toFixed(1) || "0"} hrs
                   </td>
 
-                  {/* ✅ Monthly Hours */}
+                  {/* Monthly Hours */}
                   <td
                     className={`px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 ${employeeHours[employee.id]?.monthly < 150
                         ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"

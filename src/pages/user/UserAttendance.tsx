@@ -1,6 +1,7 @@
 import { ClockFading } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getLeaveRequests, getLeaveTypes, submitLeaveRequest } from '../../services/attendanceService';
+import { getEmployeeHours } from '../../services/userService';
 
 interface AttendanceRequest {
     key: string;
@@ -31,6 +32,10 @@ const UserAttendance: React.FC = () => {
         endDate: '',
         reason: '',
     });
+    const [employeeHours, setEmployeeHours] = useState<Record<string, { weekly: number; monthly: number }>>({});
+    const [userName, setuserName] = useState('');
+    const [userId, setUserId] = useState<string | null>(null);
+
 
     useEffect(() => {
         const fetchLeaveTypes = async () => {
@@ -57,6 +62,46 @@ const UserAttendance: React.FC = () => {
         fetchLeaveTypes();
         fetchExistingRequests();
     }, []);
+
+    useEffect(() => {
+        const fetchHours = async () => {
+            const hours = await getEmployeeHours();
+            setEmployeeHours(hours);
+            console.log("Fetched employeeHours keys:", Object.keys(hours)); // ✅ here
+            console.log("employeeHours full:", hours); // ✅ also log full object
+        };
+
+        fetchHours();
+
+    }, []);
+
+    useEffect(() => {
+        const rootData = localStorage.getItem('persist:root');
+        if (!rootData) return;
+
+        try {
+            const parsedRoot = JSON.parse(rootData);
+            const authSlice = JSON.parse(parsedRoot.auth);
+            const name = authSlice?.user?.fullName || authSlice?.user?.username || 'User';
+            const empId = authSlice?.user?.employee?.id || null;
+
+            setuserName(name);
+            setUserId(empId); // ✅ Use employee ID instead of user ID
+            console.log("User fullName:", name);
+            console.log("Employee ID from authSlice:", empId);
+
+        } catch (err) {
+            console.error("Error parsing persisted user info:", err);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!userId || Object.keys(employeeHours).length === 0) return;
+
+        console.log("✅ Matching userId:", userId);
+        console.log("✅ Does employeeHours contain userId?", employeeHours.hasOwnProperty(userId));
+        console.log("✅ employeeHours for this user:", employeeHours[userId]);
+    }, [userId, employeeHours]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -230,6 +275,51 @@ const UserAttendance: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            {Object.keys(employeeHours).length > 0 && (
+                <div className="mt-10">
+                    <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">{userName}'s Working Hours</h2>
+                    <div className="overflow-x-auto shadow-md rounded-lg">
+                        <table className="min-w-full table-auto bg-white dark:bg-gray-900">
+                            <thead className="bg-gray-100 dark:bg-gray-800">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Weekly Hours</th>
+                                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Monthly Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                                {userId ? (
+                                    employeeHours[userId] ? (
+                                        <tr key={userId}>
+                                            <td className="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                {employeeHours[userId].weekly.toFixed(1)} hrs
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                {employeeHours[userId].monthly.toFixed(1)} hrs
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <tr>
+                                            <td className="px-6 py-4 text-sm text-red-600 dark:text-red-300" colSpan={2}>
+                                                No hour record found for current user.
+                                            </td>
+                                        </tr>
+                                    )
+                                ) : (
+                                    <tr>
+                                        <td className="px-6 py-4 text-sm text-yellow-600 dark:text-yellow-300" colSpan={2}>
+                                            User ID not loaded yet.
+                                        </td>
+                                    </tr>
+                                )}
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
