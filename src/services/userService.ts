@@ -220,17 +220,76 @@ export const getAllMyAttendanceRecords = async (): Promise<AttendanceRecord[]> =
 
 // Total hours summary
 export const getEmployeeHours = async (): Promise<Record<string, { weekly: number; monthly: number }>> => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/hours-lock`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/attendance/hours-lock`, {
+            method: "GET",
+            headers: getAuthHeaders(),
+        });
 
-    if (!res.ok) throw new Error("Failed to fetch employee hours");
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching employee hours:", error);
-    return {};
-  }
+        if (!res.ok) throw new Error("Failed to fetch employee hours");
+        const data = await res.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching employee hours:", error);
+        return {};
+    }
+};
+
+// Start a break
+export const startBreak = async (breakType: string): Promise<any> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/break/create`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ breakType }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to start break');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error starting break:", error);
+        return handleAuthError(error);
+    }
+};
+
+// End a break
+export const endBreak = async (): Promise<any> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/break/end`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to end break');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error ending break:", error);
+        return handleAuthError(error);
+    }
+};
+
+// Get breaks by attendanceRecordId
+export const getBreaksByAttendanceRecord = async (attendanceRecordId: string): Promise<any[]> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/break/all/${attendanceRecordId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch breaks');
+        }
+
+        const data = await response.json();
+        return data.breaks;
+    } catch (error) {
+        console.error("Error fetching breaks:", error);
+        return handleAuthError(error);
+    }
 };

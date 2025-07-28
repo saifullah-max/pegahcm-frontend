@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { checkInAttendance, checkOutAttendance, getEmployeeById, getTodayAttendance } from '../services/userService';
+import { checkInAttendance, checkOutAttendance, endBreak, getEmployeeById, getTodayAttendance, startBreak } from '../services/userService';
 import { LogIn, LogOut, Check } from 'lucide-react';
 
 const AttendanceMarker: React.FC = () => {
@@ -17,6 +17,10 @@ const AttendanceMarker: React.FC = () => {
       day: 'numeric'
     })
   );
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [breakStartTime, setBreakStartTime] = useState<string | null>(null);
+  const [currentBreakType, setCurrentBreakType] = useState<string | null>(null);
+
 
   const [shiftId, setShiftId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -113,6 +117,29 @@ const AttendanceMarker: React.FC = () => {
       console.error("Check-out failed:", error);
     }
   };
+
+  const handleStartBreak = async (breakType: string) => {
+    try {
+      const res = await startBreak(breakType);
+      setIsOnBreak(true);
+      setCurrentBreakType(breakType);
+      setBreakStartTime(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error("Failed to start break", error);
+    }
+  };
+
+  const handleEndBreak = async () => {
+    try {
+      const res = await endBreak();
+      setIsOnBreak(false);
+      setCurrentBreakType(null);
+      setBreakStartTime(null);
+    } catch (error) {
+      console.error("Failed to end break", error);
+    }
+  };
+
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
@@ -215,6 +242,40 @@ const AttendanceMarker: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <div className="p-5 rounded-lg bg-green-50 border border-green-300 shadow-sm mb-6">
+        <h3 className="text-lg font-semibold mb-3 text-green-700">Break Management</h3>
+
+        {isOnBreak ? (
+          <div className="space-y-2">
+            <p className="text-green-700">
+              On break: <span className="font-medium">{currentBreakType}</span> since {breakStartTime}
+            </p>
+            <button
+              onClick={handleEndBreak}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded shadow"
+            >
+              End Break
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-slate-600">Start a new break:</p>
+            <div className="flex gap-3 flex-wrap">
+              {["Lunch", "Prayer", "Tea"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => handleStartBreak(type)}
+                  className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded shadow"
+                >
+                  {type} Break
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
 
       <div className="mt-6 p-4 bg-white rounded-lg border border-slate-200">
         <h3 className="text-lg font-semibold mb-3 text-slate-700">Today's Status</h3>
