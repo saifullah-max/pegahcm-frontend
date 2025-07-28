@@ -6,6 +6,14 @@ export interface CreateOnboardingPayload {
     status?: string; // e.g., 'In Progress', 'Pending'
 }
 
+export interface OnboardingDataType {
+    employee: { id: string; fullName: string };
+    assignedHR: { id: string; fullName: string };
+    startDate: string;
+    notes?: string;
+    status?: string;
+}
+
 export interface HREmployee {
     id: string;
     userId: string;
@@ -23,7 +31,6 @@ export interface HREmployee {
     } | null;
     designation?: string;
 }
-
 export interface OnboardingProcess {
     id: string;
     startDate: string;
@@ -37,6 +44,7 @@ export interface OnboardingProcess {
         };
     };
     assignedHR: {
+        id: string; // ✅ Add this
         fullName: string;
     };
 }
@@ -80,14 +88,17 @@ export const createOnboardingProcess = async (
             throw new Error('invalid or expired token');
         }
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error('Failed to create onboarding process');
+            // return the actual error message from the backend
+            throw new Error(data.message || 'Failed to create onboarding process');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
         console.error('Error creating onboarding process:', error);
-        return handleAuthError(error);
+        throw error; // ← re-throw to handle it in the form
     }
 };
 
@@ -138,6 +149,54 @@ export const fetchAllOnboardingProcesses = async (): Promise<OnboardingProcess[]
         return await response.json();
     } catch (error) {
         console.error('Error fetching onboarding processes:', error);
+        return handleAuthError(error);
+    }
+};
+
+export const getOnboardingById = async (id: string): Promise<OnboardingProcess> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/hr/onboarding/${id}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch onboarding details');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching onboarding details:', error);
+        return handleAuthError(error);
+    }
+};
+
+export const updateOnboardingProcess = async (
+    id: string,
+    payload: CreateOnboardingPayload
+): Promise<any> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/hr/onboarding/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload),
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('invalid or expired token');
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to update onboarding process');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating onboarding process:', error);
         return handleAuthError(error);
     }
 };
