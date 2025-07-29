@@ -126,7 +126,7 @@ const Attendance_HR: React.FC = () => {
                     </span>
                   </td>
                   <td className='px-4 py-2'>
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-100">
                       {req.approvedBy ? req.approvedBy.fullName : 'N/A'}
                     </span>
                   </td>

@@ -90,6 +90,9 @@ const HRLayout = () => {
                         <li onClick={() => goTo('/hr/onboarding')} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] cursor-pointer flex items-center">
                             <Building2 className="inline-block mr-2" /> OnBoarding Process
                         </li>
+                        <li onClick={() => goTo('/hr/resignations')} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] cursor-pointer flex items-center">
+                            <Building2 className="inline-block mr-2" /> Resignation requests
+                        </li>
                     </ul>
                 </nav>
             </div>

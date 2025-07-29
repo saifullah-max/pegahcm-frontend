@@ -91,7 +91,7 @@ const OnboardingForm = () => {
 
 
     return (
-        <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 p-6 rounded-lg shadow-md">
+        <div className="max-w-5xl mx-auto bg-white dark:bg-slate-900 p-6 rounded-lg shadow-md">
             <div className="flex items-center gap-2 mb-4">
                 <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
                 <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -206,7 +206,7 @@ const OnboardingForm = () => {
                 <div className="pt-4">
                     <button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-md w-full"
+                        className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1] flex items-center gap-1"
                         disabled={loading}
                     >
                         {loading ? 'Creating...' : 'Create Onboarding'}

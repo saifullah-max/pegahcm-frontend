@@ -127,6 +127,14 @@ export interface SingleEmployeeResponse {
 // Also export the EmergencyContact interface for reuse
 export type { EmergencyContact };
 
+export interface SubmitResignationPayload {
+  employeeId: string;
+  resignationDate: string;     // ISO string (e.g., "2025-08-01")
+  lastWorkingDay: string;      // ISO string
+  reason: string;
+}
+
+
 // Helper function to handle authentication errors
 const handleAuthError = (error: any) => {
   if (error.message?.includes('invalid token') || error.message?.includes('expired token')) {
