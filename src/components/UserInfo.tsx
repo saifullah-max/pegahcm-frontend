@@ -108,8 +108,8 @@ const UserInfo: React.FC = () => {
       icon: Clock,
       value: matchedShift
         ? `${matchedShift.name} (${formatTime(matchedShift.startTime)} - ${formatTime(
-            matchedShift.endTime
-          )})`
+          matchedShift.endTime
+        )})`
         : 'N/A',
     },
   ];
@@ -158,7 +158,9 @@ const UserInfo: React.FC = () => {
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Skills</p>
             <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-              {employee.skills ?? 'N/A'}
+              {Array.isArray(employee.skills) && employee.skills.length
+                ? employee.skills.join(' - ')
+                : 'N/A'}
             </p>
           </div>
         </div>
