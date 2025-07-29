@@ -24,6 +24,24 @@ const Shifts: React.FC = () => {
         fetchShifts();
     }, []);
 
+    const formatTime = (isoString: string): string => {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+    };
+
+    const formatDate = (isoString: string): string => {
+        const date = new Date(isoString);
+        return date.toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+        });
+    };
+
     const columns = [
         {
             title: "ID",
@@ -46,6 +64,11 @@ const Shifts: React.FC = () => {
             key: "endTime",
         },
         {
+            title: "Valid Till",
+            dataIndex: "validTill",
+            key: "validTill",
+        },
+        {
             title: "Description",
             dataIndex: "description",
             key: "description",
@@ -57,7 +80,7 @@ const Shifts: React.FC = () => {
         },
     ];
 
-    
+
 
     const handleDelete = async (id: string) => {
         if (window.confirm("Are you sure you want to delete this shift?")) {
@@ -125,10 +148,13 @@ const Shifts: React.FC = () => {
                                         {data.name}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                                        {data.startTime}
+                                        {formatTime(data.startTime)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                                        {data.endTime}
+                                        {formatTime(data.endTime)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
+                                        {formatDate(data.endTime)} {/* Valid Till */}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                                         {data.description}
