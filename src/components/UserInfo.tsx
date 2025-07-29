@@ -26,23 +26,9 @@ type StatusKey = keyof typeof statusColors;
 const UserInfo: React.FC = () => {
   const [employee, setEmployee] = useState<any>(null);
   const [shifts, setShifts] = useState<any[]>([]);
-  const [shiftsLoading, setShiftsLoading] = useState<boolean>(false);
   const [departments, setDepartments] = useState<any[]>([]);
   const [departmentName, setDepartmentName] = useState<string>('N/A');
   const [subDepartmentName, setSubDepartmentName] = useState<string>('N/A');
-
-  const fetchShifts = async () => {
-    setShiftsLoading(true);
-    try {
-      const shiftsData = await getShifts();
-      console.log(shiftsData);
-      setShifts(shiftsData);
-    } catch (error) {
-      console.error('Failed to fetch shifts:', error);
-    } finally {
-      setShiftsLoading(false);
-    }
-  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -55,17 +41,14 @@ const UserInfo: React.FC = () => {
         const { user, employee } = await getEmployeeById(userId);
         const allShifts = await getShifts();
         const allDepartments = await getDepartments();
-        console.log("Image url:", employee.profileImage);
+
         setEmployee({ ...employee, user });
         setShifts(allShifts);
         setDepartments(allDepartments);
 
-        // ✅ Match department
         const matchedDept = allDepartments.find((dept) => dept.id === employee.departmentId);
         if (matchedDept) {
           setDepartmentName(matchedDept.name || 'N/A');
-
-          // ✅ Match sub-department
           const matchedSubDept = matchedDept.subDepartments?.find(
             (sub: any) => sub.id === employee.subDepartmentId
           );
@@ -73,7 +56,6 @@ const UserInfo: React.FC = () => {
             setSubDepartmentName(matchedSubDept.name || 'N/A');
           }
         }
-
       } catch (err) {
         console.error('Error fetching employee/departments:', err);
       }
@@ -93,118 +75,92 @@ const UserInfo: React.FC = () => {
 
   const fullName = employee.user?.fullName ?? 'Unknown';
   const avatar = employee.user?.avatar || '/default-avatar.png';
-  const status: StatusKey = employee.status || 'Inactive';
-  const shift = employee.shift;
-  const matchedShift = shifts.find(
-    (s) => s.name === employee?.shift // 👈 employee.shift is a string like "Shift 01"
-  );
+  const status: StatusKey = employee.status || 'inactive';
+  const matchedShift = shifts.find((s) => s.name === employee?.shift);
 
-
+  const details = [
+    { label: 'Employee ID', icon: IdCard, value: employee.employeeNumber ?? 'N/A' },
+    { label: 'Email', icon: Mail, value: employee.user?.email ?? 'N/A' },
+    { label: 'Designation', icon: Briefcase, value: employee.designation ?? 'N/A' },
+    { label: 'Phone', icon: Phone, value: employee.phoneNumber ?? '-' },
+    { label: 'Department', icon: Building2, value: departmentName },
+    { label: 'Sub-Department', icon: Building2, value: subDepartmentName },
+    { label: 'Location', icon: MapPin, value: employee.workLocation ?? 'N/A' },
+    {
+      label: 'Status',
+      icon: Activity,
+      value: (
+        <div className="flex items-center space-x-2">
+          <span className={`h-2 w-2 rounded-full ${statusColors[status] || 'bg-gray-400'}`} />
+          <span className="capitalize">{status}</span>
+        </div>
+      ),
+    },
+    {
+      label: 'Join Date',
+      icon: Calendar,
+      value: employee.hireDate
+        ? new Date(employee.hireDate).toUTCString().slice(0, 16)
+        : 'N/A',
+    },
+    {
+      label: 'Shift',
+      icon: Clock,
+      value: matchedShift
+        ? `${matchedShift.name} (${formatTime(matchedShift.startTime)} - ${formatTime(
+            matchedShift.endTime
+          )})`
+        : 'N/A',
+    },
+  ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
-      <div className="p-5 relative">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <img
-              src={avatar}
-              alt={fullName}
-              className="w-16 h-16 rounded-full border-4 border-white shadow-md"
-            />
-            <div
-              className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[status] || 'bg-gray-400'
-                }`}
-            ></div>
-          </div>
-          <div className="text-black">
-            <h2 className="text-xl font-bold">{fullName}</h2>
-            <p className="text-sm">{employee.designation ?? 'N/A'}</p>
-          </div>
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+      {/* Profile Header */}
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="relative">
+          <img
+            src={avatar}
+            alt={fullName}
+            className="w-16 h-16 rounded-full border-4 border-white shadow-md"
+          />
+          <div
+            className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[status] || 'bg-gray-400'}`}
+          />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">{fullName}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{employee.designation ?? 'N/A'}</p>
         </div>
       </div>
 
-      <div className="p-5 space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              label: 'Employee ID',
-              icon: <IdCard className="h-5 w-5 text-[#255199]" />,
-              value: employee.employeeNumber ?? 'N/A',
-            },
-            {
-              label: 'Email',
-              icon: <Mail className="h-5 w-5 text-[#255199]" />,
-              value: employee.user?.email ?? 'N/A',
-            },
-            {
-              label: 'Designation',
-              icon: <Briefcase className="h-5 w-5 text-[#255199]" />,
-              value: employee.designation ?? 'N/A',
-            },
-            {
-              label: 'Phone',
-              icon: <Phone className="h-5 w-5 text-[#255199]" />,
-              value: employee.phoneNumber ?? '-',
-            },
-            {
-              label: 'Department',
-              icon: <Building2 className="h-5 w-5 text-[#255199]" />,
-              value: departmentName,
-            },
-            {
-              label: 'Sub-Department',
-              icon: <Building2 className="h-5 w-5 text-[#255199]" />,
-              value: subDepartmentName,
-            },
-            {
-              label: 'Location',
-              icon: <MapPin className="h-5 w-5 text-[#255199]" />,
-              value: employee.workLocation ?? 'N/A',
-            },
-            {
-              label: 'Status',
-              icon: <Activity className="h-5 w-5 text-[#255199]" />,
-              value: (
-                <div className="flex items-center">
-                  <div
-                    className={`h-2 w-2 rounded-full ${statusColors[status] || 'bg-gray-400'
-                      } mr-2`}
-                  ></div>
-                  <span>{status}</span>
-                </div>
-              ),
-            },
-            {
-              label: 'Join Date',
-              icon: <Calendar className="h-5 w-5 text-[#255199]" />,
-              value: employee.hireDate
-                ? new Date(employee.hireDate).toUTCString().slice(0, 16) // "Mon, 01 Jan 2024"
-                : 'N/A',
-            },
-            {
-              label: 'Shift',
-              icon: <Clock className="h-5 w-5 text-[#255199]" />,
-              value: matchedShift
-                ? `${matchedShift.name} (${formatTime(matchedShift.startTime)} - ${formatTime(matchedShift.endTime)})`
-                : 'N/A',
-            },
-            {
-              label: 'Skills',
-              icon: <User className="h-5 w-5 text-[#255199]" />,
-              value: employee.skills ?? 'N/A',
-            },
-          ].map(({ label, icon, value }) => (
-            <div
-              key={label}
-              className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <div className="bg-blue-100 p-2 rounded-lg">{icon}</div>
-              <div>
-                <p className="text-xs font-medium text-slate-500">{label}</p>
-                <p className="font-medium text-slate-700 text-sm">{value}</p>
-              </div>
+      {/* Grid Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {details.map(({ label, icon: Icon, value }) => (
+          <div
+            key={label}
+            className="flex items-start space-x-3 p-4 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-700">
+              <Icon className="h-5 w-5 text-[#7d90b0]" />
             </div>
-          ))}
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{value}</p>
+            </div>
+          </div>
+        ))}
+        {/* Skills full width */}
+        <div className="md:col-span-2 flex items-start space-x-3 p-4 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-700">
+            <User className="h-5 w-5 text-[#7d90b0]" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Skills</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+              {employee.skills ?? 'N/A'}
+            </p>
+          </div>
         </div>
       </div>
     </div>
