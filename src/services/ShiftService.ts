@@ -15,8 +15,8 @@ interface CreateShiftData {
 
 interface UpdateShiftData {
   name?: string;
-  startTime?: string;
-  endTime?: string;
+  startTime?: Date;
+  endTime?: Date;
   description?: string;
 }
 

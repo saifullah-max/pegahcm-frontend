@@ -6,10 +6,13 @@ import { getShiftById, updateShift } from '../../services/ShiftService';
 interface ShiftData {
   id: string;
   name: string;
-  startTime: string;
-  endTime: string;
   description: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
 }
+
 
 const EditShift: React.FC = () => {
   const navigate = useNavigate();
@@ -17,21 +20,54 @@ const EditShift: React.FC = () => {
   const [shift, setShift] = useState<ShiftData>({
     id: '',
     name: '',
+    startDate: '',
     startTime: '',
+    endDate: '',
     endTime: '',
     description: '',
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Convert ISO string to "HH:MM AM/PM"
+  const formatTo12Hour = (isoTime: string) => {
+    const date = new Date(isoTime);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const paddedMinutes = String(minutes).padStart(2, '0');
+    return `${String(hours).padStart(2, '0')}:${paddedMinutes} ${ampm}`;
+  };
+
+  const convertTo24Hour = (time12h: string): string => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (modifier === 'PM' && hours !== '12') hours = String(parseInt(hours) + 12);
+    if (modifier === 'AM' && hours === '12') hours = '00';
+    return `${hours.padStart(2, '0')}:${minutes}:00`;
+  };
+
   useEffect(() => {
     const fetchShift = async () => {
       if (!id) return;
-      
       try {
         const shiftData = await getShiftById(id);
-        setShift(shiftData);
+
+        const start = new Date(shiftData.startTime);
+        const end = new Date(shiftData.endTime);
+
+        setShift({
+          id: shiftData.id,
+          name: shiftData.name,
+          description: shiftData.description,
+          startDate: start.toISOString().split('T')[0],
+          startTime: start.toTimeString().slice(0, 5),
+          endDate: end.toISOString().split('T')[0],
+          endTime: end.toTimeString().slice(0, 5),
+        });
       } catch (error) {
         console.error('Error fetching shift:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch shift');
@@ -47,26 +83,28 @@ const EditShift: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setShift({
-      ...shift,
+    setShift((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    
+
     try {
+      const start = new Date(`${shift.startDate}T${shift.startTime}`);
+      const end = new Date(`${shift.endDate}T${shift.endTime}`);
+
       await updateShift(id!, {
         name: shift.name,
-        startTime: shift.startTime,
-        endTime: shift.endTime,
+        startTime: start,
+        endTime: end,
         description: shift.description,
       });
-      
-      console.log('Shift updated successfully');
+
       navigate('/admin/shifts');
     } catch (error) {
       console.error('Error updating shift:', error);
@@ -78,16 +116,16 @@ const EditShift: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+      <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
         <div className="text-center text-gray-700 dark:text-gray-300">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="mb-6 flex items-center">
-        <button 
+        <button
           onClick={() => navigate('/admin/shifts')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
@@ -97,7 +135,7 @@ const EditShift: React.FC = () => {
           <UserRound /> Edit Shift
         </h1>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -111,77 +149,98 @@ const EditShift: React.FC = () => {
                 Edit Shift Details
               </h2>
             </div>
-            
-            <div className="mb-4">
+
+            <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Shift Name*</label>
               <input
                 type="text"
                 name="name"
                 value={shift.name}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                 required
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
               />
             </div>
-            
-            <div className="mb-4">
+
+            <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Description*</label>
               <input
                 type="text"
                 name="description"
                 value={shift.description}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                required
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            {/* Start Date */}
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+              <input
+                type="date"
+                name="startDate"
+                value={shift.startDate}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
                 required
               />
             </div>
-            
-            <div className="mb-4">
+
+            {/* Start Time */}
+            <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-              <select
+              <input
+                type="time"
                 name="startTime"
                 value={shift.startTime}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-              >
-                <option value="">Select</option>
-                <option value="09:00 AM">09:00 AM</option>
-                <option value="12:00 PM">12:00 PM</option>
-                <option value="03:00 PM">03:00 PM</option>
-                <option value="06:00 PM">06:00 PM</option>
-              </select>
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
+                required
+              />
             </div>
 
-            <div className="mb-4">
+            {/* End Date */}
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+              <input
+                type="date"
+                name="endDate"
+                value={shift.endDate}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
+                required
+              />
+            </div>
+
+            {/* End Time */}
+            <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-              <select
+              <input
+                type="time"
                 name="endTime"
                 value={shift.endTime}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-              >
-                <option value="">Select</option>
-                <option value="06:00 PM">06:00 PM</option>
-                <option value="09:00 PM">09:00 PM</option>
-                <option value="12:00 AM">12:00 AM</option>
-                <option value="03:00 AM">03:00 AM</option>
-              </select>
+                className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:text-white"
+                required
+              />
             </div>
+
           </div>
-          
+
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => navigate('/admin/shifts')}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               disabled={isSubmitting}
+              className="px-4 py-2 border rounded text-gray-700 dark:text-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
               disabled={isSubmitting}
+              className="px-4 py-2 text-white rounded bg-[#255199] hover:bg-[#2F66C1]"
             >
               {isSubmitting ? 'Saving...' : 'Update Shift'}
             </button>
@@ -192,4 +251,4 @@ const EditShift: React.FC = () => {
   );
 };
 
-export default EditShift; 
+export default EditShift;
