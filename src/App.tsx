@@ -30,6 +30,10 @@ import EditDepartment_HR from './pages/hr/EditDepartment';
 import OnBoardingProcess from './pages/hr/OnBoardingProcess';
 import OnboardingForm from './pages/hr/OnBoardingForm';
 import EditOnboardingForm from './pages/hr/EditOnBoarding';
+import UserResignation from './pages/user/UserResignation';
+import ResignationForm from './pages/user/ResignationForm';
+import Resignations from './pages/hr/Resignations';
+import EditResignations from './pages/user/EditResignations';
 
 function App() {
   return (
@@ -69,6 +73,7 @@ function App() {
                 <Route path='/hr/onboarding' element={<OnBoardingProcess />} />
                 <Route path='/hr/onboarding/create' element={<OnboardingForm />} />
                 <Route path='/hr/onboarding/edit/:id' element={<EditOnboardingForm />} />
+                <Route path='/hr/resignations' element={<Resignations />} />
               </Route>
             </Route>
 
@@ -77,6 +82,9 @@ function App() {
               <Route element={<UserLayout />}>
                 <Route path="user/user-dashboard" element={<UserDashboard />} />
                 <Route path="user/user-attendance" element={<UserAttendance />} />
+                <Route path='/user/resignation' element={<UserResignation />} />
+                <Route path='/user/resignation-form' element={<ResignationForm />} />
+                <Route path='/user/edit-resignation/:id' element={<EditResignations />} />
               </Route>
             </Route>
 

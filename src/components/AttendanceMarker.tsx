@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { checkInAttendance, checkOutAttendance, endBreak, getEmployeeById, getTodayAttendance, startBreak } from '../services/userService';
+import {
+  checkInAttendance,
+  checkOutAttendance,
+  endBreak,
+  getEmployeeById,
+  getTodayAttendance,
+  startBreak,
+} from '../services/userService';
 import { LogIn, LogOut, Check } from 'lucide-react';
 
 const AttendanceMarker: React.FC = () => {
@@ -14,14 +21,12 @@ const AttendanceMarker: React.FC = () => {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [breakStartTime, setBreakStartTime] = useState<string | null>(null);
   const [currentBreakType, setCurrentBreakType] = useState<string | null>(null);
-
-
   const [shiftId, setShiftId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -48,33 +53,26 @@ const AttendanceMarker: React.FC = () => {
   useEffect(() => {
     const fetchTodayAttendance = async () => {
       if (!userId) return;
-
       try {
         const today = await getTodayAttendance();
-
         if (today.checkedIn) {
           setIsCheckedIn(true);
           if (today.attendance?.clockIn) {
-            const clockInTime = new Date(today.attendance.clockIn).toLocaleTimeString();
-            setCheckInTime(clockInTime);
+            setCheckInTime(new Date(today.attendance.clockIn).toLocaleTimeString());
           }
         }
-
         if (today.checkedOut) {
           setIsCheckedOut(true);
           if (today.attendance?.clockOut) {
-            const clockOutTime = new Date(today.attendance.clockOut).toLocaleTimeString();
-            setCheckOutTime(clockOutTime);
+            setCheckOutTime(new Date(today.attendance.clockOut).toLocaleTimeString());
           }
         }
       } catch (error) {
         console.error('Error fetching today attendance:', error);
       }
     };
-
     fetchTodayAttendance();
   }, [userId]);
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -84,10 +82,9 @@ const AttendanceMarker: React.FC = () => {
   }, []);
 
   const handleCheckIn = async () => {
-    const now = new Date();
-    const formattedTime = now.toLocaleTimeString();
+    const formattedTime = new Date().toLocaleTimeString();
     try {
-      setErrorMessage(null); // clear old errors
+      setErrorMessage(null);
       if (!userId || !shiftId) throw new Error("Missing userId or shiftId");
       await checkInAttendance(userId, shiftId);
       setCheckInTime(formattedTime);
@@ -98,17 +95,13 @@ const AttendanceMarker: React.FC = () => {
         setErrorMessage(error.response.data.message);
       } else {
         setErrorMessage("Already checked in today");
-        setTimeout(() => {
-          setErrorMessage(null);
-        }, 4000);
+        setTimeout(() => setErrorMessage(null), 4000);
       }
     }
   };
 
-
   const handleCheckOut = async () => {
-    const now = new Date();
-    const formattedTime = now.toLocaleTimeString();
+    const formattedTime = new Date().toLocaleTimeString();
     try {
       await checkOutAttendance();
       setCheckOutTime(formattedTime);
@@ -120,7 +113,7 @@ const AttendanceMarker: React.FC = () => {
 
   const handleStartBreak = async (breakType: string) => {
     try {
-      const res = await startBreak(breakType);
+      await startBreak(breakType);
       setIsOnBreak(true);
       setCurrentBreakType(breakType);
       setBreakStartTime(new Date().toLocaleTimeString());
@@ -131,7 +124,7 @@ const AttendanceMarker: React.FC = () => {
 
   const handleEndBreak = async () => {
     try {
-      const res = await endBreak();
+      await endBreak();
       setIsOnBreak(false);
       setCurrentBreakType(null);
       setBreakStartTime(null);
@@ -140,181 +133,136 @@ const AttendanceMarker: React.FC = () => {
     }
   };
 
-
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+    <div className="bg-white dark:bg-[#1f2937] text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl  text-slate-800">Attendance</h2>
+        <h2 className="text-2xl font-semibold">Attendance</h2>
         <div className="text-right">
-          <p className="text-slate-600 font-medium">{currentDate}</p>
-          <p className="text-slate-500 text-sm">{currentTime}</p>
+          <p className="font-medium">{currentDate}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{currentTime}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {errorMessage && (
-          <div className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-            {errorMessage}
-          </div>
-        )}
+      {/* Error */}
+      {errorMessage && (
+        <div className="mb-4 p-3 rounded-md border border-red-300 bg-red-100 text-sm text-red-800 dark:bg-red-200 dark:text-red-900">
+          {errorMessage}
+        </div>
+      )}
 
-        <div className={`p-5 rounded-lg transition-all duration-300 ${isCheckedIn
-          ? 'bg-blue-50 border-2 border-blue-600 shadow-md'
-          : 'bg-white border border-slate-200 hover:shadow-md'
-          }`}>
-          <div className="flex items-center justify-between">
+      {/* Check In / Check Out Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Check-In */}
+        <div className={`p-5 rounded-xl transition-all duration-300 ${isCheckedIn ? 'bg-blue-100 dark:bg-blue-950 border-2 border-blue-600' : 'bg-gray-50 dark:bg-gray-800 border'}`}>
+          <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold mb-1 text-slate-700">Check In</h3>
-              {checkInTime && (
-                <p className="text-sm text-blue-600 font-medium">Recorded at {checkInTime}</p>
-              )}
+              <h3 className="text-lg font-semibold">Check In</h3>
+              {checkInTime && <p className="text-blue-600 dark:text-blue-400 text-sm">Recorded at {checkInTime}</p>}
             </div>
-            <div className="ml-4">
+            <div>
               {isCheckedIn ? (
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
                   <LogIn />
                 </div>
               ) : (
-                <button
-                  onClick={handleCheckIn}
-                  className="h-10 w-10 rounded-full text-white bg-[#255199] hover:bg-[#2F66C1] flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg"
-                >
+                <button onClick={handleCheckIn} className="h-10 w-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow">
                   <LogOut />
                 </button>
               )}
             </div>
           </div>
           {!isCheckedIn && (
-            <button
-              onClick={handleCheckIn}
-              className="mt-4 w-full py-2 bg-[#255199] hover:bg-[#2F66C1] text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow flex items-center justify-center"
-            >
-              <LogIn className="h-5 w-5 mr-2" />
-              Check In Now
+            <button onClick={handleCheckIn} className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+              <LogIn className="h-5 w-5 inline-block mr-2" /> Check In Now
             </button>
           )}
         </div>
 
-        <div className={`p-5 rounded-lg transition-all duration-300 ${isCheckedOut
-          ? 'bg-amber-50 border-2 border-amber-500 shadow-md'
-          : 'bg-white border border-slate-200 hover:shadow-md'
-          }`}>
-          <div className="flex items-center justify-between">
+        {/* Check-Out */}
+        <div className={`p-5 rounded-xl transition-all duration-300 ${isCheckedOut ? 'bg-amber-100 dark:bg-amber-950 border-2 border-amber-500' : 'bg-gray-50 dark:bg-gray-800 border'}`}>
+          <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold mb-1 text-slate-700">Check Out</h3>
-              {checkOutTime && (
-                <p className="text-sm text-amber-600 font-medium">Recorded at {checkOutTime}</p>
-              )}
+              <h3 className="text-lg font-semibold">Check Out</h3>
+              {checkOutTime && <p className="text-amber-600 dark:text-amber-400 text-sm">Recorded at {checkOutTime}</p>}
             </div>
-            <div className="ml-4">
+            <div>
               {isCheckedOut ? (
-                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
                   <Check />
                 </div>
               ) : (
-                <button
-                  onClick={handleCheckOut}
-                  disabled={!isCheckedIn || isCheckedOut}
-                  className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors duration-200 shadow-md ${!isCheckedIn || isCheckedOut
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-amber-500 hover:bg-amber-600 hover:shadow-lg'
-                    }`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${!isCheckedIn || isCheckedOut ? 'text-gray-500' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button onClick={handleCheckOut} disabled={!isCheckedIn || isCheckedOut} className={`h-10 w-10 rounded-full flex items-center justify-center ${!isCheckedIn || isCheckedOut ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600 text-white shadow'}`}>
+                  <svg className="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                 </button>
               )}
             </div>
           </div>
-          <button
-            onClick={handleCheckOut}
-            disabled={!isCheckedIn || isCheckedOut}
-            className={`mt-4 w-full py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center ${!isCheckedIn || isCheckedOut
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow'
-              }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+          <button onClick={handleCheckOut} disabled={!isCheckedIn || isCheckedOut} className={`mt-4 w-full py-2 rounded-lg transition ${!isCheckedIn || isCheckedOut ? 'bg-gray-300 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600 text-white shadow'}`}>
             Check Out Now
           </button>
         </div>
       </div>
 
-      <div className="p-5 rounded-lg bg-green-50 border border-green-300 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-3 text-green-700">Break Management</h3>
-
+      {/* Break Management */}
+      <div className="p-5 rounded-xl bg-green-50 dark:bg-green-950 border border-green-300 dark:border-green-700 mb-6">
+        <h3 className="text-lg font-semibold text-green-800 dark:text-green-400 mb-2">Break Management</h3>
         {isOnBreak ? (
           <div className="space-y-2">
-            <p className="text-green-700">
-              On break: <span className="font-medium">{currentBreakType}</span> since {breakStartTime}
-            </p>
-            <button
-              onClick={handleEndBreak}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded shadow"
-            >
+            <p>On break: <span className="font-medium">{currentBreakType}</span> since {breakStartTime}</p>
+            <button onClick={handleEndBreak} className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded shadow">
               End Break
             </button>
           </div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-slate-600">Start a new break:</p>
-            <div className="flex gap-3 flex-wrap">
-              {["Lunch", "Prayer", "Tea"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => handleStartBreak(type)}
-                  className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded shadow"
-                >
+          <>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Start a new break:</p>
+            <div className="flex flex-wrap gap-3">
+              {["Lunch", "Prayer", "Tea"].map(type => (
+                <button key={type} onClick={() => handleStartBreak(type)} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">
                   {type} Break
                 </button>
               ))}
             </div>
-          </div>
+          </>
         )}
       </div>
 
-
-      <div className="mt-6 p-4 bg-white rounded-lg border border-slate-200">
-        <h3 className="text-lg font-semibold mb-3 text-slate-700">Today's Status</h3>
-        <div className="space-y-2">
+      {/* Status */}
+      <div className="p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold mb-3">Today's Status</h3>
+        <div className="space-y-2 text-sm">
           <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedIn ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-            <span className="text-sm text-slate-600">Check-in status: {isCheckedIn ? 'Completed' : 'Pending'}</span>
+            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedIn ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
+            Check-in status: {isCheckedIn ? 'Completed' : 'Pending'}
           </div>
           <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedOut ? 'bg-amber-500' : 'bg-gray-300'}`}></div>
-            <span className="text-sm text-slate-600">Check-out status: {isCheckedOut ? 'Completed' : 'Pending'}</span>
+            <div className={`w-3 h-3 rounded-full mr-2 ${isCheckedOut ? 'bg-amber-500' : 'bg-gray-400'}`}></div>
+            Check-out status: {isCheckedOut ? 'Completed' : 'Pending'}
           </div>
           {isCheckedIn && checkInTime && (
             <div className="flex items-center pt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-sm text-slate-600">
-                Session: {isCheckedOut
-                  ? (() => {
-                    const [h1, m1, s1] = checkInTime.split(":").map(Number);
-                    const [h2, m2, s2] = checkOutTime!.split(":").map(Number);
-
-                    const start = new Date();
-                    start.setHours(h1, m1, s1, 0);
-                    const end = new Date();
-                    end.setHours(h2, m2, s2, 0);
-
-                    const diffMs = end.getTime() - start.getTime();
-                    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-                    return `${checkInTime} - ${checkOutTime} (${diffHrs} hrs ${diffMins} mins)`;
-                  })()
-                  : `Started at ${checkInTime}`}
-              </span>
+              Session: {isCheckedOut
+                ? (() => {
+                  const [h1, m1, s1] = checkInTime.split(":").map(Number);
+                  const [h2, m2, s2] = checkOutTime!.split(":").map(Number);
+                  const start = new Date();
+                  const end = new Date();
+                  start.setHours(h1, m1, s1, 0);
+                  end.setHours(h2, m2, s2, 0);
+                  const diff = end.getTime() - start.getTime();
+                  const hrs = Math.floor(diff / 3600000);
+                  const mins = Math.floor((diff % 3600000) / 60000);
+                  return `${checkInTime} - ${checkOutTime} (${hrs} hrs ${mins} mins)`;
+                })()
+                : `Started at ${checkInTime}`}
             </div>
           )}
-
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ClockFading, LayoutDashboard, UserRound, Moon, Sun } from 'lucide-react';
+import { Bell, ClockFading, LayoutDashboard, UserRound, Moon, Sun, FileArchiveIcon } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
 
 const AdminLayout = () => {
@@ -59,6 +59,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/user/user-attendance' });
     navigate('/user/user-attendance');
   };
+  const handleResignationClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/user/resignation' });
+    navigate('/user/resignation');
+  };
 
 
 
@@ -84,6 +88,9 @@ const AdminLayout = () => {
             </li>
             <li onClick={handleAttendanceClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
               <ClockFading className="inline-block mr-2" /> Attendance
+            </li>
+            <li onClick={handleResignationClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
+              <FileArchiveIcon className="inline-block mr-2" /> Apply for Resignation
             </li>
           </ul>
         </nav>

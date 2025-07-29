@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllMyAttendanceRecords, getTodayAttendance } from '../services/userService';
+import { getAllMyAttendanceRecords } from '../services/userService';
 
 interface AttendanceData {
   date: string;
@@ -20,174 +20,10 @@ interface RawAttendance {
   status: string;
 }
 
-
-
 const DailyAttendance: React.FC = () => {
   const [selectedWeek, setSelectedWeek] = useState<string>('');
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [attendanceData, setAttendanceData] = useState<AttendanceData[]>([]);
-
-
-  useEffect(() => {
-    // Mock data - Replace with actual API call
-    // const mockWeeklyData: WeekData[] = [
-    //   {
-    //     id: 'week1',
-    //     name: 'Week 1',
-    //     data: [
-    //       {
-    //         date: '2025-05-01',
-    //         checkIn: '09:15',
-    //         checkOut: '17:30',
-    //         expectedHours: 8,
-    //         actualHours: 7.25,
-    //         shortfall: 0.75
-    //       },
-    //       {
-    //         date: '2025-05-02',
-    //         checkIn: '09:00',
-    //         checkOut: '17:00',
-    //         expectedHours: 8,
-    //         actualHours: 8,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-03',
-    //         checkIn: '09:30',
-    //         checkOut: '17:15',
-    //         expectedHours: 8,
-    //         actualHours: 7.75,
-    //         shortfall: 0.25
-    //       },
-    //       {
-    //         date: '2025-05-04',
-    //         checkIn: '09:00',
-    //         checkOut: '17:45',
-    //         expectedHours: 8,
-    //         actualHours: 8.75,
-    //         shortfall: 0
-    //       },
-    //     ]
-    //   },
-    //   {
-    //     id: 'week2',
-    //     name: 'Week 2',
-    //     data: [
-    //       {
-    //         date: '2025-05-08',
-    //         checkIn: '09:00',
-    //         checkOut: '18:00',
-    //         expectedHours: 8,
-    //         actualHours: 9,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-09',
-    //         checkIn: '09:15',
-    //         checkOut: '17:30',
-    //         expectedHours: 8,
-    //         actualHours: 8.25,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-10',
-    //         checkIn: '08:45',
-    //         checkOut: '16:30',
-    //         expectedHours: 8,
-    //         actualHours: 7.75,
-    //         shortfall: 0.25
-    //       },
-    //       {
-    //         date: '2025-05-11',
-    //         checkIn: '09:30',
-    //         checkOut: '18:15',
-    //         expectedHours: 8,
-    //         actualHours: 8.75,
-    //         shortfall: 0
-    //       },
-    //     ]
-    //   },
-    //   {
-    //     id: 'week3',
-    //     name: 'Week 3',
-    //     data: [
-    //       {
-    //         date: '2025-05-15',
-    //         checkIn: '08:45',
-    //         checkOut: '17:00',
-    //         expectedHours: 8,
-    //         actualHours: 8.25,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-16',
-    //         checkIn: '09:00',
-    //         checkOut: '16:45',
-    //         expectedHours: 8,
-    //         actualHours: 7.75,
-    //         shortfall: 0.25
-    //       },
-    //       {
-    //         date: '2025-05-17',
-    //         checkIn: '09:15',
-    //         checkOut: '18:00',
-    //         expectedHours: 8,
-    //         actualHours: 8.75,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-18',
-    //         checkIn: '09:30',
-    //         checkOut: '17:30',
-    //         expectedHours: 8,
-    //         actualHours: 8,
-    //         shortfall: 0
-    //       },
-    //     ]
-    //   },
-    //   {
-    //     id: 'week4',
-    //     name: 'Week 4',
-    //     data: [
-    //       {
-    //         date: '2025-05-22',
-    //         checkIn: '09:00',
-    //         checkOut: '17:15',
-    //         expectedHours: 8,
-    //         actualHours: 8.25,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-23',
-    //         checkIn: '08:45',
-    //         checkOut: '16:30',
-    //         expectedHours: 8,
-    //         actualHours: 7.75,
-    //         shortfall: 0.25
-    //       },
-    //       {
-    //         date: '2025-05-24',
-    //         checkIn: '09:15',
-    //         checkOut: '18:00',
-    //         expectedHours: 8,
-    //         actualHours: 8.75,
-    //         shortfall: 0
-    //       },
-    //       {
-    //         date: '2025-05-25',
-    //         checkIn: '09:30',
-    //         checkOut: '17:45',
-    //         expectedHours: 8,
-    //         actualHours: 8.25,
-    //         shortfall: 0
-    //       },
-    //     ]
-    //   }
-    // ];
-
-    // setWeeklyData(mockWeeklyData);
-    // setAttendanceData(mockWeeklyData.find(week => week.id === selectedWeek)?.data || []);
-  }, []);
 
   const fetchAttendance = async () => {
     try {
@@ -227,24 +63,27 @@ const DailyAttendance: React.FC = () => {
       const year = today.getFullYear();
       const month = today.getMonth();
       const currentDay = today.getDate();
+      const lastDay = new Date(year, month + 1, 0).getDate();
+
       const currentWeek =
         currentDay <= 7 ? 'week1' :
           currentDay <= 14 ? 'week2' :
             currentDay <= 21 ? 'week3' : 'week4';
 
-      const weeklyData = [];
+      const weeklyData: WeekData[] = [];
 
       for (let w = 0; w < 4; w++) {
         const days: AttendanceData[] = [];
+        const startDay = 1 + w * 7;
+        const endDay = w === 3 ? lastDay : (w + 1) * 7;
 
-        for (let d = 1 + w * 7; d <= Math.min((w + 1) * 7, 31); d++) {
+        for (let d = startDay; d <= endDay; d++) {
           const date = new Date(year, month, d);
           const dateKey = date.toISOString().slice(0, 10);
-
           const dayName = date.getDay(); // 0 = Sun, 6 = Sat
-          if (dayName === 0 || dayName === 6) continue;
 
-          if (date > today) continue; // 🛑 Skip future dates
+          if (dayName === 0 || dayName === 6) continue;
+          if (date > today) continue;
 
           if (presentDates[dateKey]) {
             const rec = presentDates[dateKey];
@@ -277,18 +116,16 @@ const DailyAttendance: React.FC = () => {
       }
 
       setWeeklyData(weeklyData);
-      setSelectedWeek(currentWeek); // ✅ Auto select current week
+      setSelectedWeek(currentWeek);
       setAttendanceData(weeklyData.find(w => w.id === currentWeek)?.data || []);
     } catch (error) {
       console.error("Error fetching user's attendance", error);
     }
   };
 
-
   useEffect(() => {
     fetchAttendance();
-  }, [])
-
+  }, []);
 
   useEffect(() => {
     const weekData = weeklyData.find(week => week.id === selectedWeek);
@@ -297,24 +134,25 @@ const DailyAttendance: React.FC = () => {
     }
   }, [selectedWeek, weeklyData]);
 
-  const getBarHeight = (hours: number) => {
-    const maxHeight = 150; // Increased height for better visibility
-    return (hours / 10) * maxHeight; // Using 10 as max scale for better proportion
+  const getBarHeight = (hour: number) => {
+    const maxVisualHeight = 200;
+    return (hour / 24) * maxVisualHeight;
   };
+
 
   const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedWeek(e.target.value);
   };
 
   return (
-    <div className="bg-gradient-to-tr from-slate-50 to-white p-6 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col h-full">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl text-gray-800">Daily Attendance</h2>
+        <h2 className="text-2xl font-medium text-gray-800 dark:text-gray-100">Daily Attendance</h2>
         <div className="relative">
           <select
             value={selectedWeek}
             onChange={handleWeekChange}
-            className="appearance-none bg-white border border-gray-300 rounded-md py-2 pl-3 pr-10 text-sm leading-5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="appearance-none bg-white border dark:bg-gray-800 border-gray-300 dark:text-gray-100 rounded-md py-2 pl-3 pr-10 text-sm leading-5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             {weeklyData.map(week => (
               <option key={week.id} value={week.id}>{week.name}</option>
@@ -328,54 +166,53 @@ const DailyAttendance: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-grow"></div>
-
-      {/* Time Bars Section - Moved to bottom */}
-      <div className="mt-auto">
-        <h3 className="text-lg font-semibold mb-3 text-gray-700">Check-In/Out Times</h3>
+      <div className="mt-6">
+        <h3 className="text-md font-medium text-gray-800 dark:text-gray-100">Check-In/Out Times</h3>
         <div className="overflow-x-auto">
-          <div className="flex items-end space-x-4 h-[180px] min-w-max pb-2">
+          <div className="flex items-end space-x-4 h-[440px] min-w-max pb-4 pt-6">
             {attendanceData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center">
+              <div key={index} className="flex flex-col items-center relative">
                 {day.isAbsent ? (
-                  <div className="w-16 h-full flex flex-col items-center justify-end">
+                  <div className="w-16 h-[200px] flex flex-col items-center justify-end">
                     <div className="w-6 h-6 bg-red-600 rounded"></div>
                   </div>
                 ) : (
-                  <div className="relative w-16 h-full flex items-end">
+                  <div className="relative w-16 h-[200px] flex justify-between items-end">
+                    {/* Check-in (Blue) */}
                     <div
-                      className="w-6 bg-[#255199] rounded-t absolute left-0"
+                      className="w-6 bg-[#255199] rounded-t relative"
                       style={{
                         height: `${getBarHeight(parseInt(day.checkIn.split(':')[0]))}px`,
-                        bottom: 0
                       }}
                     >
-                      <span className="absolute -top-6 text-xs transform -translate-x-1/2 left-1/2 whitespace-nowrap">
+                      <span className="absolute -top-6 text-xs left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                         {day.checkIn}
                       </span>
                     </div>
+
+                    {/* Check-out (Green) */}
                     <div
-                      className="w-6 bg-green-500 rounded-t absolute right-0"
+                      className="w-6 bg-green-500 rounded-t relative"
                       style={{
                         height: `${getBarHeight(parseInt(day.checkOut.split(':')[0]))}px`,
-                        bottom: 0
                       }}
                     >
-                      <span className="absolute -top-6 text-xs transform -translate-x-1/2 left-1/2 whitespace-nowrap">
+                      <span className="absolute -top-6 text-xs left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                         {day.checkOut}
                       </span>
                     </div>
                   </div>
+
                 )}
                 <span className="text-sm mt-2 text-gray-600 whitespace-nowrap">{day.date}</span>
               </div>
             ))}
-
-
           </div>
         </div>
 
-        {/* Simple Legend just for check-in/out */}
+
+
+        {/* Legend */}
         <div className="mt-4 flex items-center justify-center space-x-6">
           <div className="flex items-center">
             <div className="w-4 h-4 bg-[#255199] rounded mr-2"></div>

@@ -119,7 +119,7 @@ const EditDepartment_HR: React.FC = () => {
                     </div>
                 )}
                 <form onSubmit={handleSubmit}>
-                    <label className="block text-gray-700  mb-2">
+                    <label className="block text-gray-700 dark:text-gray-100 mb-2">
                         Department Name*
                     </label>
                     <input
@@ -127,7 +127,8 @@ const EditDepartment_HR: React.FC = () => {
                         name="name"
                         value={department?.name || ''}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                        placeholder='Edit Department name'
+                        className="w-full px-3 py-2 border-2 border-black bg-white rounded-md dark:bg-gray-700 dark:text-white"
                         required
                     />
 
@@ -162,7 +163,7 @@ const EditDepartment_HR: React.FC = () => {
                         type="text"
                         value={newSubDepartmentName}
                         onChange={(e) => setNewSubDepartmentName(e.target.value)}
-                        className="flex-grow px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                        className="w-full px-3 py-2 border-2 border-black bg-white rounded-md dark:bg-gray-700 dark:text-white"
                         placeholder="Enter sub-department name"
                         required
                     />
