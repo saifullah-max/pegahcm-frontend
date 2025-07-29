@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
+import { getEmployeeById } from '../services/employeeService';
 
 const PayslipDetails: React.FC = () => {
   const [showDetails, setShowDetails] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('May 2025');
-  
+
   // Sample payslip data - in a real app this would come from an API
   const payslipData = {
     month: currentMonth,
@@ -28,6 +29,24 @@ const PayslipDetails: React.FC = () => {
     totalDeductions: 1300,
     netSalary: 1000
   };
+
+  useEffect(() => {
+    const root = JSON.parse(localStorage.getItem("persist:root")!);
+
+    // Parse the stringified "auth" object
+    const auth = JSON.parse(root.auth);
+
+    // Now access the deeply nested employee ID
+    const employeeId = auth.user.employee.id;
+
+    console.log(employeeId); // ➤ ca3f5441-b1d6-4841-8fd2-fef76ad1bbb5
+    const res = async () => {
+      const fetchSalary = await getEmployeeById(employeeId);
+
+      console.log("Emp data:", fetchSalary);
+    }
+    res()
+  }, [])
 
   // Previous months for the dropdown selector
   const availableMonths = [
@@ -54,30 +73,29 @@ const PayslipDetails: React.FC = () => {
           <div className="flex items-center space-x-3">
             <h2 className="text-2xl  text-slate-800">Payslip Details</h2>
           </div>
-          
+
           {/* Month selector dropdown */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowMonthSelector(!showMonthSelector)}
               className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
             >
               <Calendar className="h-4 w-4 text-slate-400" />
               <span>{currentMonth}</span>
-              {showMonthSelector ? 
-                <ChevronUp className="h-4 w-4 text-slate-400" /> : 
+              {showMonthSelector ?
+                <ChevronUp className="h-4 w-4 text-slate-400" /> :
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               }
             </button>
-            
+
             {showMonthSelector && (
               <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-10">
                 {availableMonths.map(month => (
-                  <button 
+                  <button
                     key={month}
                     onClick={() => handleMonthChange(month)}
-                    className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors ${
-                      month === currentMonth ? 'bg-indigo-50 text-[#255199]' : 'text-slate-700'
-                    }`}
+                    className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors ${month === currentMonth ? 'bg-indigo-50 text-[#255199]' : 'text-slate-700'
+                      }`}
                   >
                     {month}
                   </button>
@@ -86,7 +104,7 @@ const PayslipDetails: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         {/* Employee information */}
         <div className="bg-slate-50 rounded-xl p-4 mb-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -108,11 +126,11 @@ const PayslipDetails: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Actions bar */}
         <div className="flex justify-between items-center">
           <div className="flex space-x-2">
-            <button 
+            <button
               onClick={() => setShowDetails(!showDetails)}
               className="flex items-center space-x-1 text-sm text-[#255199] hover:text-[#2F66C1] font-medium transition-colors"
             >
@@ -132,7 +150,7 @@ const PayslipDetails: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Salary breakdown */}
       {showDetails && (
         <div className="p-6 pt-2 bg-white border-t border-slate-100">
@@ -153,7 +171,7 @@ const PayslipDetails: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Deductions section */}
             <div>
               <h3 className="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Deductions</h3>
@@ -171,7 +189,7 @@ const PayslipDetails: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Summary section */}
           <div className="mt-6 pt-4 border-t border-slate-100">
             <div className="flex justify-between items-center">
