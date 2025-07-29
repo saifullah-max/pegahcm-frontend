@@ -96,10 +96,9 @@ const AttendanceProgress: React.FC = () => {
     : 0;
 
   const getColorClass = (percent: number) => {
-    if (percent >= 90) return 'bg-green-500';
-    if (percent >= 75) return 'bg-blue-500';
-    if (percent >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (percent > 80) return 'stroke-green-500';
+    if (percent >= 65) return 'stroke-yellow-400';
+    return 'stroke-red-500';
   };
 
   const renderAttendanceDots = () => {
@@ -138,8 +137,8 @@ const AttendanceProgress: React.FC = () => {
               key={period}
               onClick={() => switchPeriod(period)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${activeTab === period
-                  ? 'bg-[#255199] text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600'
+                ? 'bg-[#255199] text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
             >
               {period === 'current' ? 'Current' : period === 'lastMonth' ? 'Last Month' : 'Quarter'}
@@ -172,7 +171,7 @@ const AttendanceProgress: React.FC = () => {
                 cy="50"
               />
               <circle
-                className={`${getColorClass(percentage)} stroke-current`}
+                className={`${getColorClass(percentage)}`}
                 strokeWidth="10"
                 strokeDasharray={`${2 * Math.PI * 40}`}
                 strokeDashoffset={`${2 * Math.PI * 40 * (1 - percentage / 100)}`}
@@ -182,6 +181,7 @@ const AttendanceProgress: React.FC = () => {
                 cx="50"
                 cy="50"
               />
+
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-lg font-bold text-gray-800 dark:text-white">{percentage}%</span>
