@@ -51,6 +51,7 @@ export interface CreateEmployeeData {
   subDepartmentId: string;
   workLocation: string;
   roleId: string;
+  subRoleId: string;
   address: string;
   salary: number;
   skills: string[];
@@ -240,6 +241,7 @@ export const createEmployee = async (employeeData: CreateEmployeeData): Promise<
         dateOfBirth: employeeData.dateOfBirth,
         joiningDate: employeeData.joiningDate,
         roleId: employeeData.roleId,
+        subRoleId: employeeData.subRoleId,
         // Only include these two if you're sending FormData or handling file uploads properly
         // profileImage: employeeData.profileImage,
         // documents: employeeData.documents,

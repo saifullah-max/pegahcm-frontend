@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { getShiftById, updateShift } from '../../services/ShiftService';
+import { getShiftById, updateShift } from '../../../services/ShiftService';
 
 interface ShiftData {
   id: string;

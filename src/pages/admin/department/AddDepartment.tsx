@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Building2 } from 'lucide-react';
-import { createDepartment } from '../../services/departmentService';
+import { createDepartment } from '../../../services/departmentService';
 
 const AddDepartment: React.FC = () => {
   const navigate = useNavigate();

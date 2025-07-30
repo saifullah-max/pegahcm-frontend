@@ -4,6 +4,13 @@ export interface Role {
   description?: string;
   permissions?: string[];
 }
+export interface subRole {
+  id: string;
+  name: string;
+  description?: string;
+  permissions?: string[];
+}
+
 
 interface RoleResponse {
   success: boolean;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
-import { deleteEmployee, Employee, getEmployees } from "../../services/employeeService";
-import { getEmployeeHours } from "../../services/userService";
+import { deleteEmployee, Employee, getEmployees } from "../../../services/employeeService";
+import { getEmployeeHours } from "../../../services/userService";
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

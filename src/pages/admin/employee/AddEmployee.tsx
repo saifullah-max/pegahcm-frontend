@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData } from '../../services/employeeService';
-import { getShifts } from '../../services/ShiftService';
-import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
+import { createEmployee, CreateEmployeeData } from '../../../services/employeeService';
+import { getShifts } from '../../../services/ShiftService';
+import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
   registerUser,
   RegisterUserData,
   ValidationError,
   RegistrationError
-} from '../../services/registerService';
-import { getRoles, Role } from '../../services/roleService';
+} from '../../../services/registerService';
+import { getRoles, Role } from '../../../services/roleService';
+import { getAllSubRoles, SubRole } from '../../../services/permissionService';
 
 interface Shift {
   id: string;
@@ -49,6 +50,7 @@ interface EmployeeFormData {
   profileImage?: File;
   shiftId?: string;
   role: string;
+  subRole: string;
 }
 
 const AddEmployee: React.FC = () => {
@@ -76,6 +78,7 @@ const AddEmployee: React.FC = () => {
     workLocation: 'Onsite',
     shiftId: '',
     role: 'employee',
+    subRole: 'teamMember'
   });
 
   const [loading, setLoading] = useState(false);
@@ -90,7 +93,9 @@ const AddEmployee: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [registering, setRegistering] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [subRole, setSubRole] = useState<SubRole[]>();
   const [rolesLoading, setRolesLoading] = useState(false);
+  const [subRolesLoading, setSubRolesLoading] = useState(false);
 
   useEffect(() => {
     const fetchShifts = async () => {
@@ -129,9 +134,22 @@ const AddEmployee: React.FC = () => {
       }
     };
 
+    const fetchSubRoles = async () => {
+      setSubRolesLoading(true);
+      try {
+        const rolesData = await getAllSubRoles();
+        setSubRole(rolesData);
+      } catch (error) {
+        // Handle error appropriately
+      } finally {
+        setSubRolesLoading(false);
+      }
+    }
+
     fetchShifts();
     fetchDepartments();
     fetchRoles();
+    fetchSubRoles()
   }, []);
 
   // Fetch sub-departments when department changes
@@ -284,6 +302,7 @@ const AddEmployee: React.FC = () => {
         address: newEmployee.address,
         fatherName: newEmployee.fatherName,
         roleId: newEmployee.role,
+        subRoleId: newEmployee.subRole,
         departmentId: newEmployee.department,
         subDepartmentId: newEmployee.subDepartment,
         designation: newEmployee.designation,
@@ -508,6 +527,34 @@ const AddEmployee: React.FC = () => {
               )}
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 This will determine what permissions the user has in the system.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
+              <select
+                name="subRole"
+                value={newEmployee.subRole}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                required
+              >
+                <option value="">Select Sub-Role</option>
+                {rolesLoading ? (
+                  <option disabled>Loading sub-roles...</option>
+                ) : (
+                  subRole && subRole.length > 0 ? subRole.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  )) : <option value="teamMember">Team-Member</option>
+                )}
+              </select>
+              {getFieldError('subRole') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
+              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                This will determine what permissions the sub-user has in the system.
               </p>
             </div>
 

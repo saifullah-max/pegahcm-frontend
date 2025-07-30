@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
 // import { createLeaveType } from '../../services/LeaveService'; // <-- you’ll need to implement this
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { createLeaveType } from '../../services/attendanceService';
+import { RootState } from '../../../../store';
+import { createLeaveType } from '../../../../services/attendanceService';
 
 const AddLeaveType: React.FC = () => {
     const navigate = useNavigate();

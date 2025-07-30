@@ -9,7 +9,7 @@ import {
   getAllSubDepartments,
   Department,
   SubDepartment,
-} from '../../services/departmentService';
+} from '../../../services/departmentService';
 
 const EditDepartment: React.FC = () => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Delete, Edit, Plus, TrashIcon } from "lucide-react";
-import { getDepartments, deleteDepartment } from "../../services/departmentService";
+import { getDepartments, deleteDepartment } from "../../../services/departmentService";
 
 const Departments: React.FC = () => {
     const [departments, setDepartments] = useState<any[]>([]);
