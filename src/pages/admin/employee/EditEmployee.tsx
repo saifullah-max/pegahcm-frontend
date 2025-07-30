@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../services/employeeService';
-import { getShifts } from '../../services/ShiftService';
-import { getDepartments, Department, SubDepartment } from '../../services/departmentService';
+import { createEmployee, CreateEmployeeData, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../../services/employeeService';
+import { getShifts } from '../../../services/ShiftService';
+import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
     registerUser,
     RegisterUserData,
     ValidationError,
     RegistrationError,
     UpdateUserData
-} from '../../services/registerService';
-import { getRoles, Role } from '../../services/roleService';
+} from '../../../services/registerService';
+import { getRoles, Role } from '../../../services/roleService';
 
 interface Shift {
     id: string;

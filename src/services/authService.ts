@@ -3,16 +3,22 @@ interface LoginCredentials {
   password: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
+  success: boolean;
   data: {
-    token: string;
     user: {
       id: string;
+      username: string;
       email: string;
-      name: string;
+      fullName: string;
+      role: string;
+      status: string;
+      employee: any;
     };
+    token: string;
   };
 }
+
 
 export const loginUser = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   try {

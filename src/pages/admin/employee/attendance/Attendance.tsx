@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, ClockFading, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLeaveRequest, getAllAdminLeaveRequests, updateLeaveStatus } from '../../services/attendanceService';
+import { AdminLeaveRequest, getAllAdminLeaveRequests, updateLeaveStatus } from '../../../../services/attendanceService';
 
 interface LeaveRequest {
   id: string;
