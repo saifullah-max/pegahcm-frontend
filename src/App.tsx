@@ -6,21 +6,21 @@ import Dashboard from './pages/admin/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
 import UserLayout from './layouts/UserLayout';
-import Employees from './pages/admin/Employees';
-import AddEmployee from './pages/admin/AddEmployee';
-import Attendance from './pages/admin/Attendance';
+import Employees from './pages/admin/employee/Employees';
+import AddEmployee from './pages/admin/employee/AddEmployee';
+import Attendance from './pages/admin/employee/attendance/Attendance';
 import UserDashboard from './pages/user/UserDashboard';
 import UserAttendance from './pages/user/UserAttendance';
 import ThemeProvider from './components/ThemeProvider';
 import ForgotPassword from './pages/auth/ForgotPassword';
-import Shifts from './pages/admin/Shifts';
-import AddShifts from './pages/admin/AddSifts';
-import EditShift from './pages/admin/EditShift';
-import Departments from './pages/admin/Departments';
-import AddDepartment from './pages/admin/AddDepartment';
-import EditDepartment from './pages/admin/EditDepartment';
-import EditEmployee from './pages/admin/EditEmployee';
-import AddLeaveType from './pages/admin/AddLeaveType';
+import Shifts from './pages/admin/shifts/Shifts';
+import AddShifts from './pages/admin/shifts/AddSifts';
+import EditShift from './pages/admin/shifts/EditShift';
+import Departments from './pages/admin/department/Departments';
+import AddDepartment from './pages/admin/department/AddDepartment';
+import EditDepartment from './pages/admin/department/EditDepartment';
+import EditEmployee from './pages/admin/employee/EditEmployee';
+import AddLeaveType from './pages/admin/employee/attendance/AddLeaveType';
 import HRDashboard from './pages/hr/HRDashboard';
 import HRLayout from './layouts/HRLayout';
 import Employees_HR from './pages/hr/Employees';
@@ -34,6 +34,10 @@ import UserResignation from './pages/user/UserResignation';
 import ResignationForm from './pages/user/ResignationForm';
 import Resignations from './pages/hr/Resignations';
 import EditResignations from './pages/user/EditResignations';
+import AddPermission from './pages/admin/AddPermission';
+import AddUserPermission from './pages/admin/employee/permissions/AddUserPermission';
+import Permission from './pages/admin/employee/permissions/Permission';
+import AssignSubRolePermissions from './pages/admin/employee/permissions/AddUserPermission';
 
 function App() {
   return (
@@ -59,6 +63,9 @@ function App() {
                 <Route path="admin/departments" element={<Departments />} />
                 <Route path="admin/add-department" element={<AddDepartment />} />
                 <Route path="admin/edit-department/:id" element={<EditDepartment />} />
+                <Route path='admin/permission' element={<Permission />} />
+                <Route path='admin/add-permission' element={<AddPermission />} />
+                <Route path='/admin/user-permission' element={<AssignSubRolePermissions />} />
               </Route>
             </Route>
 

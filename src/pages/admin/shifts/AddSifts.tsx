@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createShift } from '../../services/ShiftService';
+import { createShift } from '../../../services/ShiftService';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { RootState } from '../../../store';
 
 const AddShifts: React.FC = () => {
   const navigate = useNavigate();

@@ -1,10 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface User {
+export interface User {
   id: string;
+  username: string;
   email: string;
-  name: string;
-  role: 'admin' | 'user' | 'hr' | string; // add other roles as needed
+  fullName: string;
+  role: string;         // ✅ important
+  status: string;
+  employee: any;        // or type `Employee` if you have it defined
 }
 
 interface AuthState {

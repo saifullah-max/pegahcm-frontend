@@ -36,4 +36,4 @@ export type RootState = ReturnType<typeof rootReducer> & {
   _persist: { version: number; rehydrated: boolean }
 };
 
-export type AppDispatch = typeof store.dispatch; 
+export type AppDispatch = typeof store.dispatch;  

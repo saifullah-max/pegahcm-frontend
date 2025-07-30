@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarSync, Delete, Edit, Plus, TrashIcon } from "lucide-react";
-import { getShifts, deleteShift } from "../../services/ShiftService";
+import { getShifts, deleteShift } from "../../../services/ShiftService";
 
 
 const Shifts: React.FC = () => {

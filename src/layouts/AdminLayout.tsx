@@ -74,6 +74,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/admin/departments' });
     navigate('/admin/departments');
   };
+  const handlePermissionsClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/admin/permission' });
+    navigate('/admin/permission');
+  };
 
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
@@ -108,6 +112,9 @@ const AdminLayout = () => {
             </li>
             <li onClick={handleDepartmentsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
               <Building2 className='inline-block mr-2' />Departments
+            </li>
+            <li onClick={handlePermissionsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
+              <Building2 className='inline-block mr-2' />Manage Permissions
             </li>
           </ul>
         </nav>
