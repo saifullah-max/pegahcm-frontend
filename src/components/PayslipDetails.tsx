@@ -37,7 +37,7 @@ const PayslipDetails: React.FC = () => {
     const auth = JSON.parse(root.auth);
 
     // Now access the deeply nested employee ID
-    const employeeId = auth.user.employee.id;
+    const employeeId = auth.user.employee;
 
     console.log(employeeId); // ➤ ca3f5441-b1d6-4841-8fd2-fef76ad1bbb5
     const res = async () => {

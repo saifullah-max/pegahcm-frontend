@@ -27,17 +27,19 @@ import Employees_HR from './pages/hr/Employees';
 import Attendance_HR from './pages/hr/Attendance';
 import Departments_HR from './pages/hr/Departments';
 import EditDepartment_HR from './pages/hr/EditDepartment';
-import OnBoardingProcess from './pages/hr/OnBoardingProcess';
-import OnboardingForm from './pages/hr/OnBoardingForm';
-import EditOnboardingForm from './pages/hr/EditOnBoarding';
+import OnBoardingProcess from './pages/admin/onboarding/OnBoardingProcess';
+import OnboardingForm from './pages/admin/onboarding/OnBoardingForm';
+import EditOnboardingForm from './pages/admin/onboarding/EditOnBoarding';
 import UserResignation from './pages/user/UserResignation';
 import ResignationForm from './pages/user/ResignationForm';
 import Resignations from './pages/hr/Resignations';
 import EditResignations from './pages/user/EditResignations';
-import AddPermission from './pages/admin/AddPermission';
-import AddUserPermission from './pages/admin/employee/permissions/AddUserPermission';
+import AddPermission from './pages/admin/employee/permissions/AddPermission';
 import Permission from './pages/admin/employee/permissions/Permission';
 import AssignSubRolePermissions from './pages/admin/employee/permissions/AddUserPermission';
+import SubRoleManagement from './pages/admin/employee/sub-role-management/SubRoleManagement';
+import CreateSubRole from './pages/admin/employee/sub-role-management/CreateSubRole';
+import EditUserPermission from './pages/admin/employee/sub-role-management/EditUserPermission';
 
 function App() {
   return (
@@ -55,7 +57,7 @@ function App() {
                 <Route path="admin/employees" element={<Employees />} />
                 <Route path="admin/attendance" element={<Attendance />} />
                 <Route path='admin/add-leave-type' element={<AddLeaveType />} />
-                <Route path="admin/add-employee" element={<AddEmployee />} />
+                <Route path="/admin/add-employee" element={<AddEmployee />} />
                 <Route path='admin/edit-employee/:id' element={<EditEmployee />} />
                 <Route path="admin/shifts" element={<Shifts />} />
                 <Route path="admin/add-shifts" element={<AddShifts />} />
@@ -66,22 +68,26 @@ function App() {
                 <Route path='admin/permission' element={<Permission />} />
                 <Route path='admin/add-permission' element={<AddPermission />} />
                 <Route path='/admin/user-permission' element={<AssignSubRolePermissions />} />
+                <Route path='/admin/subrole-management' element={<SubRoleManagement />} />
+                <Route path='/admin/sub-role/create' element={<CreateSubRole />} />
+                <Route path='/admin/sub-role/edit/:id' element={<EditUserPermission />} />
+                <Route path='/admin/onboarding' element={<OnBoardingProcess />} />
+                <Route path='/admin/onboarding/create' element={<OnboardingForm />} />
+                <Route path='/admin/onboarding/edit/:id' element={<EditOnboardingForm />} />
               </Route>
             </Route>
 
             {/* HR Routes */}
+
+            <Route element={<HRLayout />}>
+              <Route path='/hr/dashboard' element={<HRDashboard />} />
+              <Route path='/hr/employees' element={<Employees_HR />} />
+              <Route path='/hr/attendance' element={<Attendance_HR />} />
+              <Route path='/hr/departments' element={<Departments_HR />} />
+              <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
+              <Route path='/hr/resignations' element={<Resignations />} />
+            </Route>
             <Route element={<ProtectedRoute allowedRole="hr" />}>
-              <Route element={<HRLayout />}>
-                <Route path='/hr/dashboard' element={<HRDashboard />} />
-                <Route path='/hr/employees' element={<Employees_HR />} />
-                <Route path='/hr/attendance' element={<Attendance_HR />} />
-                <Route path='/hr/departments' element={<Departments_HR />} />
-                <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
-                <Route path='/hr/onboarding' element={<OnBoardingProcess />} />
-                <Route path='/hr/onboarding/create' element={<OnboardingForm />} />
-                <Route path='/hr/onboarding/edit/:id' element={<EditOnboardingForm />} />
-                <Route path='/hr/resignations' element={<Resignations />} />
-              </Route>
             </Route>
 
             {/* User Routes */}

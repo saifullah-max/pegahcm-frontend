@@ -38,13 +38,16 @@ const Login = () => {
       const response = await loginUser({ email, password });
       console.log('Login response:', response);
       dispatch(setCredentials({
-        user: response.data.user,
+        user: {
+          ...response.data.user,
+          subRole: response.data.user.subRole
+        },
         token: response.data.token
       }));
 
       // Always store token in localStorage for API calls
       localStorage.setItem('token', response.data.token);
-      
+
       // Handle remember me for email only
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
@@ -53,7 +56,7 @@ const Login = () => {
       }
 
       navigate('/admin/dashboard');
-      
+
     } catch (error) {
       setError('Invalid email or password');
     } finally {
@@ -75,7 +78,7 @@ const Login = () => {
           <Moon className="h-5 w-5" />
         )}
       </button>
-      
+
       <div className="max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-semibold text-white mb-2">PegaHCM</h1>
@@ -142,9 +145,9 @@ const Login = () => {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
               <div className="text-sm">
-                <a href="#" 
+                <a href="#"
                   onClick={() => navigate('/forgot-password')}
-                    className="font-medium text-blue-500 hover:text-blue-600 flex justify-center mt-2">
+                  className="font-medium text-blue-500 hover:text-blue-600 flex justify-center mt-2">
                   Forgot your password?
                 </a>
               </div>
