@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ClockFading, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAllOnboardingProcesses, deleteOnboardingProcess, OnboardingProcess } from '../../services/hrService';
+import { fetchAllOnboardingProcesses, deleteOnboardingProcess, OnboardingProcess } from '../../../services/hrService';
 
 const OnBoardingProcess: React.FC = () => {
     const navigate = useNavigate();
@@ -25,11 +25,11 @@ const OnBoardingProcess: React.FC = () => {
     }, []);
 
     const handleNavigateToAddOnboarding = () => {
-        navigate("/hr/onboarding/create");
+        navigate("/admin/onboarding/create");
     };
 
     const handleEdit = (id: string) => {
-        navigate(`/hr/onboarding/edit/${id}`);
+        navigate(`/admin/onboarding/edit/${id}`);
     };
 
     const handleDelete = async (id: string) => {

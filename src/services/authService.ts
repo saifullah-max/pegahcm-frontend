@@ -11,13 +11,19 @@ export interface LoginResponse {
       username: string;
       email: string;
       fullName: string;
-      role: string;
+      role: 'admin' | 'user';
+      subRole: {
+        id: string;
+        name: string;
+        permissions: any[]; // or more specific
+      } | null;
       status: string;
       employee: any;
     };
     token: string;
   };
 }
+
 
 
 export const loginUser = async (credentials: LoginCredentials): Promise<LoginResponse> => {
