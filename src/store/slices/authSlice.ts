@@ -1,15 +1,22 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Employee } from '../../services/employeeService';
 
-export interface User {
+interface SubRole {
   id: string;
-  username: string;
-  email: string;
-  fullName: string;
-  role: string;         // ✅ important
-  status: string;
-  employee: any;        // or type `Employee` if you have it defined
+  name: string;
+  description?: string;
 }
 
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  fullName: string;
+  role: 'admin' | 'user';
+  status: string;
+  subRole?: SubRole | null;
+  employee?: Employee;
+}
 interface AuthState {
   user: User | null;
   token: string | null;

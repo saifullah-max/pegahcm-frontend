@@ -11,7 +11,8 @@ import {
   RegistrationError
 } from '../../../services/registerService';
 import { getRoles, Role } from '../../../services/roleService';
-import { getAllSubRoles, SubRole } from '../../../services/permissionService';
+import { SubRole } from '../../../services/permissionService';
+import { getAllSubRoles } from '../../../services/subRoleService' 
 
 interface Shift {
   id: string;
