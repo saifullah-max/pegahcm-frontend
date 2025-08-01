@@ -162,10 +162,18 @@ const AttendanceMarker: React.FC = () => {
 
   const handleStartBreak = async (breakType: string) => {
     try {
+      if (isCheckedOut) {
+        setErrorMessage("You cannot start a break after checking out.");
+        setTimeout(() => setErrorMessage(null), 5000);
+        return;
+      }
+
+
       if (isOnBreak) {
         setErrorMessage("You are already on a break.");
         return;
       }
+
       await startBreak(breakType);
       setIsOnBreak(true);
       setCurrentBreakType(breakType);
@@ -175,6 +183,7 @@ const AttendanceMarker: React.FC = () => {
       console.error("Failed to start break", error);
     }
   };
+
 
   const handleEndBreak = async () => {
     try {
