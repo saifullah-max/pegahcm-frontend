@@ -5,10 +5,12 @@ import {
     deleteResignation,
     Resignation,
     updateClearanceAndAssetStatus,
-} from '../../services/resignationService';
-import { CheckCircle, XCircle, Pencil, Trash2 } from 'lucide-react';
+} from '../../../services/resignationService';
+import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Resignations = () => {
+    const navigate = useNavigate();
     const [resignations, setResignations] = useState<Resignation[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
@@ -19,6 +21,10 @@ const Resignations = () => {
     const [assetReturnStatus, setAssetReturnStatus] = useState('');
     const [status, setStatus] = useState('');
     const [remarks, setRemarks] = useState('');
+
+    useEffect(() => {
+        fetchResignations();
+    }, []);
 
     const fetchResignations = async () => {
         try {
@@ -31,10 +37,6 @@ const Resignations = () => {
         }
     };
 
-    useEffect(() => {
-        fetchResignations();
-    }, []);
-
     const getProcessedById = (): string | null => {
         try {
             const persistedRoot = localStorage.getItem('persist:root');
@@ -44,7 +46,7 @@ const Resignations = () => {
             const auth = JSON.parse(parsedRoot.auth);
             return auth?.user?.id ?? null;
         } catch (err) {
-            console.error('Failed to extract processedById from persist:root:', err);
+            console.error('Failed to extract processedById:', err);
             return null;
         }
     };
@@ -108,20 +110,41 @@ const Resignations = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (resignations.length === 0) return <div>No resignations found.</div>;
+    if (loading) return <div className="p-6 text-center">Loading...</div>;
 
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Resignation Requests</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition"
+                        title="Back"
+                    >
+                        <ArrowLeft size={22} />
+                    </button>
+                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                        Resignation Requests
+                    </h2>
+                </div>
+                <button
+                    onClick={() => navigate('/admin/user/resignation')}
+                    className="text-white px-4 py-2 rounded-lg flex items-center gap-2 bg-[#255199] hover:bg-[#2F66C1]"
+                >
+                    <Plus size={16} /> User Resignation Page
+                </button>
+            </div>
+
+            {/* Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {resignations.map((resignation) => {
                     const statusColor =
                         resignation.status === 'Approved'
                             ? 'border-green-500'
                             : resignation.status === 'Rejected'
                                 ? 'border-red-500'
-                                : 'border-gray-300 dark:border-gray-600';
+                                : 'border-yellow-500';
 
                     const statusBg =
                         resignation.status === 'Approved'
@@ -133,20 +156,22 @@ const Resignations = () => {
                     return (
                         <div
                             key={resignation.id}
-                            className={`border-l-4 ${statusColor} rounded-lg p-5 shadow-md bg-white dark:bg-gray-800 transition-all relative`}
+                            className={`relative border-l-4 ${statusColor} rounded-lg p-5 shadow-md bg-white dark:bg-gray-800`}
                         >
+                            {/* Actions */}
                             <div className="absolute top-2 right-2 flex gap-2">
                                 <button onClick={() => handleEditClick(resignation)} title="Edit">
-                                    <Pencil className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition" size={18} />
+                                    <Pencil className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" size={18} />
                                 </button>
                                 <button onClick={() => handleDelete(resignation.id)} title="Delete">
-                                    <Trash2 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition" size={18} />
+                                    <Trash2 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" size={18} />
                                 </button>
                             </div>
 
-                            <div className="mb-2 space-y-1 text-sm text-gray-800 dark:text-gray-200">
+                            {/* Info */}
+                            <div className="text-sm space-y-1 text-gray-800 dark:text-gray-100">
                                 <p><strong>Employee ID:</strong> {resignation.employeeId}</p>
-                                <p><strong>Employee Name:</strong> {resignation.employee.user.fullName}</p>
+                                <p><strong>Name:</strong> {resignation.employee.user.fullName}</p>
                                 <p><strong>Resignation Date:</strong> {new Date(resignation.resignationDate).toLocaleDateString()}</p>
                                 <p><strong>Last Working Day:</strong> {new Date(resignation.lastWorkingDay).toLocaleDateString()}</p>
                                 <p><strong>Reason:</strong> {resignation.reason}</p>
@@ -167,17 +192,18 @@ const Resignations = () => {
                                 )}
                             </div>
 
+                            {/* Actions */}
                             {resignation.status === 'Pending' && (
                                 <div className="flex gap-3 mt-4">
                                     <button
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-100 transition"
+                                        className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-100"
                                         onClick={() => handleDecision(resignation.id, 'Approved')}
                                         disabled={processingId === resignation.id}
                                     >
                                         <CheckCircle size={18} /> Approve
                                     </button>
                                     <button
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-100 transition"
+                                        className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-100"
                                         onClick={() => handleDecision(resignation.id, 'Rejected')}
                                         disabled={processingId === resignation.id}
                                     >
@@ -190,15 +216,16 @@ const Resignations = () => {
                 })}
             </div>
 
-            {/* Modal */}
+            {/* Edit Modal */}
             {editModalOpen && selectedResignation && (
-                <div className="fixed inset-0 bg-black/40 dark:bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-                    <div className="bg-white dark:bg-gray-900 dark:text-gray-100 border dark:border-gray-700 p-6 rounded-lg w-full max-w-md shadow-xl transition-all space-y-4">
-                        <h3 className="text-lg font-bold">Update Status</h3>
-                        <div>
-                            <label className="block mb-1">Resignation Status</label>
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-white dark:bg-gray-900 dark:text-gray-100 p-6 rounded-lg w-full max-w-md shadow-xl space-y-4">
+                        <h3 className="text-lg font-bold">Update Resignation Status</h3>
+
+                        <div className="space-y-2">
+                            <label>Status</label>
                             <select
-                                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                                className="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800 dark:border-gray-700"
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
                             >
@@ -206,12 +233,10 @@ const Resignations = () => {
                                 <option value="Approved">Approved</option>
                                 <option value="Rejected">Rejected</option>
                             </select>
-                        </div>
 
-                        <div>
-                            <label className="block mb-1">Clearance Status</label>
+                            <label>Clearance Status</label>
                             <select
-                                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                                className="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800 dark:border-gray-700"
                                 value={clearanceStatus}
                                 onChange={(e) => setClearanceStatus(e.target.value)}
                             >
@@ -219,12 +244,10 @@ const Resignations = () => {
                                 <option value="InProgress">In Progress</option>
                                 <option value="Cleared">Cleared</option>
                             </select>
-                        </div>
 
-                        <div>
-                            <label className="block mb-1">Asset Return Status</label>
+                            <label>Asset Return Status</label>
                             <select
-                                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                                className="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800 dark:border-gray-700"
                                 value={assetReturnStatus}
                                 onChange={(e) => setAssetReturnStatus(e.target.value)}
                             >
@@ -232,12 +255,10 @@ const Resignations = () => {
                                 <option value="PartiallyReturned">Partially Returned</option>
                                 <option value="Returned">Returned</option>
                             </select>
-                        </div>
 
-                        <div>
-                            <label className="block mb-1">Remarks (Optional)</label>
+                            <label>Remarks</label>
                             <textarea
-                                className="w-full border rounded px-3 py-2 resize-none bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                                className="w-full border rounded px-3 py-2 resize-none bg-gray-100 dark:bg-gray-800 dark:border-gray-700"
                                 rows={3}
                                 value={remarks}
                                 onChange={(e) => setRemarks(e.target.value)}
@@ -252,7 +273,7 @@ const Resignations = () => {
                                 Cancel
                             </button>
                             <button
-                                className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1] flex items-center gap-1"
+                                className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1]"
                                 onClick={handleUpdate}
                             >
                                 Update

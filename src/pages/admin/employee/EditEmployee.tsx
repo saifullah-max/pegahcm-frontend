@@ -12,6 +12,8 @@ import {
     UpdateUserData
 } from '../../../services/registerService';
 import { getRoles, Role } from '../../../services/roleService';
+import { SubRole } from '../../../services/permissionService';
+import { getAllSubRoles } from '../../../services/subRoleService';
 
 interface Shift {
     id: string;
@@ -50,6 +52,7 @@ interface EmployeeFormData {
     profileImage?: File;
     shiftId?: string;
     role: string;
+    subRole: string;
     shift: string;
 }
 
@@ -78,6 +81,7 @@ const EditEmployee: React.FC = () => {
         workLocation: 'Onsite',
         shiftId: '',
         role: 'employee',
+        subRole: 'teamMember',
         shift: ''
     });
 
@@ -94,6 +98,8 @@ const EditEmployee: React.FC = () => {
     const [registering, setRegistering] = useState(false);
     const [roles, setRoles] = useState<Role[]>([]);
     const [rolesLoading, setRolesLoading] = useState(false);
+    const [subRole, setSubRole] = useState<SubRole[]>();
+    const [subRolesLoading, setSubRolesLoading] = useState(false);
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -131,7 +137,18 @@ const EditEmployee: React.FC = () => {
                 setRolesLoading(false);
             }
         };
-
+        const fetchSubRoles = async () => {
+            setSubRolesLoading(true);
+            try {
+                const rolesData = await getAllSubRoles();
+                setSubRole(rolesData);
+            } catch (error) {
+                // Handle error appropriately
+            } finally {
+                setSubRolesLoading(false);
+            }
+        }
+        fetchSubRoles()
         fetchShifts();
         fetchDepartments();
         fetchRoles();
@@ -177,6 +194,8 @@ const EditEmployee: React.FC = () => {
                 shiftId: employee.shiftId || '',
                 shift: shift,
                 role: user.roleId || 'employee',
+                subRole: user.subRoleId || 'teamMember'
+
             });
 
         } catch (error) {
@@ -578,6 +597,34 @@ const EditEmployee: React.FC = () => {
                             )}
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 This will determine what permissions the user has in the system.
+                            </p>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
+                            <select
+                                name="subRole"
+                                value={newEmployee.subRole}
+                                onChange={handleInputChange}
+                                className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                                required
+                            >
+                                <option value="">Select Sub-Role</option>
+                                {rolesLoading ? (
+                                    <option disabled>Loading sub-roles...</option>
+                                ) : (
+                                    subRole && subRole.length > 0 ? subRole.map((role) => (
+                                        <option key={role.id} value={role.id}>
+                                            {role.name}
+                                        </option>
+                                    )) : <option value="teamMember">Team-Member</option>
+                                )}
+                            </select>
+                            {getFieldError('subRole') && (
+                                <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
+                            )}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                This will determine what permissions the sub-user has in the system.
                             </p>
                         </div>
 

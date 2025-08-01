@@ -14,6 +14,7 @@ import {
 import { getEmployeeById } from '../services/userService';
 import { getShifts } from '../services/ShiftService';
 import { getDepartments } from '../services/departmentService';
+import { useSelector } from "react-redux";
 
 const statusColors = {
   active: 'bg-emerald-500',
@@ -24,6 +25,7 @@ const statusColors = {
 type StatusKey = keyof typeof statusColors;
 
 const UserInfo: React.FC = () => {
+  const userId = useSelector((state: any) => state.auth?.user?.id);
   const [employee, setEmployee] = useState<any>(null);
   const [shifts, setShifts] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -33,11 +35,7 @@ const UserInfo: React.FC = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const decoded = JSON.parse(atob(token.split('.')[1]));
-        const userId = decoded.userId || decoded.id;
-
+        console.log(userId);
         const { user, employee } = await getEmployeeById(userId);
         const allShifts = await getShifts();
         const allDepartments = await getDepartments();

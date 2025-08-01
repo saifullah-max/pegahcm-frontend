@@ -1,33 +1,30 @@
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
-import { RootState } from '../store';
 
-interface ProtectedRouteProps {
-  allowedRole: string;
-}
+const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
+  const { user, isAuthHydrated } = useSelector((state: any) => state.auth);
 
-const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, token, user } = useSelector((state: RootState) => state.auth);
+  // ✅ Optional: Console logs for debugging
+  console.log("✅ ProtectedRoute: user =", user);
+  console.log("✅ ProtectedRoute: isAuthHydrated =", isAuthHydrated);
 
-  // Fallback check in case Redux state is lost on refresh
-  const localStorageToken = localStorage.getItem('token');
-  const isUserAuthenticated = isAuthenticated || !!localStorageToken;
+  // 🕓 Wait until auth is fully loaded
+  if (!isAuthHydrated) {
+    return <div>Loading...</div>; // or use a Spinner component
+  }
 
-  if (!isUserAuthenticated) {
+  // 🔐 If no user, redirect to login
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Now check role
-  if (!user || user.role !== allowedRole) {
-    // Redirect to their respective dashboard or unauthorized page
-    console.log("user:", user);
-    if (user?.role === 'admin') {
-      return <Navigate to="admin/dashboard" replace />;
-    } else if (user?.role === 'user') {
-      return <Navigate to="/user/user-dashboard" replace />;
-    } else {
-      return <Navigate to="/login" replace />;
-    }
+  // ✅ Check both role and subRole.name for access
+  const hasRoleAccess =
+    allowedRoles.includes(user.role) ||
+    (user.subRole?.name && allowedRoles.includes(user.subRole.name));
+
+  if (!hasRoleAccess) {
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

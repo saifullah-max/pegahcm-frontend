@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { getEmployeeById } from '../services/employeeService';
+import { useSelector } from 'react-redux';
 
 const PayslipDetails: React.FC = () => {
+  const employeeID = useSelector((state: any) => state.auth?.user?.employee?.id);
   const [showDetails, setShowDetails] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('May 2025');
 
@@ -31,17 +33,9 @@ const PayslipDetails: React.FC = () => {
   };
 
   useEffect(() => {
-    const root = JSON.parse(localStorage.getItem("persist:root")!);
-
-    // Parse the stringified "auth" object
-    const auth = JSON.parse(root.auth);
-
-    // Now access the deeply nested employee ID
-    const employeeId = auth.user.employee;
-
-    console.log(employeeId); // ➤ ca3f5441-b1d6-4841-8fd2-fef76ad1bbb5
+    console.log(employeeID); // ➤ ca3f5441-b1d6-4841-8fd2-fef76ad1bbb5
     const res = async () => {
-      const fetchSalary = await getEmployeeById(employeeId);
+      const fetchSalary = await getEmployeeById(employeeID);
 
       console.log("Emp data:", fetchSalary);
     }
