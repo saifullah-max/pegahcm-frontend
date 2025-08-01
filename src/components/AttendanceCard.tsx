@@ -249,10 +249,10 @@ const getBarHeight = (hour: number) => (hour / 24) * 100;
                         <StatBox label="Present" value={attendanceStats.present} color="green" />
                     </div>
                     <div className="min-w-0">
-                        <StatBox label="red" value={attendanceStats.absent} color="red" />
+                        <StatBox label="absent" value={attendanceStats.absent} color="red" />
                     </div>
                     <div className="min-w-0">
-                        <StatBox label="absent" value={attendanceStats.late} color="yellow" />
+                        <StatBox label="late" value={attendanceStats.late} color="yellow" />
                     </div>
                     <div className="min-w-0">
                         <StatBox label="leave" value={attendanceStats.leave} color="blue" />
