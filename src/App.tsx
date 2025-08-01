@@ -30,30 +30,33 @@ import EditDepartment_HR from './pages/hr/EditDepartment';
 import OnBoardingProcess from './pages/admin/onboarding/OnBoardingProcess';
 import OnboardingForm from './pages/admin/onboarding/OnBoardingForm';
 import EditOnboardingForm from './pages/admin/onboarding/EditOnBoarding';
-import UserResignation from './pages/user/UserResignation';
-import ResignationForm from './pages/user/ResignationForm';
-import Resignations from './pages/hr/Resignations';
-import EditResignations from './pages/user/EditResignations';
+import UserResignation from './pages/admin/resignation/user-resignation/UserResignation';
+import ResignationForm from './pages/admin/resignation/user-resignation/ResignationForm';
+import Resignations from './pages/admin/resignation/Resignations';
+import EditResignations from './pages/admin/resignation/user-resignation/EditResignations';
 import AddPermission from './pages/admin/employee/permissions/AddPermission';
 import Permission from './pages/admin/employee/permissions/Permission';
 import AssignSubRolePermissions from './pages/admin/employee/permissions/AddUserPermission';
 import SubRoleManagement from './pages/admin/employee/sub-role-management/SubRoleManagement';
 import CreateSubRole from './pages/admin/employee/sub-role-management/CreateSubRole';
 import EditUserPermission from './pages/admin/employee/sub-role-management/EditUserPermission';
+import AuthInitializer from './store/slices/AuthInitilizer';
+import AssignUserPermissions from './pages/admin/employee/permissions/AssignUserPermissions';
 
 function App() {
   return (
     <Provider store={store}>
       <ThemeProvider>
+        <AuthInitializer />
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Admin Routes */}
-            <Route element={<ProtectedRoute allowedRole="admin" />}>
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route element={<AdminLayout />}>
-                <Route path="admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/dashboard" element={<Dashboard />} />
                 <Route path="admin/employees" element={<Employees />} />
                 <Route path="admin/attendance" element={<Attendance />} />
                 <Route path='admin/add-leave-type' element={<AddLeaveType />} />
@@ -74,6 +77,23 @@ function App() {
                 <Route path='/admin/onboarding' element={<OnBoardingProcess />} />
                 <Route path='/admin/onboarding/create' element={<OnboardingForm />} />
                 <Route path='/admin/onboarding/edit/:id' element={<EditOnboardingForm />} />
+                <Route path='/admin/resignations' element={<Resignations />} />
+                <Route path='/admin/user/resignation' element={<UserResignation />} />
+                <Route path='/admin/user/resignation-form' element={<ResignationForm />} />
+                <Route path='/admin/user/edit-resignation/:id' element={<EditResignations />} />
+                <Route path='/admin/manage-permissions/:userId' element={<AssignUserPermissions />} />
+                {/* <Route element={<UserLayout />}>
+                  <Route path="/user/user-dashboard" element={<UserDashboard />} />
+                  <Route path="/user/user-attendance" element={<UserAttendance />} />
+
+                </Route> */}
+              </Route>
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'user']} key='user' />}>
+              <Route element={<UserLayout />}>
+                <Route path="/user/user-dashboard" element={<UserDashboard />} />
+                <Route path="/user/user-attendance" element={<UserAttendance />} />
               </Route>
             </Route>
 
@@ -85,21 +105,15 @@ function App() {
               <Route path='/hr/attendance' element={<Attendance_HR />} />
               <Route path='/hr/departments' element={<Departments_HR />} />
               <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
-              <Route path='/hr/resignations' element={<Resignations />} />
+
             </Route>
-            <Route element={<ProtectedRoute allowedRole="hr" />}>
-            </Route>
+            {/* <Route element={<ProtectedRoute allowedRole="hr" />}>
+            </Route> */}
 
             {/* User Routes */}
-            <Route element={<ProtectedRoute allowedRole="user" />}>
-              <Route element={<UserLayout />}>
-                <Route path="user/user-dashboard" element={<UserDashboard />} />
-                <Route path="user/user-attendance" element={<UserAttendance />} />
-                <Route path='/user/resignation' element={<UserResignation />} />
-                <Route path='/user/resignation-form' element={<ResignationForm />} />
-                <Route path='/user/edit-resignation/:id' element={<EditResignations />} />
-              </Route>
-            </Route>
+            {/* <Route element={<ProtectedRoute allowedRole="user" />}>
+
+            </Route> */}
 
             {/* Redirect root to login */}
             <Route path="/" element={<Navigate to="/login" replace />} />

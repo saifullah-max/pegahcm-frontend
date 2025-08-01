@@ -3,8 +3,30 @@ import { useNavigate } from "react-router-dom";
 import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
 import { deleteEmployee, Employee, getEmployees } from "../../../services/employeeService";
 import { getEmployeeHours } from "../../../services/userService";
+import { impersonateUser } from "../../../services/permissionService";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../../store/slices/authSlice"; // adjust to your actual path
+import { jwtDecode } from "jwt-decode";
+
+
+export interface DecodedUser {
+  userId: string;
+  username: string;
+  fullName: string | null
+  email: string;
+  role: string;
+  subRole?: {
+    id: string;
+    name: string;
+    description?: string;
+  } | null;
+  iat: number;
+  exp: number;
+}
+
 
 const Employees: React.FC = () => {
+  const dispatch = useDispatch();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [hasFetched, setHasFetched] = useState(false);
@@ -77,6 +99,11 @@ const Employees: React.FC = () => {
       title: "Actions",
       dataIndex: "actions",
       key: "actions",
+    },
+    {
+      title: "Permissions",
+      dataIndex: "permissions",
+      key: "permissions",
     }
   ];
 
@@ -129,6 +156,63 @@ const Employees: React.FC = () => {
     }
   };
 
+  const handleImpersonate = async (
+    userId: string,
+    fullName: string,
+    status: string
+  ) => {
+    try {
+      // ✅ 1. Get current admin token from localStorage
+      const currentToken = localStorage.getItem("token");
+      if (!currentToken) {
+        alert("Admin token not found. Please log in again.");
+        return;
+      }
+
+      // ✅ 2. Store it as 'adminToken' before impersonation
+      localStorage.setItem("adminToken", currentToken);
+      localStorage.setItem("impersonating", "true");
+      localStorage.setItem("impersonatedUserId", userId);
+
+      // ✅ 3. Make API call to impersonate
+      const token = await impersonateUser(userId); // ← this returns the new token
+
+      if (!token) throw new Error("No token received");
+
+      // ✅ 4. Replace token in localStorage with impersonated user's token
+      localStorage.setItem("token", token);
+
+      // ✅ 5. Decode and update Redux state
+      const decoded = jwtDecode<DecodedUser>(token);
+
+      dispatch(
+        setCredentials({
+          user: {
+            id: decoded.userId,
+            username: decoded.username ?? "",
+            email: decoded.email ?? "",
+            fullName,
+            status,
+            role: decoded.role as "admin" | "user",
+            subRole: decoded.subRole
+              ? {
+                id: decoded.subRole.id,
+                name: decoded.subRole.name,
+                description: decoded.subRole.description ?? "",
+              }
+              : null,
+          },
+          token,
+        })
+      );
+
+      // ✅ 6. Redirect
+      window.location.href = "/user/user-dashboard";
+    } catch (error) {
+      console.error("Failed to impersonate user:", error);
+      alert("Unable to view user dashboard.");
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900  transition-colors duration-200">
@@ -210,8 +294,8 @@ const Employees: React.FC = () => {
                   {/* Monthly Hours */}
                   <td
                     className={`px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 ${employeeHours[employee.id]?.monthly < 150
-                        ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"
-                        : "text-black dark:text-gray-200"
+                      ? "bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200"
+                      : "text-black dark:text-gray-200"
                       }`}
                   >
                     {employeeHours[employee.id]?.monthly?.toFixed(1) || "0"} hrs
@@ -233,7 +317,27 @@ const Employees: React.FC = () => {
                       >
                         <Trash size={18} />
                       </button>
+                      <button
+                        onClick={() =>
+                          handleImpersonate(employee.userId, employee.fullName, employee.status)
+                        }
+                        className="text-indigo-600 hover:text-indigo-800 transition"
+                        title="View User Dashboard"
+                      >
+                        <UserRound size={18} />
+                      </button>
+
                     </div>
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      onClick={() => navigate(`/admin/manage-permissions/${employee.userId}`)}
+                      className="text-purple-600 hover:text-purple-800 transition"
+                      title="Manage Permissions"
+                    >
+                      Manage
+                    </button>
                   </td>
                 </tr>
               ))}
