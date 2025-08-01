@@ -143,28 +143,36 @@ export const checkOutAttendance = async (): Promise<void> => {
 
 // attendance check for today
 // get today's attendance
-export const getTodayAttendance = async (): Promise<{ checkedIn: boolean; checkedOut: boolean; attendance?: any; }> => {
+export const getTodayAttendance = async (): Promise<{
+    checkedIn: boolean;
+    checkedOut: boolean;
+    attendance?: any;
+    activeBreak?: {
+        id: string;
+        breakStart: string;
+        breakType: {
+            name: string;
+        };
+    };
+}> => {
     try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/attendance/today`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });
 
-        if (response.status === 401) {
-            throw new Error('invalid or expired token');
-        }
+        if (response.status === 401) throw new Error('invalid or expired token');
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch today\'s attendance');
-        }
+        if (!response.ok) throw new Error("Failed to fetch today's attendance");
 
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Error fetching today\'s attendance:', error);
+        console.error("Error fetching today’s attendance:", error);
         return handleAuthError(error);
     }
 };
+
 
 // get all todays attendances
 export const fetchTodayPresentCount = async () => {
