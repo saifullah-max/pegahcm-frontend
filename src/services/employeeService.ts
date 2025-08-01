@@ -11,6 +11,7 @@ interface Document {
 
 export interface Employee {
   id: string;
+  userId: string;
   employeeNumber: string;
   fullName: string;
   email: string;
@@ -94,6 +95,7 @@ interface UserData {
   fullName: string;
   email: string;
   roleId: string;
+  subRoleId: string;
   status: string;
   dateJoined: string;
   phoneNumber?: number;

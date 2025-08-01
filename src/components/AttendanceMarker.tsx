@@ -8,8 +8,10 @@ import {
   startBreak,
 } from '../services/userService';
 import { LogIn, LogOut, Check } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const AttendanceMarker: React.FC = () => {
+  const userId = useSelector((state: any) => state.auth?.user?.id);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<string | null>(null);
@@ -28,14 +30,8 @@ const AttendanceMarker: React.FC = () => {
   const [breakStartTime, setBreakStartTime] = useState<string | null>(null);
   const [currentBreakType, setCurrentBreakType] = useState<string | null>(null);
   const [shiftId, setShiftId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      setUserId(decoded.userId || decoded.id);
-    }
 
     const fetchEmployee = async () => {
       try {

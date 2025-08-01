@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import {
     deleteResignation,
     getAllResignations,
-} from '../../services/resignationService';
+} from '../../../../services/resignationService';
 
 interface Resignation {
     id: string;
@@ -45,7 +45,7 @@ const SubmitResignation: React.FC = () => {
     }, []);
 
     const handleEdit = (id: string) => {
-        navigate(`/user/edit-resignation/${id}`);
+        navigate(`/admin/user/edit-resignation/${id}`);
     };
 
     const handleDelete = async (id: string) => {
@@ -66,7 +66,7 @@ const SubmitResignation: React.FC = () => {
             {/* Header */}
             <div className="w-full max-w-xl flex items-center gap-4 mb-6">
                 <button
-                    onClick={() => navigate('/user/user-dashboard')}
+                    onClick={() => navigate('/admin/resignations')}
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 transition"
                 >
                     <ArrowLeft size={24} />
@@ -87,7 +87,7 @@ const SubmitResignation: React.FC = () => {
                             You have not submitted a resignation yet.
                         </p>
                         <button
-                            onClick={() => navigate('/user/resignation-form')}
+                            onClick={() => navigate('/admin/user/resignation-form')}
                             className="bg-blue-500 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md font-medium transition"
                         >
                             Submit Resignation

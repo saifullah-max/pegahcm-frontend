@@ -5,8 +5,11 @@ import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ClockFading, LayoutDashboard, UserRound, Moon, Sun, FileArchiveIcon } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
+import { jwtDecode } from "jwt-decode";
+import { setCredentials } from "../store/slices/authSlice";
+import { DecodedUser } from '../pages/admin/employee/Employees';
 
-const AdminLayout = () => {
+const UserLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user } = useSelector((state: RootState) => state.auth);
   const { isDarkMode } = useSelector((state: RootState) => state.theme);
@@ -64,12 +67,64 @@ const AdminLayout = () => {
     navigate('/user/resignation');
   };
 
-
-
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
     navigate('/login');
   };
+
+
+  const handleStopImpersonation = () => {
+    const originalToken = localStorage.getItem("adminToken");
+
+    if (originalToken) {
+      try {
+        // ✅ 1. Decode the original token
+        const decoded = jwtDecode<DecodedUser>(originalToken);
+
+        // ✅ 2. Replace impersonated token
+        localStorage.setItem("token", originalToken);
+
+        // ✅ 3. Clean up impersonation data
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("impersonating");
+        localStorage.removeItem("impersonatedUserId");
+
+        // ✅ 4. Dispatch admin credentials to Redux
+        dispatch(
+          setCredentials({
+            user: {
+              id: decoded.userId,
+              username: decoded.username ?? "",
+              email: decoded.email ?? "",
+              fullName: decoded.fullName! ?? "Super Admin",
+              status,
+              role: decoded.role as "admin" | "user",
+              subRole: decoded.subRole
+                ? {
+                  id: decoded.subRole.id,
+                  name: decoded.subRole.name,
+                  description: decoded.subRole.description ?? "",
+                }
+                : null,
+            },
+            token: originalToken,
+          })
+        );
+        // ✅ 5. Navigate to admin dashboard
+        navigate("/admin/dashboard");
+      } catch (err) {
+        console.error("Failed to decode admin token:", err);
+        alert("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    } else {
+      alert("Original admin session not found. Please log in again.");
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  };
+
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
@@ -196,6 +251,14 @@ const AdminLayout = () => {
                       >
                         Logout
                       </button>
+                      {user?.impersonatedBy && (
+                        <button
+                          onClick={handleStopImpersonation}
+                          className="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm shadow"
+                        >
+                          Stop Impersonation
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -213,4 +276,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default UserLayout;

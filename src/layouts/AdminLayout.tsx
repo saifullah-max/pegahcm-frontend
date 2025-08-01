@@ -82,6 +82,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/admin/onboarding' });
     navigate('/admin/onboarding');
   };
+  const handleOnResignationsClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/admin/resignations' });
+    navigate('/admin/resignations');
+  };
 
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
@@ -122,6 +126,9 @@ const AdminLayout = () => {
             </li>
             <li onClick={handleOnBoardingsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
               <Building2 className='inline-block mr-2' />OnBoardings
+            </li>
+            <li onClick={handleOnResignationsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
+              <Building2 className='inline-block mr-2' />Resignations
             </li>
           </ul>
         </nav>

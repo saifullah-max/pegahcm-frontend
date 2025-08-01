@@ -1,43 +1,68 @@
 import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
     getAllPermissions,
+    assignUserPermissions,
+    getPermissionsOfUser,
+    getUserById,
     Permission,
-    assignSubRolePermissions,
-    SubRole,
 } from '../../../../services/permissionService';
-import { getAllSubRoles } from '../../../../services/subRoleService';
-import { ArrowLeft, Cog } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
-const AssignSubRolePermissions = () => {
+const ACTIONS = ['view', 'create', 'update', 'delete', '|', 'approve', 'reject'];
+
+const AssignUserPermissions = () => {
+    const { userId } = useParams();
     const navigate = useNavigate();
+
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-    const [subRoles, setSubRoles] = useState<SubRole[]>([]);
-    const [selectedSubRole, setSelectedSubRole] = useState<string>('');
+    const [userName, setUserName] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            const perms = await getAllPermissions();
-            const roles = await getAllSubRoles();
-            setPermissions(perms);
-            setSubRoles(roles);
-        };
-        fetchData();
-    }, []);
+            try {
+                const perms = await getAllPermissions();
+                const userPerms = await getPermissionsOfUser(userId!);
+                const user = await getUserById(userId!);
 
-    const handlePermissionChange = (id: string) => {
+                setPermissions(perms);
+                setSelectedPermissions(userPerms);
+                setUserName(user.fullName || user.username);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error loading data:', err);
+            }
+        };
+
+        fetchData();
+    }, [userId]);
+
+    const groupedPermissions = permissions.reduce((acc: Record<string, Permission[]>, perm) => {
+        acc[perm.module] = acc[perm.module] || [];
+        acc[perm.module].push(perm);
+        return acc;
+    }, {});
+
+    const handleToggle = (permId: string) => {
         setSelectedPermissions((prev) =>
-            prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+            prev.includes(permId)
+                ? prev.filter((id) => id !== permId)
+                : [...prev, permId]
         );
     };
 
     const handleGroupToggle = (module: string) => {
-        const modulePermissions = permissions.filter((p) => p.module === module).map((p) => p.id);
+        const modulePermissions = permissions
+            .filter((p) => p.module === module)
+            .map((p) => p.id);
         const allSelected = modulePermissions.every((id) => selectedPermissions.includes(id));
 
         if (allSelected) {
-            setSelectedPermissions((prev) => prev.filter((id) => !modulePermissions.includes(id)));
+            setSelectedPermissions((prev) =>
+                prev.filter((id) => !modulePermissions.includes(id))
+            );
         } else {
             setSelectedPermissions((prev) => [
                 ...prev,
@@ -47,54 +72,38 @@ const AssignSubRolePermissions = () => {
     };
 
     const isGroupSelected = (module: string) => {
-        const modulePermissions = permissions.filter((p) => p.module === module).map((p) => p.id);
+        const modulePermissions = permissions
+            .filter((p) => p.module === module)
+            .map((p) => p.id);
         return modulePermissions.every((id) => selectedPermissions.includes(id));
     };
 
     const handleSubmit = async () => {
-        if (!selectedSubRole) return alert('Please select a sub-role');
-        await assignSubRolePermissions(selectedSubRole, selectedPermissions);
-        alert('Permissions assigned to sub-role');
-        navigate('/admin/permission')
+        try {
+            await assignUserPermissions(userId!, selectedPermissions);
+            alert('Permissions updated for user.');
+            navigate(-1);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to assign permissions');
+        }
     };
 
-    const groupedPermissions = permissions.reduce((acc: Record<string, Permission[]>, perm) => {
-        acc[perm.module] = acc[perm.module] || [];
-        acc[perm.module].push(perm);
-        return acc;
-    }, {});
-
-    const ACTIONS = ['view', 'create', 'update', 'delete', '|', 'approve', 'reject'];
-
+    if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
 
     return (
         <div className="p-4">
-            <div className="mb-7 flex items-center">
+            <div className="mb-6 flex items-center">
                 <button
-                    onClick={() => navigate('/admin/permission')}
-                    className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    onClick={() => navigate(-1)}
+                    className="mr-4 text-gray-600 hover:text-gray-900"
                 >
-                    <ArrowLeft className="text-xl" />
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
-                <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Cog className="text-2xl" /> Assign Sub-role Permissions
-                </h1>
-            </div>
-
-            <div className="mb-4">
-                <label className="block mb-1 font-semibold">Select SubRole:</label>
-                <select
-                    className="border p-2 rounded w-full"
-                    value={selectedSubRole}
-                    onChange={(e) => setSelectedSubRole(e.target.value)}
-                >
-                    <option value="">-- Select SubRole --</option>
-                    {subRoles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                            {role.name}
-                        </option>
-                    ))}
-                </select>
+                <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5" />
+                    Assign Permissions to <span className="text-blue-600">{userName}</span>
+                </h2>
             </div>
 
             <div className="overflow-x-auto border rounded bg-white dark:bg-gray-900 p-4">
@@ -111,7 +120,6 @@ const AssignSubRolePermissions = () => {
                                     </th>
                                 )
                             )}
-
                         </tr>
                     </thead>
                     <tbody>
@@ -119,10 +127,7 @@ const AssignSubRolePermissions = () => {
                             const permMap = Object.fromEntries(perms.map((p) => [p.action, p]));
 
                             return (
-                                <tr
-                                    key={module}
-                                    className="border-b hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                >
+                                <tr key={module} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">
                                         <label className="flex items-center gap-2">
                                             <input
@@ -143,7 +148,7 @@ const AssignSubRolePermissions = () => {
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedPermissions.includes(permMap[action].id)}
-                                                        onChange={() => handlePermissionChange(permMap[action].id)}
+                                                        onChange={() => handleToggle(permMap[action].id)}
                                                         className="accent-blue-600"
                                                     />
                                                 ) : (
@@ -152,7 +157,6 @@ const AssignSubRolePermissions = () => {
                                             </td>
                                         )
                                     )}
-
                                 </tr>
                             );
                         })}
@@ -161,13 +165,13 @@ const AssignSubRolePermissions = () => {
             </div>
 
             <button
-                className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 onClick={handleSubmit}
+                className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-                Assign Permissions
+                Save Permissions
             </button>
         </div>
     );
 };
 
-export default AssignSubRolePermissions;
+export default AssignUserPermissions;

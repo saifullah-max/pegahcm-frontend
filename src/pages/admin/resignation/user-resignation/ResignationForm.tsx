@@ -1,7 +1,7 @@
 import { ArrowLeft, LogOut } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';// ⬅️ your API service
-import { submitResignation } from '../../services/resignationService';
+import { submitResignation } from '../../../../services/resignationService';
 
 const ResignationForm: React.FC = () => {
     const navigate = useNavigate();
@@ -59,7 +59,7 @@ const ResignationForm: React.FC = () => {
         <div className="max-w-3xl mx-auto px-6 py-10 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="flex items-center gap-3 mb-8">
                 <button
-                    onClick={() => navigate('/user/resignation')}
+                    onClick={() => navigate('/admin/user/resignation')}
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600"
                 >
                     <ArrowLeft size={24} />

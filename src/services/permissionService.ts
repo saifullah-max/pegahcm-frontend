@@ -145,3 +145,48 @@ export const updateSubRolePermissions = async (
         return handleAuthError(error);
     }
 };
+
+export const getPermissionsOfUser = async (userId: string): Promise<string[]> => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/user/${userId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (res.status === 401) throw new Error('invalid or expired token');
+        if (!res.ok) throw new Error('Failed to fetch user permissions');
+
+        return await res.json();
+    } catch (error) {
+        return handleAuthError(error);
+    }
+};
+
+export const getUserById = async (userId: string) => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/user/${userId}`, {
+        headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) throw new Error('Failed to fetch user');
+    return await res.json();
+};
+
+
+// impersonateRoute
+export const impersonateUser = async (userId: string): Promise<string> => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/impersonate/${userId}`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+
+        if (response.status === 401) throw new Error('invalid or expired token');
+        if (!response.ok) throw new Error('Failed to impersonate user');
+
+        const { token } = await response.json();
+        return token;
+    } catch (error) {
+        console.error('Error impersonating user:', error);
+        return handleAuthError(error);
+    }
+};
