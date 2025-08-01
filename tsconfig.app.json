@@ -24,7 +24,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     /* Fix: Module resolution */
-    "baseUrl": "src"
   },
   "include": [
     "src"
