@@ -30,6 +30,10 @@ const AttendanceMarker: React.FC = () => {
   const [breakStartTime, setBreakStartTime] = useState<string | null>(null);
   const [currentBreakType, setCurrentBreakType] = useState<string | null>(null);
   const [shiftId, setShiftId] = useState<string | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [breakSegments, setBreakSegments] = useState<{ start: Date; end?: Date }[]>([]);
+  const [barPercent, setBarPercent] = useState(0);
+
 
   useEffect(() => {
 
@@ -51,24 +55,72 @@ const AttendanceMarker: React.FC = () => {
       if (!userId) return;
       try {
         const today = await getTodayAttendance();
+
         if (today.checkedIn) {
           setIsCheckedIn(true);
           if (today.attendance?.clockIn) {
-            setCheckInTime(new Date(today.attendance.clockIn).toLocaleTimeString());
+            const clockIn = new Date(today.attendance.clockIn);
+            setCheckInTime(clockIn.toLocaleTimeString());
+            setSessionStartTime(clockIn);
           }
         }
+
         if (today.checkedOut) {
           setIsCheckedOut(true);
           if (today.attendance?.clockOut) {
             setCheckOutTime(new Date(today.attendance.clockOut).toLocaleTimeString());
           }
         }
+
+        const pastBreaks = today.attendance?.breaks || [];
+        const formattedBreaks = pastBreaks
+          .filter((b: any) => b.breakStart && b.breakEnd)
+          .map((b: any) => ({
+            start: new Date(b.breakStart),
+            end: new Date(b.breakEnd),
+          }));
+
+        setBreakSegments(formattedBreaks);
+
+        if (today.activeBreak) {
+          setIsOnBreak(true);
+          setCurrentBreakType(today.activeBreak.breakType.name);
+          setBreakStartTime(new Date(today.activeBreak.breakStart).toLocaleTimeString());
+
+          // Append ongoing break segment
+          setBreakSegments(prev => [
+            ...formattedBreaks,
+            { start: new Date(today.activeBreak!.breakStart) },
+          ]);
+        }
+
       } catch (error) {
         console.error('Error fetching today attendance:', error);
       }
     };
     fetchTodayAttendance();
   }, [userId]);
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isCheckedIn || !sessionStartTime) return;
+
+      const now = new Date().getTime();
+      const sessionStart = sessionStartTime.getTime();
+      const elapsed = now - sessionStart;
+
+      const maxDuration = 9 * 60 * 60 * 1000; // 9 hours in ms
+      const percent = (elapsed / maxDuration) * 100;
+
+      setBarPercent(Math.min(percent, 100));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isCheckedIn, sessionStartTime]);
+
+
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -84,6 +136,7 @@ const AttendanceMarker: React.FC = () => {
       if (!userId || !shiftId) throw new Error("Missing userId or shiftId");
       await checkInAttendance(userId, shiftId);
       setCheckInTime(formattedTime);
+      setSessionStartTime(new Date());
       setIsCheckedIn(true);
     } catch (error: any) {
       console.error("Check-in failed:", error);
@@ -109,10 +162,15 @@ const AttendanceMarker: React.FC = () => {
 
   const handleStartBreak = async (breakType: string) => {
     try {
+      if (isOnBreak) {
+        setErrorMessage("You are already on a break.");
+        return;
+      }
       await startBreak(breakType);
       setIsOnBreak(true);
       setCurrentBreakType(breakType);
       setBreakStartTime(new Date().toLocaleTimeString());
+      setBreakSegments(prev => [...prev, { start: new Date() }]);
     } catch (error) {
       console.error("Failed to start break", error);
     }
@@ -124,6 +182,13 @@ const AttendanceMarker: React.FC = () => {
       setIsOnBreak(false);
       setCurrentBreakType(null);
       setBreakStartTime(null);
+      setBreakSegments(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last && !last.end) last.end = new Date();
+        return updated;
+      });
+
     } catch (error) {
       console.error("Failed to end break", error);
     }
@@ -208,23 +273,111 @@ const AttendanceMarker: React.FC = () => {
         {isOnBreak ? (
           <div className="space-y-2">
             <p>On break: <span className="font-medium">{currentBreakType}</span> since {breakStartTime}</p>
-            <button onClick={handleEndBreak} className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded shadow">
+            <button
+              onClick={handleEndBreak}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded shadow"
+            >
               End Break
             </button>
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Start a new break:</p>
-            <div className="flex flex-wrap gap-3">
-              {["Lunch", "Prayer", "Tea"].map(type => (
-                <button key={type} onClick={() => handleStartBreak(type)} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">
-                  {type} Break
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Start a break:</p>
+            <button
+              onClick={() => handleStartBreak("Lunch")}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow"
+            >
+              Start Lunch Break
+            </button>
           </>
         )}
+
       </div>
+
+      {/* Progress Bar */}
+      <div className="w-full h-4 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden mb-6 relative">
+        {(() => {
+          const now = isCheckedOut && checkOutTime
+            ? (() => {
+              const [h, m, s] = checkOutTime.split(":").map(Number);
+              const d = new Date();
+              d.setHours(h, m, s, 0);
+              return d;
+            })()
+            : new Date();
+
+          const segments = [];
+          const breaks = [...breakSegments];
+
+          if (isOnBreak && breaks.length > 0) {
+            breaks[breaks.length - 1] = {
+              ...breaks[breaks.length - 1],
+              end: now,
+            };
+          }
+
+          let pointer = sessionStartTime;
+          if (!pointer) return null;
+
+          for (let i = 0; i < breaks.length; i++) {
+            const b = breaks[i];
+            if (b.start > pointer) {
+              segments.push({
+                type: 'work',
+                start: pointer,
+                end: b.start,
+              });
+            }
+            if (b.end) {
+              segments.push({
+                type: 'break',
+                start: b.start,
+                end: b.end,
+              });
+              pointer = b.end;
+            }
+          }
+
+          if (pointer < now) {
+            segments.push({
+              type: 'work',
+              start: pointer,
+              end: now,
+            });
+          }
+
+          const shiftDuration = 9 * 60 * 60 * 1000;
+          const totalDuration = shiftDuration;
+          const sessionStartMs = sessionStartTime!.getTime();
+
+          return segments.map((seg, idx) => {
+            const segStart = seg.start.getTime();
+            const segEnd = seg.end!.getTime();
+            const leftPct = ((segStart - sessionStartMs) / totalDuration) * 100;
+            const widthPct = ((segEnd - segStart) / totalDuration) * 100;
+
+            const color = seg.type === 'work' ? 'bg-green-500' : 'bg-yellow-400';
+
+            // Rounded edges only on first and last segments
+            const roundedClass = [
+              idx === 0 ? 'rounded-l-full' : '',
+              idx === segments.length - 1 ? 'rounded-r-full' : ''
+            ].join(' ');
+
+            return (
+              <div
+                key={idx}
+                className={`absolute top-0 h-full ${color} ${roundedClass}`}
+                style={{
+                  left: `${leftPct}%`,
+                  width: `${widthPct}%`,
+                }}
+              />
+            );
+          });
+        })()}
+      </div>
+
 
       {/* Status */}
       <div className="p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
