@@ -54,6 +54,12 @@ const AdminLayout = () => {
     navigate('/admin/attendance');
   };
 
+  const handleUserAttendanceClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/user/user-attendance' });
+
+    navigate('/user/user-attendance');
+  };
+
   const handleShiftsClick = () => {
     dispatch({ type: 'NAVIGATE', payload: '/admin/shifts' });
     navigate('/admin/shifts');
@@ -134,12 +140,22 @@ const AdminLayout = () => {
             )}
 
             {/* Attendance */}
-            {hasPermission('Attendance:create') && (
+            {hasPermission('Attendance:approve') && (
               <li
                 onClick={handleAttendanceClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
                 <ClockFading className="inline-block mr-2" /> Attendance
+              </li>
+            )}
+
+            {/* User Attendance */}
+            {hasPermission('Attendance:view') && (
+              <li
+                onClick={handleUserAttendanceClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <ClockFading className="inline-block mr-2" />My Attendance
               </li>
             )}
 
