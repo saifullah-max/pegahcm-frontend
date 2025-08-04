@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarSync, Delete, Edit, Plus, TrashIcon } from "lucide-react";
 import { getShifts, deleteShift } from "../../../services/ShiftService";
+import { RootState } from '../../../store';
+import { useSelector, useDispatch } from 'react-redux';
 
 
 const Shifts: React.FC = () => {
+    const { permissions } = useSelector((state: RootState) => state.auth);
     const [shifts, setShifts] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
+
+    const canCreateShift = permissions.includes("Shift:create");
+
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -73,11 +79,15 @@ const Shifts: React.FC = () => {
             dataIndex: "description",
             key: "description",
         },
-        {
-            title: "Actions",
-            dataIndex: "actions",
-            key: "actions",
-        },
+        ...(canCreateShift
+            ? [
+                {
+                    title: "Actions",
+                    dataIndex: "actions",
+                    key: "actions",
+                },
+            ]
+            : []),
     ];
 
 
@@ -108,12 +118,15 @@ const Shifts: React.FC = () => {
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <CalendarSync /> Shifts
                 </h1>
-                <button
-                    onClick={handleNavigateToAddShifts}
-                    className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-                >
-                    <Plus /> Add Shift
-                </button>
+                {canCreateShift && (
+                    <button
+                        onClick={handleNavigateToAddShifts}
+                        className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+                    >
+                        <Plus /> Add Shift
+                    </button>
+                )}
+
             </div>
 
             {loading ? (
@@ -160,17 +173,24 @@ const Shifts: React.FC = () => {
                                         {data.description}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
-                                        <Edit
-                                            onClick={() => handleEdit(data.id)}
-                                            strokeWidth={1}
-                                            size={20}
-                                            className="text-blue-500 cursor-pointer" />
-                                        <TrashIcon
-                                            onClick={() => handleDelete(data.id)}
-                                            strokeWidth={1}
-                                            size={20}
-                                            className="text-red-500 cursor-pointer" />
+                                        {canCreateShift && (
+                                            <>
+                                                <Edit
+                                                    onClick={() => handleEdit(data.id)}
+                                                    strokeWidth={1}
+                                                    size={20}
+                                                    className="text-blue-500 cursor-pointer"
+                                                />
+                                                <TrashIcon
+                                                    onClick={() => handleDelete(data.id)}
+                                                    strokeWidth={1}
+                                                    size={20}
+                                                    className="text-red-500 cursor-pointer"
+                                                />
+                                            </>
+                                        )}
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>

@@ -114,7 +114,7 @@ export const assignSubRolePermissions = async (
 
 export const getSubRolePermissions = async (subRoleId: string): Promise<string[]> => {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/sub-role/${subRoleId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/${subRoleId}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -162,6 +162,7 @@ export const getPermissionsOfUser = async (userId: string): Promise<string[]> =>
     }
 };
 
+// user permissions
 export const getUserById = async (userId: string) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/user/${userId}`, {
         headers: getAuthHeaders(),
@@ -171,6 +172,14 @@ export const getUserById = async (userId: string) => {
     return await res.json();
 };
 
+export const getPermissionIdByUserId = async (userId: string) => {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/permissions/id/user/${userId}`, {
+        headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) throw new Error('Failed to fetch user');
+    return await res.json();
+}
 
 // impersonateRoute
 export const impersonateUser = async (userId: string): Promise<string> => {
