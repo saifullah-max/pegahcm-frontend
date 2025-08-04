@@ -49,6 +49,16 @@ interface AttendanceRecord {
     // Add other fields if needed
 }
 
+export interface EmployeeSummary {
+    employeeId: string;
+    fullName: string;
+    email: string;
+    department: string;
+    todayStatus: 'Present' | 'Absent' | 'On Leave' | 'Late Arrival';
+    totalLeaves: number;
+    lateArrivals: number;
+}
+
 // Helper function to get auth headers
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -299,5 +309,23 @@ export const getBreaksByAttendanceRecord = async (attendanceRecordId: string): P
     } catch (error) {
         console.error("Error fetching breaks:", error);
         return handleAuthError(error);
+    }
+};
+
+// get all employee summary
+export const getEmployeeAttendanceSummary = async (): Promise<EmployeeSummary[]> => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/employee-summary`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch employee summary');
+
+        const data = await res.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching employee attendance summary:', error);
+        return [];
     }
 };
