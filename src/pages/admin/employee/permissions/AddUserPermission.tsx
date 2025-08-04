@@ -4,6 +4,7 @@ import {
     Permission,
     assignSubRolePermissions,
     SubRole,
+    getSubRolePermissions,
 } from '../../../../services/permissionService';
 import { getAllSubRoles } from '../../../../services/subRoleService';
 import { ArrowLeft, Cog } from 'lucide-react';
@@ -15,6 +16,20 @@ const AssignSubRolePermissions = () => {
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [subRoles, setSubRoles] = useState<SubRole[]>([]);
     const [selectedSubRole, setSelectedSubRole] = useState<string>('');
+
+    const fetchSubRolePermissions = async () => {
+        if (!selectedSubRole) return;
+        try {
+            const assigned = await getSubRolePermissions(selectedSubRole);
+            setSelectedPermissions(assigned);
+        } catch (error) {
+            console.error('Failed to load sub-role permissions:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSubRolePermissions();
+    }, [selectedSubRole]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -64,7 +79,7 @@ const AssignSubRolePermissions = () => {
         return acc;
     }, {});
 
-    const ACTIONS = ['view', 'create', 'update', 'delete', '|', 'approve', 'reject'];
+    const ACTIONS = ['view', 'create', 'update', 'delete', 'view-all', '|', 'approve', 'reject'];
 
 
     return (

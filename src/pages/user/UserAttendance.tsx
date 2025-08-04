@@ -46,6 +46,7 @@ const UserAttendance: React.FC = () => {
         };
         const fetchExistingRequests = async () => {
             const requests = await getLeaveRequests();
+            console.log("LEAVES:", requests);
             if (Array.isArray(requests)) {
                 const formatted = requests.map((req) => ({
                     key: req.id,

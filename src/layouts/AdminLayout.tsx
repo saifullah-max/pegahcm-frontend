@@ -8,27 +8,14 @@ import { toggleTheme } from '../store/slices/themeSlice';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, permissions } = useSelector((state: RootState) => state.auth);
   const { isDarkMode } = useSelector((state: RootState) => state.theme);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
-    const [fullName, setFullName] = useState<string | null>(null);
 
   useEffect(() => {
-    const persistRoot = localStorage.getItem('persist:root');
-
-    if (persistRoot) {
-      const parsedRoot = JSON.parse(persistRoot);
-      const authString = parsedRoot.auth;
-
-      if (authString) {
-        const parsedAuth = JSON.parse(authString);
-        const fullName = parsedAuth.user?.fullName;
-        setFullName(fullName);
-      }
-    }
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.relative')) {
@@ -44,6 +31,8 @@ const AdminLayout = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const hasPermission = (permission: string) => permissions.includes(permission);
 
   const handleThemeToggle = () => {
     dispatch(toggleTheme());
@@ -92,6 +81,13 @@ const AdminLayout = () => {
     navigate('/login');
   };
 
+  const dashboardHeadings: Record<string, string> = {
+    teamMember: "Team Member Panel",
+    teamLead: "Team Lead Panel",
+    manager: "Manager Workspace",
+    director: "Director Console",
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
       {/* Sidebar */}
@@ -100,36 +96,103 @@ const AdminLayout = () => {
           } bg-[#255199] text-white transition-all duration-300 dark:bg-gray-900`}
       >
         <div className="p-4">
-          <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
+          <h2 className="text-2xl md:text-xl sm:text-lg font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-full sm:max-w-[80vw]">
+            {user?.role === "admin"
+              ? "Admin Dashboard"
+              : dashboardHeadings[user?.subRole?.name || ""] || "User Dashboard"}
+          </h2>
+
         </div>
         <nav className="mt-4">
           <ul>
-            <li onClick={handleDashboardClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <LayoutDashboard className="inline-block mr-2" /> Dashboard
-            </li>
+            {/* Dashboard (no specific permission required) */}
+            {
+              user?.role === "admin" ?
+                <li
+                  onClick={handleDashboardClick}
+                  className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+                >
+                  <LayoutDashboard className="inline-block mr-2" /> Dashboard
+                </li>
+                :
+                <li
+                  onClick={() => navigate('/user/user-dashboard')}
+                  className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+                >
+                  <LayoutDashboard className="inline-block mr-2" /> Dashboard
+                </li>
+            }
 
+            {/* Employees */}
+            {hasPermission('Employee:create') && (
+              <li
+                onClick={handleEmployeesClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <UserRound className="inline-block mr-2" /> Employees
+              </li>
+            )}
 
-            <li onClick={handleEmployeesClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <UserRound className='inline-block mr-2' />Employees
-            </li>
-            <li onClick={handleAttendanceClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <ClockFading className='inline-block mr-2' />Attendance
-            </li>
-            <li onClick={handleShiftsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <CalendarSync className='inline-block mr-2' />Shifts
-            </li>
-            <li onClick={handleDepartmentsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <Building2 className='inline-block mr-2' />Departments
-            </li>
-            <li onClick={handlePermissionsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <Building2 className='inline-block mr-2' />Manage Permissions
-            </li>
-            <li onClick={handleOnBoardingsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <Building2 className='inline-block mr-2' />OnBoardings
-            </li>
-            <li onClick={handleOnResignationsClick} className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center">
-              <Building2 className='inline-block mr-2' />Resignations
-            </li>
+            {/* Attendance */}
+            {hasPermission('Attendance:create') && (
+              <li
+                onClick={handleAttendanceClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <ClockFading className="inline-block mr-2" /> Attendance
+              </li>
+            )}
+
+            {/* Shifts */}
+            {hasPermission('Shift:create') && (
+              <li
+                onClick={handleShiftsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <CalendarSync className="inline-block mr-2" /> Shifts
+              </li>
+            )}
+
+            {/* Departments */}
+            {hasPermission('Department:create') && (
+              <li
+                onClick={handleDepartmentsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <Building2 className="inline-block mr-2" /> Departments
+              </li>
+            )}
+
+            {/* Manage Permissions */}
+            {hasPermission('Permission:create') && (
+              <li
+                onClick={handlePermissionsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <Building2 className="inline-block mr-2" /> Manage Permissions
+              </li>
+            )}
+
+            {/* OnBoardings */}
+            {hasPermission('Onboarding:create') && (
+              <li
+                onClick={handleOnBoardingsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <Building2 className="inline-block mr-2" /> OnBoardings
+              </li>
+            )}
+
+            {/* Resignations */}
+            {hasPermission('Resignation:view') && (
+              <li
+                onClick={handleOnResignationsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <Building2 className="inline-block mr-2" /> Resignations
+              </li>
+            )}
+
           </ul>
         </nav>
       </div>
@@ -158,7 +221,7 @@ const AdminLayout = () => {
               </svg>
             </button>
             <div className="flex items-center">
-              <span className="mr-4 text-black dark:text-white">Welcome, <strong>{fullName}</strong></span>
+              <span className="mr-4 text-black dark:text-white">Welcome, <strong>{user?.fullName}</strong></span>
               <div className="flex items-center space-x-4">
                 {/* Theme Toggle Button */}
                 <button

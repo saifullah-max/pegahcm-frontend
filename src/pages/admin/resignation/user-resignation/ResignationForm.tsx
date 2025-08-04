@@ -2,39 +2,30 @@ import { ArrowLeft, LogOut } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';// ⬅️ your API service
 import { submitResignation } from '../../../../services/resignationService';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
 
 const ResignationForm: React.FC = () => {
+    const { user } = useSelector((state: RootState) => state.auth)
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         resignationDate: '',
         lastWorkingDay: '',
         reason: '',
     });
-    const [employeeId, setEmployeeId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const rootData = localStorage.getItem('persist:root');
-        if (!rootData) return;
-
-        try {
-            const parsedRoot = JSON.parse(rootData);
-            const authSlice = JSON.parse(parsedRoot.auth);
-            const empId = authSlice?.user?.employee?.id || null;
-            setEmployeeId(empId);
-        } catch (err) {
-            console.error("Error parsing user info from localStorage", err);
-        }
-    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const employeeId = user?.employee?.id;
+    console.log("USER:", user);
+    console.log("EMPLOYEE ID:", employeeId);
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!employeeId) {
+        if (employeeId === undefined) {
             alert("Employee ID not found. Please log in again.");
             return;
         }
@@ -48,7 +39,7 @@ const ResignationForm: React.FC = () => {
             });
 
             alert('Resignation submitted successfully!');
-            navigate('/user/resignation');
+            navigate('/admin/user/resignation');
         } catch (err) {
             console.error("Submission failed:", err);
             alert('Failed to submit resignation.');

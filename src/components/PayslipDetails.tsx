@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { RootState } from '../store';
 import { Calendar, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { getEmployeeById } from '../services/employeeService';
 import { useSelector } from 'react-redux';
 
 const PayslipDetails: React.FC = () => {
-  const employeeID = useSelector((state: any) => state.auth?.user?.employee?.id);
+  const { user } = useSelector((state: RootState) => state.auth);
   const [showDetails, setShowDetails] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('May 2025');
 
@@ -33,11 +34,13 @@ const PayslipDetails: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log(employeeID); // ➤ ca3f5441-b1d6-4841-8fd2-fef76ad1bbb5
+    const empId = user?.employee?.id
     const res = async () => {
-      const fetchSalary = await getEmployeeById(employeeID);
+      if (user?.employee !== undefined && empId !== undefined) {
+        const fetchSalary = await getEmployeeById(user?.employee?.id);
+        console.log("Emp data:", fetchSalary);
+      }
 
-      console.log("Emp data:", fetchSalary);
     }
     res()
   }, [])

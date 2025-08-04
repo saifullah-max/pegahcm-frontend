@@ -7,6 +7,7 @@ import { fetchTodayPresentCount, getTodayAttendance } from "../../services/userS
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { getDepartments } from "../../services/departmentService";
+import { useNavigate } from "react-router-dom";
 
 interface DepartmentData {
   name: string;
@@ -15,6 +16,7 @@ interface DepartmentData {
 }
 
 const Dashboard: React.FC = () => {
+  const permissions = useSelector((state: RootState) => state.auth.permissions);
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [employeeNumber, setemployeeNumber] = useState(0);
   const [leaveTypes, setLeaveTypes] = useState<string[]>([]);
@@ -27,6 +29,7 @@ const Dashboard: React.FC = () => {
   const [newHires, setNewHires] = useState(0);
   const [departmentsData, setDepartmentsData] = useState<any[]>([]);
   const [departmentWiseAttendance, setDepartmentWiseAttendance] = useState<Record<string, number>>({});
+  const navigate = useNavigate();
 
   const role = user?.role;
   const departments: DepartmentData[] = [
@@ -42,6 +45,14 @@ const Dashboard: React.FC = () => {
     { text: "Jane Smith requested leave for next week", time: "4 hours ago" },
     { text: "Monthly payroll processing completed", time: "1 day ago" },
   ];
+  useEffect(() => {
+    if (user?.role !== 'admin') {
+      navigate('/user/user-dashboard')
+    }
+
+  }, [])
+  const hasPermission = (permission: string) => permissions.includes(permission);
+
 
   const calculateAbsentEmployees = (leaveRequest: LeaveRequest[]) => {
     const today = new Date().setHours(0, 0, 0, 0);

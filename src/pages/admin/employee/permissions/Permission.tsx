@@ -73,7 +73,7 @@ const Permission = () => {
                     onClick={handleNavigateToAddUserPermission}
                     className="text-white px-4 py-2 rounded-lg flex items-center gap-1 bg-[#255199] hover:bg-[#2F66C1] transition-colors"
                 >
-                    <Plus size={16} /> Add user permission
+                    <Plus size={16} /> Add sub-role permissions
                 </button>
                 <button
                     onClick={handleNavigateToSubRoleManagement}

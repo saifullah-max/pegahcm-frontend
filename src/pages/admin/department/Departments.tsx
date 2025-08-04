@@ -2,13 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Delete, Edit, Plus, TrashIcon } from "lucide-react";
 import { getDepartments, deleteDepartment } from "../../../services/departmentService";
+import { RootState } from '../../../store';
+import { useSelector, useDispatch } from 'react-redux';
 
 const Departments: React.FC = () => {
+    const { permissions } = useSelector((state: RootState) => state.auth);
     const [departments, setDepartments] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
+
+    const canCreateDept = permissions.includes("Department:create");
+
 
     useEffect(() => {
         const fetchDepartments = async () => {
@@ -40,11 +46,15 @@ const Departments: React.FC = () => {
             dataIndex: "subDepartments",
             key: "subDepartments",
         },
-        {
-            title: "Actions",
-            dataIndex: "actions",
-            key: "actions",
-        },
+        ...(canCreateDept
+            ? [
+                {
+                    title: "Actions",
+                    dataIndex: "actions",
+                    key: "actions",
+                },
+            ]
+            : []),
     ];
 
     const handleDelete = async (id: string) => {
@@ -80,12 +90,17 @@ const Departments: React.FC = () => {
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <Building2 /> Departments
                 </h1>
-                <button
-                    onClick={handleNavigateToAddDepartment}
-                    className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-                >
-                    <Plus /> Add Department
-                </button>
+                {
+                    canCreateDept && (
+                        <button
+                            onClick={handleNavigateToAddDepartment}
+                            className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+                        >
+                            <Plus /> Add Department
+                        </button>
+                    )
+                }
+
             </div>
             {error && (
                 <div className="text-red-500 mt-2">
@@ -128,16 +143,20 @@ const Departments: React.FC = () => {
                                         {dept.subDepartments.map((subDept: any) => subDept.name).join(', ')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
-                                        <Edit
-                                            onClick={() => handleEdit(dept.id)}
-                                            strokeWidth={1}
-                                            size={20}
-                                            className="text-blue-500 cursor-pointer" />
-                                        <TrashIcon
-                                            onClick={() => handleDelete(dept.id)}
-                                            strokeWidth={1}
-                                            size={20}
-                                            className="text-red-500 cursor-pointer" />
+                                        {canCreateDept && (
+                                            <>
+                                                <Edit
+                                                    onClick={() => handleEdit(dept.id)}
+                                                    strokeWidth={1}
+                                                    size={20}
+                                                    className="text-blue-500 cursor-pointer" />
+                                                <TrashIcon
+                                                    onClick={() => handleDelete(dept.id)}
+                                                    strokeWidth={1}
+                                                    size={20}
+                                                    className="text-red-500 cursor-pointer" />
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

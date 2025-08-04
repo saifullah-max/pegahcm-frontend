@@ -156,6 +156,8 @@ export const getLeaveRequests = async (): Promise<LeaveRequest[]> => {
             headers: getAuthHeaders(),
         });
 
+        console.log("LEAVES RES:", response);
+
         if (response.status === 401) throw new Error('invalid or expired token');
         if (!response.ok) throw new Error('Failed to fetch leave requests');
 

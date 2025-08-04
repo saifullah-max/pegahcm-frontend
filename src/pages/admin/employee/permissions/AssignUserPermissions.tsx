@@ -6,6 +6,7 @@ import {
     getPermissionsOfUser,
     getUserById,
     Permission,
+    getPermissionIdByUserId,
 } from '../../../../services/permissionService';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
@@ -23,13 +24,14 @@ const AssignUserPermissions = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const perms = await getAllPermissions();
-                const userPerms = await getPermissionsOfUser(userId!);
-                const user = await getUserById(userId!);
+                const perms = await getAllPermissions(); // full permission list
+                const userPermIds = await getPermissionIdByUserId(userId!); // only IDs
+                const user = await getUserById(userId!); // get user info
 
                 setPermissions(perms);
-                setSelectedPermissions(userPerms);
-                setUserName(user.fullName || user.username);
+                setSelectedPermissions(userPermIds); // correct permission IDs
+                setUserName(user.fullName || user.username); // correct user object
+
                 setLoading(false);
             } catch (err) {
                 console.error('Error loading data:', err);

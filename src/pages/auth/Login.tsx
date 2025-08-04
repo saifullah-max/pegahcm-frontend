@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCredentials } from '../../store/slices/authSlice';
+import { setCredentials, setPermissions } from '../../store/slices/authSlice';
 import { RootState } from '../../store';
 import { Moon, Sun } from 'lucide-react';
 import { toggleTheme } from '../../store/slices/themeSlice';
 import { loginUser } from '../../services/authService';
+import { getUserById } from '../../services/permissionService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -55,8 +56,20 @@ const Login = () => {
         localStorage.removeItem('rememberedEmail');
       }
 
+      const permissionStrings = await getUserById(response.data.user.id);
+      dispatch(setPermissions(permissionStrings));
+
+      const role = response.data.user.role;
+      const subRole = response.data.user.subRole?.name;
+
       navigate('/admin/dashboard');
 
+      // if (role === 'admin') {
+      // } else if (subRole === 'teamMember') {
+      //   navigate('/user/user-dashboard');
+      // } else {
+      //   navigate('/unauthorized');
+      // }
     } catch (error) {
       setError('Invalid email or password');
     } finally {
