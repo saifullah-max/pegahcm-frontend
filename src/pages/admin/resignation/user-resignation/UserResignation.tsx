@@ -66,7 +66,7 @@ const SubmitResignation: React.FC = () => {
             {/* Header */}
             <div className="w-full max-w-xl flex items-center gap-4 mb-6">
                 <button
-                    onClick={() => navigate('/admin/resignations')}
+                    onClick={() => navigate('/user/user-dashboard')}
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 transition"
                 >
                     <ArrowLeft size={24} />
