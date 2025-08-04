@@ -64,7 +64,7 @@ const UserLayout = () => {
   };
   const handleResignationClick = () => {
     dispatch({ type: 'NAVIGATE', payload: '/user/resignation' });
-    navigate('/user/resignation');
+    navigate('admin/user/resignation');
   };
 
   const handleLogoutClick = () => {

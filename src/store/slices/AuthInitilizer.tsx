@@ -1,7 +1,6 @@
-// components/AuthInitializer.tsx
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { markAuthHydrated, setCredentials } from "./authSlice";
+import { markAuthHydrated, setCredentials, setPermissions } from "./authSlice";
 import { jwtDecode } from "jwt-decode";
 
 const AuthInitializer = () => {
@@ -9,49 +8,51 @@ const AuthInitializer = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        console.log("Token from localStorage:", token);
-        if (token) {
+        const rawPermissions = localStorage.getItem("permissions");
 
+        // ✅ Load permissions into Redux
+        if (rawPermissions) {
+            try {
+                const parsed = JSON.parse(rawPermissions);
+                dispatch(setPermissions(parsed));
+                console.log("✅ Loaded permissions from localStorage:", parsed);
+            } catch (err) {
+                console.error("❌ Failed to parse permissions from localStorage:", err);
+            }
+        }
+
+        // ✅ Decode and set user from token
+        if (token) {
             try {
                 const decoded: any = jwtDecode(token);
-                console.log("Decoded Token:", decoded);
-                console.log("Dispatching setCredentials with:", {
-                    user: {
-                        id: decoded.userId,
-                        username: decoded.username,
-                        fullName: decoded.fullName || "",
-                        email: decoded.email || "",
-                        role: decoded.role,
-                        subRole: decoded.subRole || null,
-                        status: "active"
-                    },
-                    token
-                });
-
-                dispatch(setCredentials({
-                    user: {
-                        id: decoded.userId,
-                        username: decoded.username,
-                        fullName: decoded.fullName || decoded.username, // fallback
-                        email: decoded.email || decoded.username, // fallback
-                        employee: decoded.employee,
-                        role: decoded.role,
-                        subRole: decoded.subRole || null,
-                        impersonatedBy: decoded.impersonatedBy || null,
-                        status: "active"
-                    },
-                    token
-                }));
-                dispatch(markAuthHydrated()); // ✅ mark as initialized
+                console.log("DOCODED:", decoded);
+                dispatch(
+                    setCredentials({
+                        user: {
+                            id: decoded.userId,
+                            username: decoded.username,
+                            fullName: decoded.fullName || decoded.username,
+                            email: decoded.email || decoded.username,
+                            employee: decoded.employee,
+                            role: decoded.role,
+                            subRole: decoded.subRole || null,
+                            impersonatedBy: decoded.impersonatedBy || null,
+                            status: "active",
+                        },
+                        token,
+                    })
+                );
             } catch (err) {
                 console.error("Token decoding failed:", err);
             }
         } else {
-            console.log("No token found.");
+            console.log(" No token found in localStorage.");
         }
+
+        dispatch(markAuthHydrated());
     }, [dispatch]);
 
-    return null; // nothing rendered
+    return null;
 };
 
 export default AuthInitializer;

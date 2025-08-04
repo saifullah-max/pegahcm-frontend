@@ -4,7 +4,7 @@ import { ArrowLeft, Cog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const initialModules = ['Department', 'Employee', 'Project', 'Leave', 'Shift', 'Role', 'SubRole'];
-const actions = ['view', 'create', 'update', 'delete', 'approve'];
+const actions = ['view', 'view-all', 'create', 'update', 'delete', 'approve'];
 
 const AddPermission = () => {
     const navigate = useNavigate();

@@ -15,12 +15,10 @@ const RoleRedirect = () => {
             case 'admin':
                 navigate('/admin/dashboard');
                 break;
-            case 'hr':
-                navigate('/hr/dashboard');
-                break;
             case 'user':
+                navigate('/user/user-dashboard')
             default:
-                navigate('/user/dashboard');
+                navigate('/user/user-dashboard');
         }
     }, [user, isAuthenticated, navigate]);
 

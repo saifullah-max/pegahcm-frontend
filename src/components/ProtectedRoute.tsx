@@ -1,33 +1,40 @@
 import { useSelector } from 'react-redux';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { RootState } from '../store';
 
-const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
-  const { user, isAuthHydrated } = useSelector((state: any) => state.auth);
+const ProtectedRoute = ({
+  allowedRoles = [],
+  requiredPermission = '',
+  children,
+}: {
+  allowedRoles?: string[];
+  requiredPermission?: string;
+  children: React.ReactNode;
+}) => {
+  const { user, permissions, isAuthHydrated } = useSelector(
+    (state: RootState) => state.auth
+  );
 
-  // ✅ Optional: Console logs for debugging
-  console.log("✅ ProtectedRoute: user =", user);
-  console.log("✅ ProtectedRoute: isAuthHydrated =", isAuthHydrated);
+  const isLoading = !isAuthHydrated || !user;
 
-  // 🕓 Wait until auth is fully loaded
-  if (!isAuthHydrated) {
-    return <div>Loading...</div>; // or use a Spinner component
-  }
+  if (isLoading) return <div>Loading...</div>;
 
-  // 🔐 If no user, redirect to login
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // ✅ Check both role and subRole.name for access
-  const hasRoleAccess =
+  const roleAllowed =
+    allowedRoles.length === 0 ||
     allowedRoles.includes(user.role) ||
-    (user.subRole?.name && allowedRoles.includes(user.subRole.name));
+    allowedRoles.includes(user.subRole?.name || '');
 
-  if (!hasRoleAccess) {
-    return <Navigate to="/login" replace />;
+  const hasPermission =
+    !requiredPermission || permissions.includes(requiredPermission);
+
+  if (!roleAllowed || !hasPermission) {
+    // Redirect admin to /admin/dashboard and others to /user/user-dashboard
+    if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
+    if (user.role === 'user') return <Navigate to="/user/user-dashboard" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

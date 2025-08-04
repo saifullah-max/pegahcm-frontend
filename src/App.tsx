@@ -42,6 +42,7 @@ import CreateSubRole from './pages/admin/employee/sub-role-management/CreateSubR
 import EditUserPermission from './pages/admin/employee/sub-role-management/EditUserPermission';
 import AuthInitializer from './store/slices/AuthInitilizer';
 import AssignUserPermissions from './pages/admin/employee/permissions/AssignUserPermissions';
+import Unauthorized from './pages/auth/Unauthorized';
 
 function App() {
   return (
@@ -50,72 +51,213 @@ function App() {
         <AuthInitializer />
         <Router>
           <Routes>
+            {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Admin Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-              <Route element={<AdminLayout />}>
-                <Route path="/admin/dashboard" element={<Dashboard />} />
-                <Route path="admin/employees" element={<Employees />} />
-                <Route path="admin/attendance" element={<Attendance />} />
-                <Route path='admin/add-leave-type' element={<AddLeaveType />} />
-                <Route path="/admin/add-employee" element={<AddEmployee />} />
-                <Route path='admin/edit-employee/:id' element={<EditEmployee />} />
-                <Route path="admin/shifts" element={<Shifts />} />
-                <Route path="admin/add-shifts" element={<AddShifts />} />
-                <Route path="admin/edit-shift/:id" element={<EditShift />} />
-                <Route path="admin/departments" element={<Departments />} />
-                <Route path="admin/add-department" element={<AddDepartment />} />
-                <Route path="admin/edit-department/:id" element={<EditDepartment />} />
-                <Route path='admin/permission' element={<Permission />} />
-                <Route path='admin/add-permission' element={<AddPermission />} />
-                <Route path='/admin/user-permission' element={<AssignSubRolePermissions />} />
-                <Route path='/admin/subrole-management' element={<SubRoleManagement />} />
-                <Route path='/admin/sub-role/create' element={<CreateSubRole />} />
-                <Route path='/admin/sub-role/edit/:id' element={<EditUserPermission />} />
-                <Route path='/admin/onboarding' element={<OnBoardingProcess />} />
-                <Route path='/admin/onboarding/create' element={<OnboardingForm />} />
-                <Route path='/admin/onboarding/edit/:id' element={<EditOnboardingForm />} />
-                <Route path='/admin/resignations' element={<Resignations />} />
-                <Route path='/admin/user/resignation' element={<UserResignation />} />
-                <Route path='/admin/user/resignation-form' element={<ResignationForm />} />
-                <Route path='/admin/user/edit-resignation/:id' element={<EditResignations />} />
-                <Route path='/admin/manage-permissions/:userId' element={<AssignUserPermissions />} />
-                {/* <Route element={<UserLayout />}>
-                  <Route path="/user/user-dashboard" element={<UserDashboard />} />
-                  <Route path="/user/user-attendance" element={<UserAttendance />} />
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'teamMember']}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute requiredPermission="Dashboard:view">
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
 
-                </Route> */}
-              </Route>
+              <Route path="/admin/employees" element={
+                <ProtectedRoute requiredPermission="Employee:view-all">
+                  <Employees />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/add-employee" element={
+                <ProtectedRoute requiredPermission="Employee:create">
+                  <AddEmployee />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/edit-employee/:id" element={
+                <ProtectedRoute requiredPermission="Employee:update">
+                  <EditEmployee />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/attendance" element={
+                <ProtectedRoute requiredPermission="Attendance:view">
+                  <Attendance />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/add-leave-type" element={
+                <ProtectedRoute requiredPermission="Leave:create">
+                  <AddLeaveType />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/shifts" element={
+                <ProtectedRoute requiredPermission="Shift:view">
+                  <Shifts />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/add-shifts" element={
+                <ProtectedRoute requiredPermission="Shift:create">
+                  <AddShifts />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/edit-shift/:id" element={
+                <ProtectedRoute requiredPermission="Shift:update">
+                  <EditShift />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/departments" element={
+                <ProtectedRoute requiredPermission="Department:view">
+                  <Departments />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/add-department" element={
+                <ProtectedRoute requiredPermission="Department:create">
+                  <AddDepartment />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/edit-department/:id" element={
+                <ProtectedRoute requiredPermission="Department:update">
+                  <EditDepartment />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/permission" element={
+                <ProtectedRoute requiredPermission="Permission:view">
+                  <Permission />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/add-permission" element={
+                <ProtectedRoute requiredPermission="Permission:create">
+                  <AddPermission />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/user-permission" element={
+                <ProtectedRoute requiredPermission="Permission:update">
+                  <AssignSubRolePermissions />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/subrole-management" element={
+                <ProtectedRoute requiredPermission="SubRole:view">
+                  <SubRoleManagement />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/sub-role/create" element={
+                <ProtectedRoute requiredPermission="SubRole:create">
+                  <CreateSubRole />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/sub-role/edit/:id" element={
+                <ProtectedRoute requiredPermission="SubRole:update">
+                  <EditUserPermission />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/onboarding" element={
+                <ProtectedRoute requiredPermission="Onboarding:view">
+                  <OnBoardingProcess />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/onboarding/create" element={
+                <ProtectedRoute requiredPermission="Onboarding:create">
+                  <OnboardingForm />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/onboarding/edit/:id" element={
+                <ProtectedRoute requiredPermission="Onboarding:update">
+                  <EditOnboardingForm />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/resignations" element={
+                <ProtectedRoute requiredPermission="Resignation:view">
+                  <Resignations />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/user/resignation" element={
+                <ProtectedRoute requiredPermission="Resignation:create">
+                  <UserResignation />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/user/resignation-form" element={
+                <ProtectedRoute requiredPermission="Resignation:create">
+                  <ResignationForm />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/user/edit-resignation/:id" element={
+                <ProtectedRoute requiredPermission="Resignation:update">
+                  <EditResignations />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/manage-permissions/:userId" element={
+                <ProtectedRoute requiredPermission="Permission:update">
+                  <AssignUserPermissions />
+                </ProtectedRoute>
+              } />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['admin', 'user']} key='user' />}>
-              <Route element={<UserLayout />}>
-                <Route path="/user/user-dashboard" element={<UserDashboard />} />
-                <Route path="/user/user-attendance" element={<UserAttendance />} />
-              </Route>
+
+            {/* User Routes */}
+            <Route element={<UserLayout />}>
+              <Route
+                path="/user/user-dashboard"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'teamMember']}
+                    requiredPermission="Dashboard:view"
+                  >
+                    <UserDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/user-attendance"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'teamMember']}
+                    requiredPermission="Attendance:view"
+                  >
+                    <UserAttendance />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             {/* HR Routes */}
-
             <Route element={<HRLayout />}>
-              <Route path='/hr/dashboard' element={<HRDashboard />} />
-              <Route path='/hr/employees' element={<Employees_HR />} />
-              <Route path='/hr/attendance' element={<Attendance_HR />} />
-              <Route path='/hr/departments' element={<Departments_HR />} />
-              <Route path='/hr/edit-department/:id' element={<EditDepartment_HR />} />
-
+              <Route path="/hr/dashboard" element={<HRDashboard />} />
+              <Route path="/hr/employees" element={<Employees_HR />} />
+              <Route path="/hr/attendance" element={<Attendance_HR />} />
+              <Route path="/hr/departments" element={<Departments_HR />} />
+              <Route path="/hr/edit-department/:id" element={<EditDepartment_HR />} />
             </Route>
-            {/* <Route element={<ProtectedRoute allowedRole="hr" />}>
-            </Route> */}
 
-            {/* User Routes */}
-            {/* <Route element={<ProtectedRoute allowedRole="user" />}>
-
-            </Route> */}
-
-            {/* Redirect root to login */}
+            {/* Fallback & Unauthorized */}
+            {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
