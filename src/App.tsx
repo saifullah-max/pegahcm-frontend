@@ -58,7 +58,7 @@ function App() {
             {/* Admin Routes */}
             <Route
               element={
-                <ProtectedRoute allowedRoles={['admin', 'teamMember']}>
+                <ProtectedRoute allowedRoles={['admin', 'teamMember', 'manager', 'teamLead', 'director']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }
@@ -141,18 +141,6 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="/admin/add-permission" element={
-                <ProtectedRoute requiredPermission="Permission:create">
-                  <AddPermission />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/admin/user-permission" element={
-                <ProtectedRoute requiredPermission="Permission:update">
-                  <AssignSubRolePermissions />
-                </ProtectedRoute>
-              } />
-
               <Route path="/admin/subrole-management" element={
                 <ProtectedRoute requiredPermission="SubRole:view">
                   <SubRoleManagement />
@@ -220,14 +208,35 @@ function App() {
               } />
             </Route>
 
+            {/* Routes allowed for admins only */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/admin/add-permission" element={
+                <ProtectedRoute allowedRoles={['admin']} requiredPermission="Permission:create">
+                  <AddPermission />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/user-permission" element={
+                <ProtectedRoute requiredPermission="Permission:update">
+                  <AssignSubRolePermissions />
+                </ProtectedRoute>
+              } />
+            </Route>
+
 
             {/* User Routes */}
-            <Route element={<UserLayout />}>
+            <Route element={<AdminLayout />}>
               <Route
                 path="/user/user-dashboard"
                 element={
                   <ProtectedRoute
-                    allowedRoles={['admin', 'teamMember']}
+                    allowedRoles={['admin', 'teamMember', 'manager', 'teamLead', 'director']}
                     requiredPermission="Dashboard:view"
                   >
                     <UserDashboard />
@@ -238,7 +247,7 @@ function App() {
                 path="/user/user-attendance"
                 element={
                   <ProtectedRoute
-                    allowedRoles={['admin', 'teamMember']}
+                    allowedRoles={['admin', 'teamMember', 'manager', 'teamLead', 'director']}
                     requiredPermission="Attendance:view"
                   >
                     <UserAttendance />

@@ -113,7 +113,7 @@ export const processResignation = async (
     remarks: string
 ) => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/hr/resignation/${id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/hr/resignation/process/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({ status, processedById, remarks }),

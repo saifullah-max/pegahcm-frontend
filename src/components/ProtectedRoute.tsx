@@ -23,9 +23,13 @@ const ProtectedRoute = ({
     allowedRoles.length === 0 ||
     allowedRoles.includes(user.role) ||
     allowedRoles.includes(user.subRole?.name || '');
+  console.log("USER role:", user.subRole?.name);
+  console.log("ROLE ALLOWED?", roleAllowed);
+
 
   const hasPermission =
     !requiredPermission || permissions.includes(requiredPermission);
+  console.log("HAS PERMISSION:", hasPermission);
 
   if (!roleAllowed || !hasPermission) {
     // Redirect admin to /admin/dashboard and others to /user/user-dashboard

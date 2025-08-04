@@ -23,12 +23,15 @@ const Resignations = () => {
     const [remarks, setRemarks] = useState('');
 
     useEffect(() => {
+        console.log("Resignations Component Rendered");
+
         fetchResignations();
     }, []);
 
     const fetchResignations = async () => {
         try {
             const data = await getAllResignations();
+            console.log("Resignation data:", data);
             setResignations(data);
         } catch (error) {
             console.error('Failed to fetch resignations:', error);
