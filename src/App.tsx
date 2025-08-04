@@ -190,7 +190,7 @@ function App() {
               } />
 
               <Route path="/admin/resignations" element={
-                <ProtectedRoute requiredPermission="Resignation:view">
+                <ProtectedRoute requiredPermission="Resignation:approve">
                   <Resignations />
                 </ProtectedRoute>
               } />
