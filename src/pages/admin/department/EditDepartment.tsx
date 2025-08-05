@@ -10,6 +10,7 @@ import {
   Department,
   SubDepartment,
 } from '../../../services/departmentService';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 const EditDepartment: React.FC = () => {
   const navigate = useNavigate();
@@ -64,9 +65,11 @@ const EditDepartment: React.FC = () => {
 
     try {
       await updateDepartment(id!, department?.name || '');
+      showSuccess("Department updated successfully!")
       navigate('/admin/departments');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update department');
+      showError("Error while updating department")
     } finally {
       setIsSubmitting(false);
     }

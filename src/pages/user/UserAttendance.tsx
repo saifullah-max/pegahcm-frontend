@@ -2,6 +2,7 @@ import { ClockFading } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getLeaveRequests, getLeaveTypes, submitLeaveRequest } from '../../services/attendanceService';
 import { getEmployeeHours } from '../../services/userService';
+import { showError, showSuccess } from '../../lib/toastUtils';
 
 interface AttendanceRequest {
     key: string;
@@ -143,8 +144,10 @@ const UserAttendance: React.FC = () => {
 
             setNewRequest({ leaveId: '', startDate: '', endDate: '', reason: '' });
             setShowForm(false);
+            showSuccess("Leave requests submitted")
         } catch (err) {
             console.error('Leave submission failed:', err);
+            showError("Error - maybe you're unlucky to go on a leave")
         }
     };
 

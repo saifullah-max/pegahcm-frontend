@@ -5,6 +5,7 @@ import { AdminLeaveRequest, getAllAdminLeaveRequests, updateLeaveStatus } from '
 import { EmployeeSummary, getEmployeeAttendanceSummary } from '../../../../services/userService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
+import { showError, showInfo, showSuccess } from '../../../../lib/toastUtils';
 
 interface LeaveRequest {
   id: string;
@@ -60,8 +61,10 @@ const Attendance: React.FC = () => {
       setLeaveRequests(prev =>
         prev.map(req => (req.id === id ? { ...req, status: 'Approved' } : req))
       );
-    } catch (err) {
-      console.error('Failed to approve leave request', err);
+      showInfo("Leave request approved successfully")
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || 'Something went wrong';
+      showError(errorMessage)
     }
   };
 
@@ -71,8 +74,10 @@ const Attendance: React.FC = () => {
       setLeaveRequests(prev =>
         prev.map(req => (req.id === id ? { ...req, status: 'Rejected' } : req))
       );
-    } catch (err) {
-      console.error('Failed to reject leave request', err);
+      showSuccess("Leave request rejecetd")
+    } catch (err: any) {
+      const errorMessage = err?.response?.message || 'Something went wrong';
+      showError(errorMessage);
     }
   };
 

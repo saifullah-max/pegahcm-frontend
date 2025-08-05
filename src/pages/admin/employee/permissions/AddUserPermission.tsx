@@ -9,6 +9,7 @@ import {
 import { getAllSubRoles } from '../../../../services/subRoleService';
 import { ArrowLeft, Cog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { showSuccess } from '../../../../lib/toastUtils';
 
 const AssignSubRolePermissions = () => {
     const navigate = useNavigate();
@@ -69,7 +70,7 @@ const AssignSubRolePermissions = () => {
     const handleSubmit = async () => {
         if (!selectedSubRole) return alert('Please select a sub-role');
         await assignSubRolePermissions(selectedSubRole, selectedPermissions);
-        alert('Permissions assigned to sub-role');
+        showSuccess(`Permissions assigned to ${selectedSubRole}`)
         navigate('/admin/permission')
     };
 

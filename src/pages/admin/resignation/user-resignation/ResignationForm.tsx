@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';// ⬅️ your API service
 import { submitResignation } from '../../../../services/resignationService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 const ResignationForm: React.FC = () => {
     const { user } = useSelector((state: RootState) => state.auth)
@@ -38,11 +39,11 @@ const ResignationForm: React.FC = () => {
                 reason: formData.reason
             });
 
-            alert('Resignation submitted successfully!');
+            showSuccess('Resignation submitted successfully!')
             navigate('/admin/user/resignation');
         } catch (err) {
             console.error("Submission failed:", err);
-            alert('Failed to submit resignation.');
+            showError('Failed to submit resignation.')
         }
     };
 

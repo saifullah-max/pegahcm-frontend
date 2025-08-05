@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
 import { getShiftById, updateShift } from '../../../services/ShiftService';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 interface ShiftData {
   id: string;
@@ -105,9 +106,11 @@ const EditShift: React.FC = () => {
         description: shift.description,
       });
 
+      showSuccess("Shift updated successfully!")
       navigate('/admin/shifts');
     } catch (error) {
       console.error('Error updating shift:', error);
+      showError("Error while updating shifts")
       setError(error instanceof Error ? error.message : 'Failed to update shift');
     } finally {
       setIsSubmitting(false);

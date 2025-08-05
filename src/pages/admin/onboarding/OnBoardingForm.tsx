@@ -5,6 +5,7 @@ import { createOnboardingProcess, CreateOnboardingPayload, fetchAllHREmployees, 
 import { Employee, getEmployees } from '../../../services/employeeService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 // import { getHRs } from '../../services/hrService'; // You’ll need this to fetch HRs
 
 interface HR {
@@ -77,12 +78,15 @@ const OnboardingForm = () => {
         try {
             setLoading(true);
             await createOnboardingProcess(formData);
+            showSuccess("Employee onboarded")
             navigate('/hr/onboarding');
         } catch (error: any) {
             if (error.message === 'This employee is already onboarded.' || error.message.includes('already')) {
-                window.alert(error.message); // 🔔 Show alert on duplicate
+                // window.alert(error.message); // 🔔 Show alert on duplicate
+                showError(error.message)
             } else {
                 setError('Something went wrong. Please try again.');
+                showError("Some unknown error occurred ")
             }
         } finally {
             setLoading(false);

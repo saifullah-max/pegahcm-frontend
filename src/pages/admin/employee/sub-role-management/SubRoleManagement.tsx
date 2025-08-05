@@ -6,6 +6,8 @@ import { deleteSubRole, getAllSubRoles, SubRole } from '../../../../services/sub
 const SubRoleManagement = () => {
     const navigate = useNavigate();
     const [subRoles, setSubRoles] = useState<SubRole[]>([]);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+
 
     useEffect(() => {
         fetchSubRoles();
@@ -16,11 +18,28 @@ const SubRoleManagement = () => {
         setSubRoles(subRoles);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure?')) return;
-        await deleteSubRole(id);
-        fetchSubRoles();
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id);
     };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteSubRole(deleteId);
+            fetchSubRoles();
+        } catch (error) {
+            console.error("Error deleting sub-role:", error);
+        } finally {
+            setDeleteId(null); // Close modal
+        }
+    };
+
+    const cancelDelete = () => {
+        setDeleteId(null); // Close modal
+    };
+
+
 
     return (
         <div className="p-6">
@@ -71,7 +90,7 @@ const SubRoleManagement = () => {
                                     </button>
                                     <button
                                         className="text-red-600 hover:underline"
-                                        onClick={() => handleDelete(subRole.id)}
+                                        onClick={() => handleDeleteClick(subRole.id)}
                                     >
                                         <Trash2 size={18} />
                                     </button>
@@ -88,6 +107,34 @@ const SubRoleManagement = () => {
                     </tbody>
                 </table>
             </div>
+            {deleteId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 max-w-sm w-full">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            Confirm Deletion
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Are you sure you want to delete this sub-role?
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 rounded-md text-sm border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

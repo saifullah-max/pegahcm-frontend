@@ -9,6 +9,7 @@ import {
     getPermissionIdByUserId,
 } from '../../../../services/permissionService';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 const ACTIONS = ['view', 'create', 'update', 'delete', '|', 'approve', 'reject'];
 
@@ -83,11 +84,11 @@ const AssignUserPermissions = () => {
     const handleSubmit = async () => {
         try {
             await assignUserPermissions(userId!, selectedPermissions);
-            alert('Permissions updated for user.');
+            showSuccess('Permissions updated for user.')
             navigate(-1);
         } catch (err) {
             console.error(err);
-            alert('Failed to assign permissions');
+            showError('Failed to assign permissions')
         }
     };
 

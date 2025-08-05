@@ -4,12 +4,14 @@ import { CalendarSync, Delete, Edit, Plus, TrashIcon } from "lucide-react";
 import { getShifts, deleteShift } from "../../../services/ShiftService";
 import { RootState } from '../../../store';
 import { useSelector, useDispatch } from 'react-redux';
+import { showError, showSuccess } from "../../../lib/toastUtils";
 
 
 const Shifts: React.FC = () => {
     const { permissions } = useSelector((state: RootState) => state.auth);
     const [shifts, setShifts] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const canCreateShift = permissions.includes("Shift:create");
@@ -92,16 +94,42 @@ const Shifts: React.FC = () => {
 
 
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm("Are you sure you want to delete this shift?")) {
-            try {
-                await deleteShift(id);
-                // Refresh the list
-                setShifts(shifts.filter(shift => shift.id !== id));
-            } catch (error) {
-                console.error("Error deleting shift:", error);
-            }
+    // const handleDelete = async (id: string) => {
+    //     if (window.confirm("Are you sure you want to delete this shift?")) {
+    //         try {
+    //             await deleteShift(id);
+    //             // Refresh the list
+    //             showSuccess("Shift deleted successfully")
+    //             setShifts(shifts.filter(shift => shift.id !== id));
+    //         } catch (error) {
+    //             console.error("Error deleting shift:", error);
+    //         }
+    //     }
+    // };
+
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id); // Opens modal
+    };
+
+
+    // On Confirm
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await deleteShift(deleteId);
+            setShifts(shifts.filter((shift) => shift.id !== deleteId));
+            showSuccess('Shift deleted successfully');
+        } catch (error) {
+            showError('Failed to delete shift');
+        } finally {
+            setDeleteId(null); // Close modal
         }
+    };
+
+    // On Cancel
+    const cancelDelete = () => {
+        setDeleteId(null);
     };
 
     const handleEdit = (id: string) => {
@@ -182,7 +210,7 @@ const Shifts: React.FC = () => {
                                                     className="text-blue-500 cursor-pointer"
                                                 />
                                                 <TrashIcon
-                                                    onClick={() => handleDelete(data.id)}
+                                                    onClick={() => handleDeleteClick(data.id)}
                                                     strokeWidth={1}
                                                     size={20}
                                                     className="text-red-500 cursor-pointer"
@@ -197,6 +225,36 @@ const Shifts: React.FC = () => {
                     </table>
                 </div>
             )}
+
+            {deleteId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 max-w-sm w-full animate-fadeIn transition-transform duration-200">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            Confirm Deletion
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Are you sure you want to delete this shift? This action cannot be undone.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
         </div>
     );
 };

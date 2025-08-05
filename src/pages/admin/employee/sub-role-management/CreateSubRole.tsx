@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSubRole } from '../../../../services/subRoleService';
 import { getAllPermissions, Permission } from '../../../../services/permissionService';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 const CreateSubRole = () => {
     const navigate = useNavigate();
@@ -27,8 +28,10 @@ const CreateSubRole = () => {
         e.preventDefault();
         try {
             await createSubRole({ name, description, permissionIds });
+            showSuccess(`${name} as sub-role added`)
             navigate('/admin/subrole-management');
         } catch (err) {
+            showError("Error while adding new sub-role")
             console.error('Error creating subRole', err);
         }
     };
