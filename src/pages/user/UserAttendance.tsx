@@ -22,6 +22,7 @@ const UserAttendance: React.FC = () => {
     const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
     const [attendanceRequests, setAttendanceRequests] = useState<AttendanceRequest[]>([]);
     const [showForm, setShowForm] = useState(false);
+    const [showAttendanceForm, setShowAttendanceForm] = useState(false);
     const [newRequest, setNewRequest] = useState<{
         leaveId: string;
         startDate: string;
@@ -36,7 +37,13 @@ const UserAttendance: React.FC = () => {
     const [employeeHours, setEmployeeHours] = useState<Record<string, { weekly: number; monthly: number }>>({});
     const [userName, setuserName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
-
+    const [attendanceFixRequest, setAttendanceFixRequest] = useState({
+        date: '',
+        missingType: '',
+        expectedClockIn: '',
+        expectedClockOut: '',
+        reason: '',
+    });
 
     useEffect(() => {
         const fetchLeaveTypes = async () => {
@@ -106,6 +113,12 @@ const UserAttendance: React.FC = () => {
         setNewRequest((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleAttendanceFixChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setAttendanceFixRequest((prev) => ({ ...prev, [name]: value }));
+    };
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -159,88 +172,26 @@ const UserAttendance: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-            <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <ClockFading />
-                    My Attendance Requests
+            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <ClockFading className="text-blue-600 dark:text-blue-400" />
+                    Attendance Requests
                 </h1>
-                <button
-                    onClick={() => setShowForm((prev) => !prev)}
-                    className="px-4 py-2 bg-[#255199] hover:bg-[#2F66C1] text-white rounded-lg transition"
-                >
-                    {showForm ? 'Cancel' : 'Add Request'}
-                </button>
-            </div>
-
-            {showForm && (
-                <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded shadow-md">
-                    <div className="mb-4">
-                        <label htmlFor="leaveId" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                            Leave Type
-                        </label>
-                        <select
-                            id="leaveId"
-                            name="leaveId"
-                            value={newRequest.leaveId}
-                            onChange={handleInputChange}
-                            required
-                            className="mt-1 block w-full border-gray-300 bg-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
-                        >
-                            <option value="">Select Leave Type</option>
-                            {leaveTypes.map((type) => (
-                                <option key={type.id} value={type.id}>
-                                    {type.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="mb-4">
-                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Start Date</label>
-                        <input
-                            type="date"
-                            id="startDate"
-                            name="startDate"
-                            value={newRequest.startDate}
-                            onChange={handleInputChange}
-                            required
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200">End Date</label>
-                        <input
-                            type="date"
-                            id="endDate"
-                            name="endDate"
-                            value={newRequest.endDate}
-                            onChange={handleInputChange}
-                            required
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label htmlFor="reason" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Reason</label>
-                        <textarea
-                            id="reason"
-                            name="reason"
-                            value={newRequest.reason}
-                            onChange={handleInputChange}
-                            required
-                            className="mt-1 block w-full border-gray-300 bg-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        />
-                    </div>
-
+                <div className="flex gap-3">
                     <button
-                        type="submit"
-                        className="px-4 py-2 bg-[#255199] hover:bg-[#2F66C1] text-white rounded-lg transition"
+                        onClick={() => setShowForm((prev) => !prev)}
+                        className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
                     >
-                        Submit Request
+                        {showForm ? 'Cancel' : 'Add Leave Request'}
                     </button>
-                </form>
-            )}
+                    <button
+                        onClick={() => setShowAttendanceForm((prev) => !prev)}
+                        className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+                    >
+                        {showAttendanceForm ? 'Cancel' : 'Fix Attendance'}
+                    </button>
+                </div>
+            </div>
 
             <div className="overflow-x-auto shadow-md rounded-lg">
                 <table className="min-w-full table-auto">
@@ -316,6 +267,176 @@ const UserAttendance: React.FC = () => {
 
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+
+            {showForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl shadow-lg relative">
+                        <button
+                            onClick={() => setShowForm(false)}
+                            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                        >
+                            ✕
+                        </button>
+                        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                            Submit Leave Request
+                        </h3>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Leave Type</label>
+                                <select
+                                    name="leaveId"
+                                    value={newRequest.leaveId}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                >
+                                    <option value="">Select Leave Type</option>
+                                    {leaveTypes.map((type) => (
+                                        <option key={type.id} value={type.id} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                        >
+                                            {type.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Start Date</label>
+                                <input
+                                    type="date"
+                                    name="startDate"
+                                    value={newRequest.startDate}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">End Date</label>
+                                <input
+                                    type="date"
+                                    name="endDate"
+                                    value={newRequest.endDate}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Reason</label>
+                                <textarea
+                                    name="reason"
+                                    value={newRequest.reason}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full px-5 py-2.5 text-base bg-[#255199] hover:bg-[#2F66C1] text-white rounded-md text-sm"
+                            >
+                                Submit Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showAttendanceForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl shadow-lg relative">
+                        <button
+                            onClick={() => setShowAttendanceForm(false)}
+                            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                        >
+                            ✕
+                        </button>
+                        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                            Fix Attendance Entry
+                        </h3>
+                        <form className="space-y-6">
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Date</label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={attendanceFixRequest.date}
+                                    onChange={handleAttendanceFixChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Missing Type</label>
+                                <select
+                                    name="missingType"
+                                    value={attendanceFixRequest.missingType}
+                                    onChange={handleAttendanceFixChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="CheckIn">Check In</option>
+                                    <option value="CheckOut">Check Out</option>
+                                    <option value="Both">Both</option>
+                                </select>
+                            </div>
+
+                            {(attendanceFixRequest.missingType === 'CheckIn' || attendanceFixRequest.missingType === 'Both') && (
+                                <div>
+                                    <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Expected Clock In</label>
+                                    <input
+                                        type="time"
+                                        name="expectedClockIn"
+                                        value={attendanceFixRequest.expectedClockIn}
+                                        onChange={handleAttendanceFixChange}
+                                        required
+                                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                    />
+                                </div>
+                            )}
+
+                            {(attendanceFixRequest.missingType === 'CheckOut' || attendanceFixRequest.missingType === 'Both') && (
+                                <div>
+                                    <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Expected Clock Out</label>
+                                    <input
+                                        type="time"
+                                        name="expectedClockOut"
+                                        value={attendanceFixRequest.expectedClockOut}
+                                        onChange={handleAttendanceFixChange}
+                                        required
+                                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Reason</label>
+                                <textarea
+                                    name="reason"
+                                    value={attendanceFixRequest.reason}
+                                    onChange={handleAttendanceFixChange}
+                                    required
+                                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full px-5 py-2.5 text-base bg-[#255199] hover:bg-[#2F66C1] text-white rounded-md text-sm"
+                            >
+                                Submit Request
+                            </button>
+                        </form>
                     </div>
                 </div>
             )}
