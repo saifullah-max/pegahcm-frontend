@@ -99,10 +99,6 @@ const UserAttendance: React.FC = () => {
 
     useEffect(() => {
         if (!userId || Object.keys(employeeHours).length === 0) return;
-
-        console.log("✅ Matching userId:", userId);
-        console.log("✅ Does employeeHours contain userId?", employeeHours.hasOwnProperty(userId));
-        console.log("✅ employeeHours for this user:", employeeHours[userId]);
     }, [userId, employeeHours]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -162,9 +158,9 @@ const UserAttendance: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 bg-gray-50 transition-colors duration-200">
+        <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl text-gray-600 dark:text-gray-200 flex items-center gap-2">
+                <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <ClockFading />
                     My Attendance Requests
                 </h1>

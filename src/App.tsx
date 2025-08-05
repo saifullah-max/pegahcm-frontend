@@ -5,7 +5,6 @@ import Login from './pages/auth/Login';
 import Dashboard from './pages/admin/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
-import UserLayout from './layouts/UserLayout';
 import Employees from './pages/admin/employee/Employees';
 import AddEmployee from './pages/admin/employee/AddEmployee';
 import Attendance from './pages/admin/employee/attendance/Attendance';
@@ -21,12 +20,6 @@ import AddDepartment from './pages/admin/department/AddDepartment';
 import EditDepartment from './pages/admin/department/EditDepartment';
 import EditEmployee from './pages/admin/employee/EditEmployee';
 import AddLeaveType from './pages/admin/employee/attendance/AddLeaveType';
-import HRDashboard from './pages/hr/HRDashboard';
-import HRLayout from './layouts/HRLayout';
-import Employees_HR from './pages/hr/Employees';
-import Attendance_HR from './pages/hr/Attendance';
-import Departments_HR from './pages/hr/Departments';
-import EditDepartment_HR from './pages/hr/EditDepartment';
 import OnBoardingProcess from './pages/admin/onboarding/OnBoardingProcess';
 import OnboardingForm from './pages/admin/onboarding/OnBoardingForm';
 import EditOnboardingForm from './pages/admin/onboarding/EditOnBoarding';
@@ -269,21 +262,17 @@ function App() {
               />
             </Route>
 
-            {/* HR Routes */}
-            <Route element={<HRLayout />}>
-              <Route path="/hr/dashboard" element={<HRDashboard />} />
-              <Route path="/hr/employees" element={<Employees_HR />} />
-              <Route path="/hr/attendance" element={<Attendance_HR />} />
-              <Route path="/hr/departments" element={<Departments_HR />} />
-              <Route path="/hr/edit-department/:id" element={<EditDepartment_HR />} />
-            </Route>
-
             {/* Fallback & Unauthorized */}
-            {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          pauseOnHover={false}
+          pauseOnFocusLoss={false}
+        />
       </ThemeProvider>
     </Provider>
   );

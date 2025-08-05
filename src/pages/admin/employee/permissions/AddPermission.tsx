@@ -106,6 +106,8 @@ const AddPermission = () => {
         setCustomModule('');
         setCustomError('');
     };
+    const buttonStyle =
+        'w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]';
 
     return (
         <div className="min-h-screen flex flex-col items-center pt-10 px-4 bg-gray-50 dark:bg-gray-900">
@@ -124,13 +126,13 @@ const AddPermission = () => {
             {/* Tab Switcher */}
             <div className="mb-4 flex gap-4">
                 <button
-                    className={`px-4 py-2 rounded ${tab === 'single' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'}`}
+                    className={`${buttonStyle} ${tab === 'single' ? '' : 'opacity-60'}`}
                     onClick={() => setTab('single')}
                 >
                     Single Permission
                 </button>
                 <button
-                    className={`px-4 py-2 rounded ${tab === 'bulk' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'}`}
+                    className={`${buttonStyle} ${tab === 'bulk' ? '' : 'opacity-60'}`}
                     onClick={() => setTab('bulk')}
                 >
                     Bulk Permission
@@ -155,7 +157,7 @@ const AddPermission = () => {
                         <button
                             type="button"
                             onClick={handleAddCustomModule}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            className={buttonStyle}
                         >
                             Add
                         </button>
@@ -192,7 +194,7 @@ const AddPermission = () => {
                         />
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-2 rounded disabled:opacity-50"
+                            className={`${buttonStyle} w-full disabled:opacity-50`}
                             disabled={loading}
                         >
                             {loading ? 'Creating...' : 'Create Permission'}
@@ -245,7 +247,7 @@ const AddPermission = () => {
 
                         <button
                             type="submit"
-                            className="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800"
+                            className={`${buttonStyle} w-full disabled:opacity-50`}
                             disabled={loading}
                         >
                             {loading ? 'Creating...' : 'Create Bulk Permissions'}
