@@ -53,6 +53,7 @@ interface EmployeeFormData {
   shiftId?: string;
   role: string;
   subRole: string;
+  roleTag: string;
 }
 
 const AddEmployee: React.FC = () => {
@@ -80,7 +81,8 @@ const AddEmployee: React.FC = () => {
     workLocation: 'Onsite',
     shiftId: '',
     role: 'employee',
-    subRole: 'teamMember'
+    subRole: 'teamMember',
+    roleTag: ""
   });
 
   const [loading, setLoading] = useState(false);
@@ -305,6 +307,7 @@ const AddEmployee: React.FC = () => {
         fatherName: newEmployee.fatherName,
         roleId: newEmployee.role,
         subRoleId: newEmployee.subRole,
+        roleTag: newEmployee.roleTag,
         departmentId: newEmployee.department,
         subDepartmentId: newEmployee.subDepartment,
         designation: newEmployee.designation,
@@ -317,9 +320,7 @@ const AddEmployee: React.FC = () => {
         documents: newEmployee.documents,
         profileImage: newEmployee.profileImage,
       };
-      console.log("Creating employee");
       await createEmployee(apiData);
-      console.log("New employee added");
       showSuccess("Employee Added successfully")
       navigate('/admin/employees');
 
@@ -337,6 +338,13 @@ const AddEmployee: React.FC = () => {
     }
   };
 
+  const roleTagOptions = [
+    { label: "None", value: "" },
+    { label: "HR", value: "HR" },
+    { label: "Interviewer", value: "INTERVIEWER" },
+    { label: "Trainer", value: "TRAINER" },
+    { label: "Recruiter", value: "RECRUITER" },
+  ];
 
   // Helper function to get field error message
   const getFieldError = (fieldName: string): string | undefined => {
@@ -560,6 +568,31 @@ const AddEmployee: React.FC = () => {
                 This will determine what permissions the sub-user has in the system.
               </p>
             </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">Role Tag*</label>
+              <select
+                name="roleTag"
+                value={newEmployee.roleTag}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border ${getFieldError('roleTag') ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                required
+              >
+                {roleTagOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {getFieldError('roleTag') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('roleTag')}</p>
+              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                This will help assign HR-related or interview-related responsibilities.
+              </p>
+            </div>
+
 
             {/* Employment Information Section */}
             <div className="md:col-span-3 mt-4">
