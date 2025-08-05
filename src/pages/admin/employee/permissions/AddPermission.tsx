@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPermission } from '../../../../services/permissionService';
 import { ArrowLeft, Cog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 const initialModules = ['Department', 'Employee', 'Project', 'Leave', 'Shift', 'Role', 'SubRole'];
 const actions = ['view', 'view-all', 'create', 'update', 'delete', 'approve'];
@@ -47,12 +48,12 @@ const AddPermission = () => {
 
         try {
             await createPermission({ module, action, description });
-            setMessage('Permission created successfully!');
+            showSuccess('Permission created successfully!')
             setModule('');
             setAction('');
             setDescription('');
         } catch (err: any) {
-            setMessage(err.message || 'Failed to create permission');
+            showError(err.message || 'Failed to create permission')
         } finally {
             setLoading(false);
         }

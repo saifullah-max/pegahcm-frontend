@@ -43,6 +43,8 @@ import EditUserPermission from './pages/admin/employee/sub-role-management/EditU
 import AuthInitializer from './store/slices/AuthInitilizer';
 import AssignUserPermissions from './pages/admin/employee/permissions/AssignUserPermissions';
 import Unauthorized from './pages/auth/Unauthorized';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -254,6 +256,17 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/user/user-resignation"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'teamMember', 'manager', 'teamLead', 'director']}
+                    requiredPermission="Resignation:view"
+                  >
+                    <UserResignation />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             {/* HR Routes */}
@@ -270,6 +283,7 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
+        <ToastContainer position="top-right" autoClose={3000} />
       </ThemeProvider>
     </Provider>
   );

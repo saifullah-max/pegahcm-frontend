@@ -81,6 +81,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/admin/resignations' });
     navigate('/admin/resignations');
   };
+  const handleOnUserResignationsClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/user/user-resignation' });
+    navigate('/user/user-resignation');
+  };
 
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
@@ -200,12 +204,20 @@ const AdminLayout = () => {
             )}
 
             {/* Resignations */}
-            {hasPermission('Resignation:view') && (
+            {hasPermission('Resignation:approve') && (
               <li
                 onClick={handleOnResignationsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
                 <Building2 className="inline-block mr-2" /> Resignations
+              </li>
+            )}
+            {hasPermission('Resignation:view') && (
+              <li
+                onClick={handleOnUserResignationsClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <Building2 className="inline-block mr-2" /> User-Resignations
               </li>
             )}
 

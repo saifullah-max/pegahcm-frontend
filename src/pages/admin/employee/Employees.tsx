@@ -4,9 +4,11 @@ import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
 import { deleteEmployee, Employee, getEmployees } from "../../../services/employeeService";
 import { getEmployeeHours } from "../../../services/userService";
 import { impersonateUser } from "../../../services/permissionService";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../../store/slices/authSlice"; // adjust to your actual path
 import { jwtDecode } from "jwt-decode";
+import { showError, showInfo } from "../../../lib/toastUtils";
+import { RootState } from "../../../store";
 
 
 export interface DecodedUser {
@@ -27,10 +29,14 @@ export interface DecodedUser {
 
 const Employees: React.FC = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [hasFetched, setHasFetched] = useState(false);
   const [employeeHours, setEmployeeHours] = useState<Record<string, { weekly: number; monthly: number }>>({});
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteName, setDeleteName] = useState<string>(""); // for user name
+
 
   const navigate = useNavigate();
 
@@ -138,23 +144,38 @@ const Employees: React.FC = () => {
   const handleEdit = (id: string) => {
     navigate(`/admin/edit-employee/${id}`);
   }
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string, name: string) => {
     if (!id) {
       console.error("Invalid employee ID for deletion");
+      showError("Invalid employee ID for deletion");
       return;
     }
 
-    const confirmed = window.confirm("Are you sure you want to delete this employee?");
-    if (!confirmed) return; // Cancel deletion if user clicks "Cancel"
+    setDeleteId(id);
+    setDeleteName(name); // Set name for context
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
 
     try {
-      await deleteEmployee(id);
-      setEmployees((prev) => prev.filter((employee) => employee.id !== id));
-      console.log(`Deleted employee with ID: ${id}`);
+      await deleteEmployee(deleteId);
+      setEmployees((prev) => prev.filter((employee) => employee.id !== deleteId));
+      showInfo(`Deleted employee: ${deleteName} (${deleteId})`);
     } catch (error) {
       console.error("Error deleting employee:", error);
+      showError("Failed to delete employee");
+    } finally {
+      setDeleteId(null);
+      setDeleteName("");
     }
   };
+
+  const cancelDelete = () => {
+    setDeleteId(null);
+    setDeleteName("");
+  };
+
 
   const handleImpersonate = async (
     userId: string,
@@ -162,27 +183,27 @@ const Employees: React.FC = () => {
     status: string
   ) => {
     try {
-      // ✅ 1. Get current admin token from localStorage
+      // 1. Get current admin token from localStorage
       const currentToken = localStorage.getItem("token");
       if (!currentToken) {
-        alert("Admin token not found. Please log in again.");
+        showError("Admin token not found. Please log in again.")
         return;
       }
 
-      // ✅ 2. Store it as 'adminToken' before impersonation
+      // 2. Store it as 'adminToken' before impersonation
       localStorage.setItem("adminToken", currentToken);
       localStorage.setItem("impersonating", "true");
       localStorage.setItem("impersonatedUserId", userId);
 
-      // ✅ 3. Make API call to impersonate
+      // 3. Make API call to impersonate
       const token = await impersonateUser(userId); // ← this returns the new token
 
       if (!token) throw new Error("No token received");
 
-      // ✅ 4. Replace token in localStorage with impersonated user's token
+      // Replace token in localStorage with impersonated user's token
       localStorage.setItem("token", token);
 
-      // ✅ 5. Decode and update Redux state
+      // 5. Decode and update Redux state
       const decoded = jwtDecode<DecodedUser>(token);
 
       dispatch(
@@ -207,6 +228,7 @@ const Employees: React.FC = () => {
       );
 
       // ✅ 6. Redirect
+      showInfo("You're being redirected to user dashboard")
       window.location.href = "/user/user-dashboard";
     } catch (error) {
       console.error("Failed to impersonate user:", error);
@@ -311,7 +333,7 @@ const Employees: React.FC = () => {
                         <PencilLine size={18} />
                       </button>
                       <button
-                        onClick={() => handleDelete(employee.id)}
+                        onClick={() => handleDelete(employee.id, employee.fullName)}
                         className="text-red-600 hover:text-red-800 transition"
                         title="Delete"
                       >
@@ -346,6 +368,34 @@ const Employees: React.FC = () => {
           </table>
         </div>
       )}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 max-w-sm w-full animate-fadeIn transition-transform duration-200">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+              Confirm Deletion
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete employee <span className="font-semibold">{deleteName}</span>?
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -9,6 +9,7 @@ const OnBoardingProcess: React.FC = () => {
     const navigate = useNavigate();
     const [onboardingList, setOnboardingList] = useState<OnboardingProcess[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,15 +33,27 @@ const OnBoardingProcess: React.FC = () => {
         navigate(`/admin/onboarding/edit/${id}`);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this onboarding?")) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id); // triggers modal
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
         try {
-            await deleteOnboardingProcess(id);
-            setOnboardingList(prev => prev.filter(o => o.id !== id));
+            await deleteOnboardingProcess(deleteId);
+            setOnboardingList(prev => prev.filter(o => o.id !== deleteId));
         } catch (err) {
             console.error("Failed to delete onboarding:", err);
+        } finally {
+            setDeleteId(null); // Close modal
         }
     };
+
+    const cancelDelete = () => {
+        setDeleteId(null);
+    };
+
 
     const formatDate = (isoDate: string): string => {
         return new Date(isoDate).toLocaleDateString('en-GB', {
@@ -50,18 +63,18 @@ const OnBoardingProcess: React.FC = () => {
         });
     };
 
-const getStatusClass = (status: string) => {
-    switch (status) {
-        case 'Completed':
-            return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
-        case 'InProgress':
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100';
-        case 'Pending':
-            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
-        default:
-            return 'bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-    }
-};
+    const getStatusClass = (status: string) => {
+        switch (status) {
+            case 'Completed':
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
+            case 'InProgress':
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100';
+            case 'Pending':
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
+            default:
+                return 'bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+        }
+    };
 
 
 
@@ -120,7 +133,7 @@ const getStatusClass = (status: string) => {
                                             <Pencil size={16} />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(item.id)}
+                                            onClick={() => handleDeleteClick(item.id)}
                                             className="text-red-600 hover:text-red-800"
                                         >
                                             <Trash2 size={16} />
@@ -132,6 +145,35 @@ const getStatusClass = (status: string) => {
                     </table>
                 </div>
             )}
+
+            {deleteId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 max-w-sm w-full">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            Confirm Deletion
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Are you sure you want to delete this onboarding process?
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 rounded-md text-sm border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

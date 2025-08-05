@@ -4,11 +4,12 @@ import { ArrowLeft, UserRound } from 'lucide-react';
 import { createShift } from '../../../services/ShiftService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 const AddShifts: React.FC = () => {
   const navigate = useNavigate();
   const { token, isAuthenticated } = useSelector((state: RootState) => state.auth);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     startDate: new Date().toISOString().split('T')[0],
@@ -44,12 +45,12 @@ const AddShifts: React.FC = () => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    
+
     try {
       // Create Date objects for start and end times
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
       const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
-      
+
       // Format the data according to the updated CreateShiftData interface
       const shiftData = {
         name: formData.name,
@@ -57,14 +58,16 @@ const AddShifts: React.FC = () => {
         endTime: endDateTime,
         description: formData.description
       };
-      
+
       await createShift(shiftData);
-      
+
       console.log('Shift added successfully');
       // Navigate back to shifts list
+      showSuccess("Shift added successfully!")
       navigate('/admin/shifts');
     } catch (error) {
       console.error('Error adding shift:', error);
+      showError("Error while adding shifts")
       setError(error instanceof Error ? error.message : 'Failed to add shift');
     } finally {
       setIsSubmitting(false);
@@ -74,7 +77,7 @@ const AddShifts: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6 flex items-center">
-        <button 
+        <button
           onClick={() => navigate('/admin/shifts')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
@@ -84,7 +87,7 @@ const AddShifts: React.FC = () => {
           <UserRound /> Add Shifts
         </h1>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -100,7 +103,7 @@ const AddShifts: React.FC = () => {
                 Add Shift Details
               </h2>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Shift Name*</label>
               <input
@@ -112,7 +115,7 @@ const AddShifts: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Description*</label>
               <input
@@ -124,7 +127,7 @@ const AddShifts: React.FC = () => {
                 required
               />
             </div>
-            
+
             {/* Start Date and Time */}
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
@@ -137,7 +140,7 @@ const AddShifts: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
               <input
@@ -175,7 +178,7 @@ const AddShifts: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"

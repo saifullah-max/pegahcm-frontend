@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getResignationById, updateResignation } from '../../../../services/resignationService';
 import { ArrowLeft } from 'lucide-react';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 interface Resignation {
     id: string;
@@ -59,9 +60,10 @@ const EditResignations: React.FC = () => {
             });
 
             console.log('Resignation updated:', result);
+            showSuccess("Resignation updated successfully")
             navigate('/user/resignation');
         } catch (error) {
-            alert('Failed to update resignation. It may already be processed.');
+            showError('Failed to update resignation. It may already be processed.')
             console.error('Update error:', error);
         }
     };

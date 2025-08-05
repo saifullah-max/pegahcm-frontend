@@ -11,6 +11,7 @@ import {
 import { Employee, getEmployees } from '../../../services/employeeService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 const EditOnboardingForm = () => {
     const navigate = useNavigate();
@@ -79,9 +80,11 @@ const EditOnboardingForm = () => {
             setLoading(true);
             if (!id) return;
             await updateOnboardingProcess(id, formData);
+            showSuccess("Form updated!")
             navigate('/hr/onboarding');
         } catch (error) {
             console.error('Error updating onboarding:', error);
+            showError("Error while updating form")
         } finally {
             setLoading(false);
         }
