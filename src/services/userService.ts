@@ -183,7 +183,6 @@ export const getTodayAttendance = async (): Promise<{
     }
 };
 
-
 // get all todays attendances
 export const fetchTodayPresentCount = async () => {
     try {
