@@ -109,7 +109,7 @@ export const getAllResignations = async (): Promise<Resignation[]> => {
 export const processResignation = async (
     id: string,
     status: 'Approved' | 'Rejected',
-    processedById: string, // You must fetch this from the current user
+    processedById: String,
     remarks: string
 ) => {
     try {
@@ -121,6 +121,12 @@ export const processResignation = async (
 
         if (response.status === 401) throw new Error('invalid or expired token');
 
+        // ⛔️ Check for 403 and extract message
+        if (response.status === 403) {
+            const errorData = await response.json();
+            throw new Error(errorData.message); // This will be caught below
+        }
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Resignation processing failed: ${errorText}`);
@@ -130,9 +136,10 @@ export const processResignation = async (
         return data;
     } catch (error) {
         console.error('Error processing resignation:', error);
-        return handleAuthError(error);
+        throw error; // Let the caller handle it
     }
 };
+
 
 // Get single resignation
 export const getResignationById = async (id: string): Promise<Resignation> => {
@@ -158,6 +165,22 @@ export const getResignationById = async (id: string): Promise<Resignation> => {
         return handleAuthError(error);
     }
 };
+
+// GET - my resignation
+export const getMyResignation = async (): Promise<Resignation> => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/hr/user/my`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch resignation');
+    }
+
+    const data = await response.json();
+    return data.data;
+};
+
 
 // update resignation - if pending
 export const updateResignation = async (

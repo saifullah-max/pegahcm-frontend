@@ -11,7 +11,9 @@ import React, { useEffect, useState } from 'react';
 import {
     deleteResignation,
     getAllResignations,
+    getMyResignation,
 } from '../../../../services/resignationService';
+import { showInfo } from '../../../../lib/toastUtils';
 
 interface Resignation {
     id: string;
@@ -32,8 +34,9 @@ const SubmitResignation: React.FC = () => {
         const fetchResignation = async () => {
             setLoading(true);
             try {
-                const data = await getAllResignations();
-                setResignation(data?.[0] || null); // assuming only one resignation
+                const data = await getMyResignation();
+                console.log("Resignation:", data);
+                setResignation(data);
             } catch (error) {
                 console.error('Failed to load resignation:', error);
             } finally {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { createDepartment } from '../../../services/departmentService';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 const AddDepartment: React.FC = () => {
   const navigate = useNavigate();
@@ -17,13 +18,15 @@ const AddDepartment: React.FC = () => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    
+
     try {
       await createDepartment(departmentName);
       console.log('Department created successfully');
+      showSuccess("Department added successfully")
       navigate('/admin/departments');
     } catch (error) {
       console.error('Error creating department:', error);
+      showError("Error while adding new department")
       setError(error instanceof Error ? error.message : 'Failed to create department');
     } finally {
       setIsSubmitting(false);
@@ -33,7 +36,7 @@ const AddDepartment: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="mb-6 flex items-center">
-        <button 
+        <button
           onClick={() => navigate('/admin/departments')}
           className="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         >
@@ -43,7 +46,7 @@ const AddDepartment: React.FC = () => {
           <Building2 /> Add Department
         </h1>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -57,7 +60,7 @@ const AddDepartment: React.FC = () => {
                 Department Details
               </h2>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Department Name*</label>
               <input
@@ -70,7 +73,7 @@ const AddDepartment: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"

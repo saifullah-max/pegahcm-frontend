@@ -5,6 +5,7 @@ import { ArrowLeft, UserRound } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 import { createLeaveType } from '../../../../services/attendanceService';
+import { showError, showSuccess } from '../../../../lib/toastUtils';
 
 const AddLeaveType: React.FC = () => {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ const AddLeaveType: React.FC = () => {
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
-        const target = e.target as HTMLInputElement; 
+        const target = e.target as HTMLInputElement;
         const { name, value, type } = target;
 
         setFormData({
@@ -45,9 +46,11 @@ const AddLeaveType: React.FC = () => {
 
         try {
             await createLeaveType(formData); // call your backend
+            showSuccess("Leave type created successfully")
             navigate('/admin/attendance');
         } catch (error) {
             console.error('Error adding leave type:', error);
+            showError("Error while adding a leave type")
             setError(error instanceof Error ? error.message : 'Failed to add leave type');
         } finally {
             setIsSubmitting(false);

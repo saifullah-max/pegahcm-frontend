@@ -21,6 +21,7 @@ const Resignations = () => {
     const [assetReturnStatus, setAssetReturnStatus] = useState('');
     const [status, setStatus] = useState('');
     const [remarks, setRemarks] = useState('');
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         console.log("Resignations Component Rendered");
@@ -103,15 +104,27 @@ const Resignations = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this resignation?')) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id); // triggers confirmation modal
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
         try {
-            await deleteResignation(id);
+            await deleteResignation(deleteId);
             await fetchResignations();
         } catch (error) {
             console.error('Failed to delete resignation:', error);
+        } finally {
+            setDeleteId(null); // close modal
         }
     };
+
+    const cancelDelete = () => {
+        setDeleteId(null);
+    };
+
 
     if (loading) return <div className="p-6 text-center">Loading...</div>;
 
@@ -166,7 +179,7 @@ const Resignations = () => {
                                 <button onClick={() => handleEditClick(resignation)} title="Edit">
                                     <Pencil className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" size={18} />
                                 </button>
-                                <button onClick={() => handleDelete(resignation.id)} title="Delete">
+                                <button onClick={() => handleDeleteClick(resignation.id)} title="Delete">
                                     <Trash2 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" size={18} />
                                 </button>
                             </div>
@@ -285,6 +298,33 @@ const Resignations = () => {
                     </div>
                 </div>
             )}
+
+            {deleteId && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg max-w-sm w-full">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Delete Resignation</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                            Are you sure you want to delete this resignation?
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-4">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 rounded dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

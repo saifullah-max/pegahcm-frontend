@@ -14,6 +14,7 @@ import {
 import { getRoles, Role } from '../../../services/roleService';
 import { SubRole } from '../../../services/permissionService';
 import { getAllSubRoles } from '../../../services/subRoleService';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 interface Shift {
     id: string;
@@ -415,6 +416,7 @@ const EditEmployee: React.FC = () => {
                 console.log("Id", id, "Employee updated");
             }
             console.log("New employee added");
+            showSuccess("Employee updated!")
             navigate('/admin/employees');
 
         } catch (error: any) {
@@ -423,7 +425,7 @@ const EditEmployee: React.FC = () => {
             if (error instanceof RegistrationError && error.validationErrors) {
                 setValidationErrors(error.validationErrors);
             } else {
-                alert(`Operation failed: ${error.message || 'Unknown error'}`);
+                showError(`Operation failed: ${error.message || 'Unknown error'}`);
             }
         } finally {
             setLoading(false);

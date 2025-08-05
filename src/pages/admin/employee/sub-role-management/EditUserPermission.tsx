@@ -7,6 +7,7 @@ import {
 } from '../../../../services/permissionService';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { showInfo, showSuccess } from '../../../../lib/toastUtils';
 
 const actionList = ['view', 'create', 'update', 'delete', 'approve', 'reject'];
 
@@ -43,9 +44,11 @@ const EditUserPermission = () => {
 
         try {
             await updateSubRolePermissions(subRoleId, selected);
-            setMessage('✅ Permissions updated successfully!');
+            // setMessage('Permissions updated successfully!');
+            showSuccess('Permissions updated successfully!')
         } catch {
-            setMessage('❌ Something went wrong.');
+            // setMessage('Something went wrong.');
+            showInfo('Something went wrong.')
         }
 
         setLoading(false);

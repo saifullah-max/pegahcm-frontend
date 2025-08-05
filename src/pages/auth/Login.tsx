@@ -7,6 +7,7 @@ import { Moon, Sun } from 'lucide-react';
 import { toggleTheme } from '../../store/slices/themeSlice';
 import { loginUser } from '../../services/authService';
 import { getUserById } from '../../services/permissionService';
+import { showError, showSuccess } from '../../lib/toastUtils';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -61,17 +62,12 @@ const Login = () => {
 
       const role = response.data.user.role;
       const subRole = response.data.user.subRole?.name;
-
+      showSuccess("Logged in successfully")
       navigate('/admin/dashboard');
 
-      // if (role === 'admin') {
-      // } else if (subRole === 'teamMember') {
-      //   navigate('/user/user-dashboard');
-      // } else {
-      //   navigate('/unauthorized');
-      // }
     } catch (error) {
       setError('Invalid email or password');
+      showError("Invalid credentials")
     } finally {
       setIsLoading(false);
     }
