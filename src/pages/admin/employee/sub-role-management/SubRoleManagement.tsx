@@ -39,7 +39,7 @@ const SubRoleManagement = () => {
         setDeleteId(null); // Close modal
     };
 
-
+    const headingStyle = "px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-900 transition-colors duration-200"
 
     return (
         <div className="p-6">
@@ -63,43 +63,49 @@ const SubRoleManagement = () => {
                 </button>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full border">
-                    <thead>
-                        <tr className="bg-gray-200 text-left">
-                            <th className="py-2 px-4">Name</th>
-                            <th className="py-2 px-4">Description</th>
-                            <th className="py-2 px-4">Permissions</th>
-                            <th className="py-2 px-4">Actions</th>
+            <div className="overflow-x-auto rounded-lg shadow-md">
+                <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
+                    <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase">
+                        <tr>
+                            <th className={headingStyle}>Name</th>
+                            <th className={headingStyle}>Description</th>
+                            <th className={headingStyle}>Permissions</th>
+                            <th className={headingStyle}>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {subRoles.map((subRole: any) => (
-                            <tr key={subRole.id} className="border-t">
-                                <td className="py-2 px-4">{subRole.name}</td>
-                                <td className="py-2 px-4">{subRole.description}</td>
-                                <td className="py-2 px-4">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {subRoles.map((subRole: any, index) => (
+                            <tr
+                                key={subRole.id}
+                                className={`transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'
+                                    }`}
+                            >
+                                <td className="py-3 px-6">{subRole.name}</td>
+                                <td className="py-3 px-6">{subRole.description}</td>
+                                <td className="py-3 px-6 text-sm">
                                     {subRole.permissions.map((p: any) => `${p.permission.module}:${p.permission.action}`).join(', ')}
                                 </td>
-                                <td className="py-2 px-4 flex gap-2">
-                                    <button
-                                        className="text-blue-600 hover:underline"
-                                        onClick={() => navigate(`/admin/sub-role/edit/${subRole.id}`)}
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button
-                                        className="text-red-600 hover:underline"
-                                        onClick={() => handleDeleteClick(subRole.id)}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                <td className="py-3 px-6">
+                                    <div className="flex gap-2">
+                                        <button
+                                            className="text-blue-600 hover:underline dark:text-blue-400"
+                                            onClick={() => navigate(`/admin/sub-role/edit/${subRole.id}`)}
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button
+                                            className="text-red-600 hover:underline dark:text-red-400"
+                                            onClick={() => handleDeleteClick(subRole.id)}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                         {subRoles.length === 0 && (
                             <tr>
-                                <td colSpan={4} className="text-center py-4">
+                                <td colSpan={4} className="text-center py-6 text-gray-500 dark:text-gray-400">
                                     No SubRoles found.
                                 </td>
                             </tr>

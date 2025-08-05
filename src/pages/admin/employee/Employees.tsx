@@ -339,16 +339,21 @@ const Employees: React.FC = () => {
                       >
                         <Trash size={18} />
                       </button>
-                      <button
-                        onClick={() =>
-                          handleImpersonate(employee.userId, employee.fullName, employee.status)
-                        }
-                        className="text-indigo-600 hover:text-indigo-800 transition"
-                        title="View User Dashboard"
-                      >
-                        <UserRound size={18} />
-                      </button>
-
+                      {
+                        user?.role === "admin" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                handleImpersonate(employee.userId, employee.fullName, employee.status)
+                              }
+                              className="text-indigo-600 hover:text-indigo-800 transition"
+                              title="View User Dashboard"
+                            >
+                              <UserRound size={18} />
+                            </button>
+                          </>
+                        )
+                      }
                     </div>
                   </td>
 

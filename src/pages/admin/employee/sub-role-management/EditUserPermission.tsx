@@ -115,7 +115,7 @@ const EditUserPermission = () => {
 
                 <button
                     onClick={handleSave}
-                    className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded disabled:opacity-50"
+                    className='w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]  disabled:bg-gray-400 disabled:cursor-not-allowed'
                     disabled={loading}
                 >
                     {loading ? 'Saving...' : 'Save Changes'}

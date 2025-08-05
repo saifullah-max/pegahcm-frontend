@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createSubRole } from '../../../../services/subRoleService';
 import { getAllPermissions, Permission } from '../../../../services/permissionService';
 import { showError, showSuccess } from '../../../../lib/toastUtils';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
 const CreateSubRole = () => {
     const navigate = useNavigate();
@@ -44,7 +45,18 @@ const CreateSubRole = () => {
 
     return (
         <div className="p-6 max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Create SubRole</h1>
+            <div className="mb-6 flex items-center">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2"
+                >
+                    <ArrowLeft className="text-xl w-5 h-5" />
+                </button>
+                <h2 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5" />
+                    Create Sub-Role
+                </h2>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     className="w-full border rounded px-3 py-2"
@@ -78,7 +90,7 @@ const CreateSubRole = () => {
 
                 <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className='w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]'
                 >
                     Create SubRole
                 </button>

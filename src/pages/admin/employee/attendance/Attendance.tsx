@@ -152,11 +152,12 @@ const Attendance: React.FC = () => {
                       {req.leaveType.isPaid ? 'Yes' : 'No'}
                     </span>
                   </td>
-                  <td className='px-4 py-2'>
-                    <span className="text-gray-600">
+                  <td className="px-4 py-2">
+                    <span className="text-gray-900 dark:text-gray-100">
                       {req.approvedBy ? req.approvedBy.fullName : 'N/A'}
                     </span>
                   </td>
+
                   <td className="px-4 py-2">
                     {req.status === 'Pending' && (
                       <div className="flex gap-2">
