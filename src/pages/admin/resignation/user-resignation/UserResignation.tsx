@@ -69,7 +69,7 @@ const SubmitResignation: React.FC = () => {
             {/* Header */}
             <div className="w-full max-w-xl flex items-center gap-4 mb-6">
                 <button
-                    onClick={() => navigate('/user/user-dashboard')}
+                    onClick={() => navigate(-1)}
                     className="text-gray-600 dark:text-gray-300 hover:text-blue-600 transition"
                 >
                     <ArrowLeft size={24} />
@@ -91,7 +91,7 @@ const SubmitResignation: React.FC = () => {
                         </p>
                         <button
                             onClick={() => navigate('/admin/user/resignation-form')}
-                            className="bg-blue-500 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md font-medium transition"
+                            className="w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
                         >
                             Submit Resignation
                         </button>

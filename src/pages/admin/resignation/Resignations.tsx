@@ -8,6 +8,7 @@ import {
 } from '../../../services/resignationService';
 import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
 
 const Resignations = () => {
     const navigate = useNavigate();
@@ -57,14 +58,14 @@ const Resignations = () => {
 
     const storedProcessedById = getProcessedById();
     if (!storedProcessedById) {
-        alert('Unable to identify logged-in HR user. Please log in again.');
+        showInfo('Unable to identify logged-in HR user. Please log in again.')
         window.location.href = '/login';
         return null;
     }
 
     const handleDecision = async (id: string, status: 'Approved' | 'Rejected') => {
         const remarks = prompt(`Enter remarks for ${status.toLowerCase()} resignation:`);
-        if (!remarks) return alert('Remarks are required.');
+        if (!remarks) return showInfo('Remarks are required.');
 
         setProcessingId(id);
         try {
@@ -98,9 +99,10 @@ const Resignations = () => {
             });
             setEditModalOpen(false);
             await fetchResignations();
+            showSuccess("updated successfully")
         } catch (err) {
             console.error(err);
-            alert('Failed to update status.');
+            showError('Failed to update status.')
         }
     };
 
