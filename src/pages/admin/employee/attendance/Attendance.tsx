@@ -6,6 +6,7 @@ import { EmployeeSummary, getEmployeeAttendanceSummary } from '../../../../servi
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 import { showError, showInfo, showSuccess } from '../../../../lib/toastUtils';
+import FixAttendanceRequests from '../../../../components/FixAttendanceRequests';
 
 interface LeaveRequest {
   id: string;
@@ -224,6 +225,8 @@ const Attendance: React.FC = () => {
           </div>
         </>
       )}
+
+      <FixAttendanceRequests />
 
     </div>
   );

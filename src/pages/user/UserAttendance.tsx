@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { getLeaveRequests, getLeaveTypes, submitLeaveRequest } from '../../services/attendanceService';
 import { getEmployeeHours } from '../../services/userService';
 import { showError, showSuccess } from '../../lib/toastUtils';
+import { AttendanceFixFormData, FixAttendanceRequestPayload, FixRequest, getFixRequestsByEmployee, submitFixAttendanceRequest } from '../../services/fixAttendanceService';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface AttendanceRequest {
     key: string;
@@ -19,6 +22,7 @@ interface LeaveType {
 }
 
 const UserAttendance: React.FC = () => {
+    const { user } = useSelector((state: RootState) => state.auth)
     const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
     const [attendanceRequests, setAttendanceRequests] = useState<AttendanceRequest[]>([]);
     const [showForm, setShowForm] = useState(false);
@@ -37,13 +41,19 @@ const UserAttendance: React.FC = () => {
     const [employeeHours, setEmployeeHours] = useState<Record<string, { weekly: number; monthly: number }>>({});
     const [userName, setuserName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
-    const [attendanceFixRequest, setAttendanceFixRequest] = useState({
+    const [attendanceFixRequest, setAttendanceFixRequest] = useState<AttendanceFixFormData>({
         date: '',
-        missingType: '',
+        requestType: '',
         expectedClockIn: '',
         expectedClockOut: '',
         reason: '',
+        employeeId: '',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fixRequests, setFixRequests] = useState<FixRequest[]>();
+    const [loading, setLoading] = useState(true);
+
+
 
     useEffect(() => {
         const fetchLeaveTypes = async () => {
@@ -108,16 +118,74 @@ const UserAttendance: React.FC = () => {
         if (!userId || Object.keys(employeeHours).length === 0) return;
     }, [userId, employeeHours]);
 
+    useEffect(() => {
+        if (empId === undefined) {
+            showError("Employee Id is required")
+            return;
+        }
+        const fetchData = async () => {
+            const data = await getFixRequestsByEmployee(empId);
+            setFixRequests(data);
+            console.log("reqs by employee:", data);
+            setLoading(false);
+        };
+
+        fetchData();
+    }, []);
+
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setNewRequest((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleAttendanceFixChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleAttendanceFixChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setAttendanceFixRequest((prev) => ({ ...prev, [name]: value }));
+        setAttendanceFixRequest((prev: any) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
+    const empId = user?.employee?.id
+
+    const handleAttendanceFixSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        if (empId === undefined) {
+            showError("Employee Id not found");
+            return;
+        }
+
+        try {
+            const payload: FixAttendanceRequestPayload = {
+                employeeId: empId,
+                date: attendanceFixRequest.date,
+                requestType: attendanceFixRequest.requestType as 'CheckIn' | 'CheckOut' | 'Both',
+                requestedCheckIn:
+                    (attendanceFixRequest.requestType === 'CheckIn' || attendanceFixRequest.requestType === 'Both')
+                        ? attendanceFixRequest.expectedClockIn
+                        : undefined,
+                requestedCheckOut:
+                    (attendanceFixRequest.requestType === 'CheckOut' || attendanceFixRequest.requestType === 'Both')
+                        ? attendanceFixRequest.expectedClockOut
+                        : undefined,
+                reason: attendanceFixRequest.reason,
+            };
+
+            await submitFixAttendanceRequest(payload);
+
+            showSuccess('Attendance fix request submitted successfully');
+            setShowAttendanceForm(false);
+
+            // Optional: refresh list of requests or records
+        } catch (error: any) {
+            showError(error.message || 'Failed to submit fix request');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -170,6 +238,25 @@ const UserAttendance: React.FC = () => {
         });
     };
 
+    const formatDateAndTime = (isoDate?: string): string => {
+        if (!isoDate || isoDate === '—') return '—';
+
+        const date = new Date(isoDate);
+        const time = date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        }).toLowerCase(); // e.g., "3:00 PM" → "3:00 pm"
+
+        const dayMonthYear = date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }); // e.g., "02 Jul 2025"
+
+        return `${time} - ${dayMonthYear}`;
+    };
+
     return (
         <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -193,38 +280,88 @@ const UserAttendance: React.FC = () => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto shadow-md rounded-lg">
-                <table className="min-w-full table-auto">
-                    <thead className="bg-white dark:bg-gray-800 border-b-2 dark:border-gray-700">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Start Date</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">End Date</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Leave Type</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Reason</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Approval Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                        {attendanceRequests.map((request) => (
-                            <tr key={request.key} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
-                                <td className="px-6 py-4 text-sm text-black dark:text-gray-200"> {formatDate(request.startDate)}</td>
-                                <td className="px-6 py-4 text-sm text-black dark:text-gray-200"> {formatDate(request.endDate)}</td>
-                                <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{request.requestType}</td>
-                                <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{request.reason}</td>
-                                <td className="px-6 py-4 text-sm">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${request.approvalStatus === 'Approved'
-                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                                        : request.approvalStatus === 'Rejected'
-                                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
-                                        }`}>
-                                        {request.approvalStatus}
-                                    </span>
-                                </td>
+            {/* Leave Requests */}
+            <div className="mb-10">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-100 mb-4">Leave Requests</h2>
+                <div className="overflow-x-auto shadow-md rounded-lg">
+                    <table className="min-w-full table-auto">
+                        <thead className="bg-white dark:bg-gray-800 border-b-2 dark:border-gray-700">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Start Date</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">End Date</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Leave Type</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Reason</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Approval Status</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+                            {attendanceRequests.map((request) => (
+                                <tr key={request.key} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{formatDate(request.startDate)}</td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{formatDate(request.endDate)}</td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{request.requestType}</td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">{request.reason}</td>
+                                    <td className="px-6 py-4 text-sm">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${request.approvalStatus === 'Approved'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                            : request.approvalStatus === 'Rejected'
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                                            }`}>
+                                            {request.approvalStatus}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Fix Attendance Requests */}
+            <div className="mb-10">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-100 mb-4">Fix Attendance Requests</h2>
+                <div className="overflow-x-auto shadow-md rounded-lg">
+                    <table className="min-w-full table-auto">
+                        <thead className="bg-white dark:bg-gray-800 border-b-2 dark:border-gray-700">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Check-In</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Check-Out</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Request Type</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Reason</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+                            {fixRequests && fixRequests.map((request) => (
+                                <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">
+                                        {request.requestedCheckIn ? formatDateAndTime(request.requestedCheckIn) : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">
+                                        {request.requestedCheckOut ? formatDateAndTime(request.requestedCheckOut) : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">
+                                        {request.requestType}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-black dark:text-gray-200">
+                                        {request.reason}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${request.status === 'Approved'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                            : request.status === 'Rejected'
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                                            }`}>
+                                            {request.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {Object.keys(employeeHours).length > 0 && (
@@ -270,7 +407,6 @@ const UserAttendance: React.FC = () => {
                     </div>
                 </div>
             )}
-
 
             {showForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
@@ -362,7 +498,7 @@ const UserAttendance: React.FC = () => {
                         <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
                             Fix Attendance Entry
                         </h3>
-                        <form className="space-y-6">
+                        <form className="space-y-6" onSubmit={handleAttendanceFixSubmit}>
                             <div>
                                 <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Date</label>
                                 <input
@@ -378,8 +514,8 @@ const UserAttendance: React.FC = () => {
                             <div>
                                 <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Missing Type</label>
                                 <select
-                                    name="missingType"
-                                    value={attendanceFixRequest.missingType}
+                                    name="requestType"
+                                    value={attendanceFixRequest.requestType}
                                     onChange={handleAttendanceFixChange}
                                     required
                                     className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 rounded-md text-base px-3 py-2"
@@ -391,7 +527,7 @@ const UserAttendance: React.FC = () => {
                                 </select>
                             </div>
 
-                            {(attendanceFixRequest.missingType === 'CheckIn' || attendanceFixRequest.missingType === 'Both') && (
+                            {(attendanceFixRequest.requestType === 'CheckIn' || attendanceFixRequest.requestType === 'Both') && (
                                 <div>
                                     <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Expected Clock In</label>
                                     <input
@@ -405,7 +541,7 @@ const UserAttendance: React.FC = () => {
                                 </div>
                             )}
 
-                            {(attendanceFixRequest.missingType === 'CheckOut' || attendanceFixRequest.missingType === 'Both') && (
+                            {(attendanceFixRequest.requestType === 'CheckOut' || attendanceFixRequest.requestType === 'Both') && (
                                 <div>
                                     <label className="block text-sm text-base font-medium text-gray-700 dark:text-gray-200">Expected Clock Out</label>
                                     <input
@@ -432,10 +568,13 @@ const UserAttendance: React.FC = () => {
 
                             <button
                                 type="submit"
-                                className="w-full px-5 py-2.5 text-base bg-[#255199] hover:bg-[#2F66C1] text-white rounded-md text-sm"
+                                disabled={isSubmitting}
+                                className={`w-full px-5 py-2.5 text-base bg-[#255199] hover:bg-[#2F66C1] text-white rounded-md text-sm ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                             >
-                                Submit Request
+                                {isSubmitting ? 'Submitting...' : 'Submit Request'}
                             </button>
+
                         </form>
                     </div>
                 </div>

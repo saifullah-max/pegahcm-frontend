@@ -37,7 +37,7 @@ export interface SingleEmployeeResponse {
     employee: EmployeeData;
 }
 
-interface AttendanceRecord {
+export interface AttendanceRecord {
     id: string;
     employeeId: string;
     date: Date;
