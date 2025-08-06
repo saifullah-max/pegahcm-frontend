@@ -8,6 +8,7 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { getDepartments } from "../../services/departmentService";
 import { useNavigate } from "react-router-dom";
+import { getNotifications, Notification } from "../../services/notificationService";
 
 interface DepartmentData {
   name: string;
@@ -29,6 +30,7 @@ const Dashboard: React.FC = () => {
   const [newHires, setNewHires] = useState(0);
   const [departmentsData, setDepartmentsData] = useState<any[]>([]);
   const [departmentWiseAttendance, setDepartmentWiseAttendance] = useState<Record<string, number>>({});
+  const [activities, setActivities] = useState<Notification[]>([]);
   const navigate = useNavigate();
 
   const role = user?.role;
@@ -40,11 +42,11 @@ const Dashboard: React.FC = () => {
     { name: "Operations", attendance: 90, color: "bg-[#255199]" },
   ];
 
-  const activities = [
-    { text: "New employee John Doe joined IT Department", time: "2 hours ago" },
-    { text: "Jane Smith requested leave for next week", time: "4 hours ago" },
-    { text: "Monthly payroll processing completed", time: "1 day ago" },
-  ];
+  // const activities = [
+  //   { text: "New employee John Doe joined IT Department", time: "2 hours ago" },
+  //   { text: "Jane Smith requested leave for next week", time: "4 hours ago" },
+  //   { text: "Monthly payroll processing completed", time: "1 day ago" },
+  // ];
   useEffect(() => {
     if (user?.role !== 'admin') {
       navigate('/user/user-dashboard')
@@ -179,6 +181,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setActivities(data);
+      console.log("Notifications:", data);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    }
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,6 +200,7 @@ const Dashboard: React.FC = () => {
       fetchEmployeeAttendance();
       fetchDepartments();
       fetchDepartmentWiseAttendance();
+      fetchNotifications();
     }
 
     fetchData()
@@ -455,21 +468,16 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 className="text-lg text-gray-500 dark:text-gray-300 font-semibold mb-6">
           Recent Activities
         </h2>
         <div className="space-y-4">
           {activities.map((activity, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center border-b dark:border-gray-700 pb-4"
-            >
-              <span className="text-gray-700 dark:text-gray-300">
-                {activity.text}
-              </span>
+            <div key={index} className="flex justify-between items-center border-b dark:border-gray-700 pb-4">
+              <span className="text-gray-700 dark:text-gray-300">{activity.message}</span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {activity.time}
+                {new Date(activity.createdAt).toLocaleString()}
               </span>
             </div>
           ))}

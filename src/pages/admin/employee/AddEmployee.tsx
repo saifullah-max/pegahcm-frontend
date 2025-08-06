@@ -577,7 +577,6 @@ const AddEmployee: React.FC = () => {
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border ${getFieldError('roleTag') ? 'border-red-500' : 'border-gray-300'
                   } rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
-                required
               >
                 {roleTagOptions.map((option) => (
                   <option key={option.value} value={option.value}>

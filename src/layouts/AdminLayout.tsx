@@ -5,6 +5,7 @@ import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
+import { getNotifications, Notification } from '../services/notificationService';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -13,6 +14,7 @@ const AdminLayout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -27,6 +29,31 @@ const AdminLayout = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    }
+  };
+
+  // Optional: Fetch once on mount
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  function getScopeLabel(notif: Notification, user: any): string | null {
+    if (notif.userId === user.userId) return "Direct";
+    if (notif.employeeId) return "Employee Only";
+    if (notif.subDepartmentId === user.subDepartmentId) return "Sub-Department";
+    if (notif.departmentId === user.departmentId) return "Department";
+    if (notif.visibilityLevel !== null && notif.visibilityLevel! <= (user.visibilityLevel ?? 99)) return "Management";
+    return null;
+  }
+
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -268,8 +295,9 @@ const AdminLayout = () => {
                   <button
                     className='flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     onClick={() => {
-                      setIsNotificationDropdownOpen(!isNotificationDropdownOpen);
+                      setIsNotificationDropdownOpen((prev) => !prev);
                       setIsUserDropdownOpen(false);
+                      if (!isNotificationDropdownOpen) fetchNotifications();
                     }}
                   >
                     <Bell className='inline-block mr-2' />
@@ -280,16 +308,27 @@ const AdminLayout = () => {
                         <h3 className="text-sm font-semibold dark:text-white">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {/* Sample notifications - you can map through actual notifications here */}
-                        <div className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">New employee registration</p>
-                          <p className="text-xs text-gray-400">2 hours ago</p>
-                        </div>
-                        <div className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">Attendance update required</p>
-                          <p className="text-xs text-gray-400">3 hours ago</p>
-                        </div>
+                        {notifications.map((notif, index) => {
+                          const label = getScopeLabel(notif, user); // ⬅️ Optional
+                          return (
+                            <div
+                              key={notif.id || index}
+                              className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                            >
+                              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{notif.title}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{notif.message}</p>
+                              {label && (
+                                <span className="text-xs text-white bg-blue-500 px-2 py-0.5 rounded-md">
+                                  {label}
+                                </span>
+                              )}
+                              <p className="text-xs text-gray-400">{new Date(notif.createdAt).toLocaleString()}</p>
+                            </div>
+                          );
+                        })}
+
                       </div>
+
                       <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
                         <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                           View all notifications
