@@ -5,7 +5,7 @@ import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
-import { getNotifications, Notification } from '../services/notificationService';
+import { getNotifications, getVisibleNotificationsForUser, markNotificationAsRead, Notification, UserNotification } from '../services/notificationService';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -14,7 +14,7 @@ const AdminLayout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -30,12 +30,31 @@ const AdminLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchNotifications = async () => {
+
+  const fetchNotifications = async (pageNum = 1) => {
     try {
-      const data = await getNotifications();
-      setNotifications(data);
+      const res = await getVisibleNotificationsForUser(pageNum, 10);
+
+      // Full map, respecting UserNotification shape
+      const userNotifs: UserNotification[] = res.data.map((notif: any) => ({
+        id: notif.id,
+        userId: notif.userId,
+        read: notif.read,
+        readAt: notif.readAt,
+        notification: {
+          id: notif.notification?.id ?? notif.id,
+          title: notif.notification?.title ?? notif.title,
+          message: notif.notification?.message ?? notif.message,
+          type: notif.notification?.type ?? notif.type,
+          createdAt: notif.notification?.createdAt ?? notif.createdAt,
+          userId: notif.notification?.userId ?? notif.userId, // ✅ Add this line
+        },
+      }));
+
+      setNotifications(userNotifs);
     } catch (error) {
-      console.error("Error loading notifications:", error);
+      console.error('Error loading notifications:', error);
+    } finally {
     }
   };
 
@@ -53,6 +72,7 @@ const AdminLayout = () => {
     return null;
   }
 
+  const unreadCount = notifications.filter(notif => !notif.read).length;
 
 
   const toggleSidebar = () => {
@@ -112,6 +132,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/user/user-resignation' });
     navigate('/user/user-resignation');
   };
+  const handleViewAllNotificationsClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/notifications' });
+    navigate('/notifications')
+  }
 
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
@@ -301,6 +325,13 @@ const AdminLayout = () => {
                     }}
                   >
                     <Bell className='inline-block mr-2' />
+
+                    {/* Badge */}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
                   </button>
                   {isNotificationDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-800">
@@ -308,29 +339,44 @@ const AdminLayout = () => {
                         <h3 className="text-sm font-semibold dark:text-white">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {notifications.map((notif, index) => {
-                          const label = getScopeLabel(notif, user); // ⬅️ Optional
-                          return (
-                            <div
-                              key={notif.id || index}
-                              className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                            >
-                              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{notif.title}</p>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">{notif.message}</p>
-                              {label && (
-                                <span className="text-xs text-white bg-blue-500 px-2 py-0.5 rounded-md">
-                                  {label}
-                                </span>
-                              )}
-                              <p className="text-xs text-gray-400">{new Date(notif.createdAt).toLocaleString()}</p>
-                            </div>
-                          );
-                        })}
+                        {notifications.length > 0 && (
+                          <div
+                            key={notifications[0].notification.id}
+                            className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                await markNotificationAsRead(notifications[0].notification.id);
+                                setNotifications(prev =>
+                                  prev.map(n =>
+                                    n.id === notifications[0].notification.id ? { ...n, read: true } : n
+                                  )
+                                );
+                              } catch (err) {
+                                console.error("Failed to mark notification as read", err);
+                              }
+                            }}
+                          >
+                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                              {notifications[0].notification.title}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                              {notifications[0].notification.message}
+                            </p>
+                            <span className="text-xs text-white bg-blue-500 px-2 py-0.5 rounded-md">
+                              {getScopeLabel(notifications[0].notification, user)}
+                            </span>
+                            <p className="text-xs text-gray-400">
+                              {new Date(notifications[0].notification.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+
 
                       </div>
 
                       <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
-                        <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        <button onClick={handleViewAllNotificationsClick}
+                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                           View all notifications
                         </button>
                       </div>

@@ -38,6 +38,7 @@ import AssignUserPermissions from './pages/admin/employee/permissions/AssignUser
 import Unauthorized from './pages/auth/Unauthorized';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Notification from './pages/admin/notifications/Notification';
 
 function App() {
   return (
@@ -199,6 +200,12 @@ function App() {
               <Route path="/admin/manage-permissions/:userId" element={
                 <ProtectedRoute requiredPermission="Permission:update">
                   <AssignUserPermissions />
+                </ProtectedRoute>
+              } />
+
+              <Route path='/notifications' element={
+                <ProtectedRoute requiredPermission='Notification:view'>
+                  <Notification />
                 </ProtectedRoute>
               } />
             </Route>
