@@ -41,7 +41,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('🔔 New Notification:', notif);
 
       if (notif.showPopup) {
+        // Show toast
         showInfo(`${notif.description || notif.message}`);
+
+        // 🔊 Play notification sound
+        const audio = new Audio('/sounds/notification_sound.mp3');
+        audio.volume = 0.8;
+        audio.play().catch(console.error);
       }
 
       setNotification(notif);
