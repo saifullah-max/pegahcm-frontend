@@ -44,26 +44,26 @@ const getAuthHeaders = () => {
     };
 };
 
-export const getNotifications = async (): Promise<Notification[]> => {
-    try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
-        });
+// export const getNotifications = async (): Promise<Notification[]> => {
+//     try {
+//         const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
+//             method: 'GET',
+//             headers: getAuthHeaders(),
+//         });
 
-        console.log("NOTIFICATIONS RES:", response);
+//         console.log("NOTIFICATIONS RES:", response);
 
-        if (response.status === 401) throw new Error('invalid or expired token');
-        if (!response.ok) throw new Error('Failed to fetch notifications');
+//         if (response.status === 401) throw new Error('invalid or expired token');
+//         if (!response.ok) throw new Error('Failed to fetch notifications');
 
-        // 👇 backend sends notifications directly, not wrapped in `data`
-        const result = await response.json();
-        return result as Notification[];
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
-        return handleAuthError(error);
-    }
-};
+//         // 👇 backend sends notifications directly, not wrapped in `data`
+//         const result = await response.json();
+//         return result as Notification[];
+//     } catch (error) {
+//         console.error('Error fetching notifications:', error);
+//         return handleAuthError(error);
+//     }
+// };
 
 // Create a type for paginated response
 export interface PaginatedNotifications {
