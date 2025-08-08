@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 import { showError, showInfo, showSuccess } from '../../../../lib/toastUtils';
 import FixAttendanceRequests from '../../../../components/FixAttendanceRequests';
+import { useSocket } from '../../../../store/SocketContext';
 
 interface LeaveRequest {
   id: string;
@@ -35,26 +36,31 @@ const Attendance: React.FC = () => {
   const [leaveRequests, setLeaveRequests] = useState<AdminLeaveRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<EmployeeSummary[]>([]);
+  const { notification } = useSocket();
 
   const canViewSummary = permissions.includes("Attendance:approve");
 
-
+  const fetchRequests = async () => {
+    try {
+      const data = await getAllAdminLeaveRequests();
+      setLeaveRequests(data);
+      const attendanceSummary = await getEmployeeAttendanceSummary();
+      setSummary(attendanceSummary);
+    } catch (error) {
+      console.error('Failed to fetch leave requests');
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await getAllAdminLeaveRequests();
-        setLeaveRequests(data);
-        const attendanceSummary = await getEmployeeAttendanceSummary();
-        setSummary(attendanceSummary);
-      } catch (error) {
-        console.error('Failed to fetch leave requests');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRequests();
   }, []);
+
+  useEffect(() => {
+    if (notification) {
+      fetchRequests()
+    }
+  }, [summary, leaveRequests])
 
   const handleApprove = async (id: string) => {
     try {
