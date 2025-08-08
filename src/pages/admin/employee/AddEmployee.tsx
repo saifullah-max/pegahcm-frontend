@@ -281,6 +281,16 @@ const AddEmployee: React.FC = () => {
       roleId: newEmployee.role,
     };
 
+    // Conditional validation based on subRole
+    if (newEmployee.subRole !== 'director') {
+      if (!newEmployee.department.trim()) {
+        validationErrors.push({ field: "department", message: "Department is required" });
+      }
+      if (!newEmployee.subDepartment.trim()) {
+        validationErrors.push({ field: "subDepartment", message: "Sub Department is required" });
+      }
+    }
+
     try {
       // Register the user (preserve admin token = true)
       // try {
@@ -600,50 +610,54 @@ const AddEmployee: React.FC = () => {
               </h2>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">Department*</label>
-              <select
-                name="department"
-                value={newEmployee.department}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-                required
-              >
-                <option value="">Select Department</option>
-                {departmentsLoading ? (
-                  <option disabled>Loading departments...</option>
-                ) : (
-                  departments && departments.length > 0 ? departments.map((department) => (
-                    <option key={department.id} value={department.id}>
-                      {department.name}
-                    </option>
-                  )) : <option disabled>No departments available</option>
-                )}
-              </select>
-            </div>
+            {subRole?.find(sr => sr.id === newEmployee.subRole)?.name.toLowerCase() !== "director" && (
+              <>
+                <div className="mb-4">
+                  <label className="block text-gray-700 dark:text-gray-300 mb-1">Department*</label>
+                  <select
+                    name="department"
+                    value={newEmployee.department}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {departmentsLoading ? (
+                      <option disabled>Loading departments...</option>
+                    ) : (
+                      departments && departments.length > 0 ? departments.map((department) => (
+                        <option key={department.id} value={department.id}>
+                          {department.name}
+                        </option>
+                      )) : <option disabled>No departments available</option>
+                    )}
+                  </select>
+                </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">Sub Department*</label>
-              <select
-                name="subDepartment"
-                value={newEmployee.subDepartment}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-                required
-                disabled={!newEmployee.department || subDepartmentsLoading}
-              >
-                <option value="">Select Sub Department</option>
-                {subDepartmentsLoading ? (
-                  <option disabled>Loading sub-departments...</option>
-                ) : (
-                  subDepartments && subDepartments.length > 0 ? subDepartments.map((subDepartment) => (
-                    <option key={subDepartment.id} value={subDepartment.id}>
-                      {subDepartment.name}
-                    </option>
-                  )) : <option disabled>No sub-departments available</option>
-                )}
-              </select>
-            </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 dark:text-gray-300 mb-1">Sub Department*</label>
+                  <select
+                    name="subDepartment"
+                    value={newEmployee.subDepartment}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                    required
+                    disabled={!newEmployee.department || subDepartmentsLoading}
+                  >
+                    <option value="">Select Sub Department</option>
+                    {subDepartmentsLoading ? (
+                      <option disabled>Loading sub-departments...</option>
+                    ) : (
+                      subDepartments && subDepartments.length > 0 ? subDepartments.map((subDepartment) => (
+                        <option key={subDepartment.id} value={subDepartment.id}>
+                          {subDepartment.name}
+                        </option>
+                      )) : <option disabled>No sub-departments available</option>
+                    )}
+                  </select>
+                </div>
+              </>
+            )}
 
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Designation*</label>
