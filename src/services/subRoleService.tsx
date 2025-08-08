@@ -11,6 +11,7 @@ export interface CreateSubRoleData {
     name: string;
     description?: string;
     permissionIds?: string[];
+    level: number
 }
 
 export interface UpdateSubRoleData {
