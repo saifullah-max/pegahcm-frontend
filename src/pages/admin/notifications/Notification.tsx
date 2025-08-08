@@ -8,6 +8,10 @@ import {
     UserNotification
 } from '../../../services/notificationService';
 import { Loader2, X } from 'lucide-react';
+import socket from '../../../lib/socket';
+import { showInfo } from '../../../lib/toastUtils';
+import { useSocket } from '../../../store/SocketContext';
+
 
 interface GroupedNotification {
     groupKey: string;
@@ -25,6 +29,13 @@ const Notifications = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const { notification } = useSocket();
+
+    useEffect(() => {
+        if (notification) {
+            fetchNotifications(); // or just refetch the list
+        }
+    }, [notification]);
 
     const fetchNotifications = async (pageNum = 1) => {
         setLoading(true);
@@ -55,8 +66,6 @@ const Notifications = () => {
             setLoading(false);
         }
     };
-
-
 
     useEffect(() => {
         fetchNotifications(page);

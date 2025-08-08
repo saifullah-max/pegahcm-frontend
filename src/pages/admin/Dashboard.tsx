@@ -8,7 +8,8 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { getDepartments } from "../../services/departmentService";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, Notification } from "../../services/notificationService";
+import { getVisibleNotificationsForUser, Notification, UserNotification } from "../../services/notificationService";
+import { useSocket } from '../../store/SocketContext';
 
 interface DepartmentData {
   name: string;
@@ -30,7 +31,11 @@ const Dashboard: React.FC = () => {
   const [newHires, setNewHires] = useState(0);
   const [departmentsData, setDepartmentsData] = useState<any[]>([]);
   const [departmentWiseAttendance, setDepartmentWiseAttendance] = useState<Record<string, number>>({});
-  const [activities, setActivities] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const { notification } = useSocket();
   const navigate = useNavigate();
 
   const role = user?.role;
@@ -47,11 +52,18 @@ const Dashboard: React.FC = () => {
   //   { text: "Jane Smith requested leave for next week", time: "4 hours ago" },
   //   { text: "Monthly payroll processing completed", time: "1 day ago" },
   // ];
+
+
+  useEffect(() => {
+    if (notification) {
+      fetchNotifications(); // or just refetch the list
+    }
+  }, [notification]);
+
   useEffect(() => {
     if (user?.role !== 'admin') {
       navigate('/user/user-dashboard')
     }
-
   }, [])
   const hasPermission = (permission: string) => permissions.includes(permission);
 
@@ -180,14 +192,33 @@ const Dashboard: React.FC = () => {
       console.error("Error fetching department-wise attendance", error);
     }
   };
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (pageNum = 1) => {
+    setLoading(true);
     try {
-      const data = await getNotifications();
-      setActivities(data);
-      console.log("Notifications:", data);
+      const res = await getVisibleNotificationsForUser(pageNum, 10);
+
+      // Full map, respecting UserNotification shape
+      const userNotifs: UserNotification[] = res.data.map((notif: any) => ({
+        id: notif.id,
+        userId: notif.userId,
+        read: notif.read,
+        readAt: notif.readAt,
+        notification: {
+          id: notif.notification?.id ?? notif.id,
+          title: notif.notification?.title ?? notif.title,
+          message: notif.notification?.message ?? notif.message,
+          type: notif.notification?.type ?? notif.type,
+          createdAt: notif.notification?.createdAt ?? notif.createdAt,
+          userId: notif.notification?.userId ?? notif.userId, // ✅ Add this line
+        },
+      }));
+
+      setNotifications(userNotifs);
+      setTotalPages(res.totalPages);
     } catch (error) {
-      console.error("Error loading notifications:", error);
+      console.error('Error loading notifications:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -473,15 +504,37 @@ const Dashboard: React.FC = () => {
           Recent Activities
         </h2>
         <div className="space-y-4">
-          {activities.map((activity, index) => (
-            <div key={index} className="flex justify-between items-center border-b dark:border-gray-700 pb-4">
-              <span className="text-gray-700 dark:text-gray-300">{activity.message}</span>
+          {!loading && notifications.length === 0 && (
+            <p className="text-sm text-gray-500">No recent activities.</p>
+          )}
+          {notifications.slice(0, 3).map((notif, index) => (
+            <div
+              key={notif.id || index}
+              className="flex justify-between items-center border-b dark:border-gray-700 pb-4"
+            >
+              <span className="text-gray-700 dark:text-gray-300">
+                {notif.notification.message}
+              </span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {new Date(activity.createdAt).toLocaleString()}
+                {new Date(notif.notification.createdAt).toLocaleString()}
               </span>
             </div>
           ))}
+
+          {notifications.length > 0 && (
+            <div className="text-right">
+              <button
+                onClick={() => navigate("/notifications")}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                Check all activities →
+              </button>
+            </div>
+          )}
+
+          {loading && <p className="text-sm text-gray-500">Loading...</p>}
         </div>
+
       </div>
     </div>
   );

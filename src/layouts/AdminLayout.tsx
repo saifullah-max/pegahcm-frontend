@@ -5,7 +5,10 @@ import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
-import { getNotifications, getVisibleNotificationsForUser, markNotificationAsRead, Notification, UserNotification } from '../services/notificationService';
+import { getVisibleNotificationsForUser, markNotificationAsRead, Notification, UserNotification } from '../services/notificationService';
+import socket from '../lib/socket';
+import { showInfo } from '../lib/toastUtils';
+import { useSocket } from '../store/SocketContext';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -16,6 +19,13 @@ const AdminLayout = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+  const { notification } = useSocket();
+
+  useEffect(() => {
+    if (notification) {
+      fetchNotifications(); // or just refetch the list
+    }
+  }, [notification]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
