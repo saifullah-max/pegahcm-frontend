@@ -11,6 +11,8 @@ const CreateSubRole = () => {
     const [description, setDescription] = useState('');
     const [permissionIds, setPermissionIds] = useState<string[]>([]);
     const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+    const [level, setLevel] = useState('');
+
 
     useEffect(() => {
         fetchPermissions();
@@ -28,7 +30,7 @@ const CreateSubRole = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await createSubRole({ name, description, permissionIds });
+            await createSubRole({ name, description, level: Number(level), permissionIds });
             showSuccess(`${name} as sub-role added`)
             navigate('/admin/subrole-management');
         } catch (err) {
@@ -72,6 +74,15 @@ const CreateSubRole = () => {
                     onChange={(e) => setDescription(e.target.value)}
                 />
 
+                <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Level (e.g., 1)"
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    required
+                />
+
                 <div>
                     <label className="font-medium block mb-2">Assign Permissions:</label>
                     <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
@@ -90,7 +101,7 @@ const CreateSubRole = () => {
 
                 <button
                     type="submit"
-                className='w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]'
+                    className='w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]'
                 >
                     Create SubRole
                 </button>
