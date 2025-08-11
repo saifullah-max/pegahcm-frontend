@@ -45,6 +45,7 @@ import { showInfo } from './lib/toastUtils';
 import { SocketProvider } from './store/SocketContext';
 import AddSalary from './pages/admin/salary/AddSalary';
 import SalaryDetails from './pages/admin/salary/Salary';
+import ResetPassword from './pages/auth/ResetPassword';
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -86,6 +87,8 @@ function App() {
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+
 
               {/* Admin Routes */}
               <Route
