@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PencilLine, Plus, Trash, UserRound } from "lucide-react";
+import { ArrowLeft, PencilLine, Plus, Trash, UserRound } from "lucide-react";
 import { deleteEmployee, Employee, getEmployees } from "../../../services/employeeService";
 import { getEmployeeHours } from "../../../services/userService";
 import { impersonateUser } from "../../../services/permissionService";
@@ -239,9 +239,18 @@ const Employees: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900  transition-colors duration-200">
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-          <UserRound /> Employees
-        </h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            aria-label="Go Back"
+          >
+            <ArrowLeft className="text-xl" />
+          </button>
+          <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+            <UserRound /> Employees
+          </h1>
+        </div>
         <button
           onClick={handleNavigateToAddEmployee}
           className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"

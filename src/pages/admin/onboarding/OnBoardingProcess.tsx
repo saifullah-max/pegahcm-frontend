@@ -1,7 +1,7 @@
 // components/OnBoardingProcess.tsx
 
 import React, { useEffect, useState } from 'react';
-import { ClockFading, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ClockFading, Plus, Pencil, Trash2, Layers2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllOnboardingProcesses, deleteOnboardingProcess, OnboardingProcess } from '../../../services/hrService';
 
@@ -81,14 +81,25 @@ const OnBoardingProcess: React.FC = () => {
     return (
         <div className="mt-10">
             <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <ClockFading /> Onboarding Process
-                </h1>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                        aria-label="Go Back"
+                    >
+                        <ArrowLeft className="text-xl" />
+                    </button>
+                    <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                        <Layers2 />
+                        Onboarding Process
+                    </h1>
+                </div>
                 <button
                     onClick={handleNavigateToAddOnboarding}
                     className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
                 >
-                    <Plus /> Add Onboarding
+                    <Plus />
+                    Add Onboarding
                 </button>
             </div>
 

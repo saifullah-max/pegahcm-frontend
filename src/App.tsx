@@ -185,7 +185,7 @@ function App() {
                   </ProtectedRoute>
                 } />
 
-                <Route path="/admin/sub-role/edit/:id" element={
+                <Route path="/admin/sub-role/edit/:subRoleId" element={
                   <ProtectedRoute requiredPermission="SubRole:update">
                     <EditUserPermission />
                   </ProtectedRoute>
