@@ -6,9 +6,10 @@ import {
     Resignation,
     updateClearanceAndAssetStatus,
 } from '../../../services/resignationService';
-import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft, Plus } from 'lucide-react';
+import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft, Plus, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
+import { FaSignOutAlt, FaUserSlash } from 'react-icons/fa';
 
 const Resignations = () => {
     const navigate = useNavigate();
@@ -142,16 +143,11 @@ const Resignations = () => {
                     >
                         <ArrowLeft size={22} />
                     </button>
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                        <FaUserSlash size={24} className="text-red-600 dark:text-red-400" />
                         Resignation Requests
                     </h2>
                 </div>
-                <button
-                    onClick={() => navigate('/admin/user/resignation')}
-                    className="text-white px-4 py-2 rounded-lg flex items-center gap-2 bg-[#255199] hover:bg-[#2F66C1]"
-                >
-                    <Plus size={16} /> User Resignation Page
-                </button>
             </div>
 
             {/* Cards */}

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Salary, Allowance } from '../../../services/salaryService';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 interface Props {
     isOpen: boolean;
@@ -8,7 +10,6 @@ interface Props {
     initialData?: Salary | null;
 }
 
-// Form-specific type that allows blank strings for number fields
 interface FormAllowance {
     type: string;
     amount: number | "";
@@ -22,9 +23,8 @@ interface FormData extends Omit<Partial<Salary>, 'allowances' | 'baseSalary' | '
 }
 
 const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialData }) => {
-    const [formData, setFormData] = useState<FormData>({
-        allowances: []
-    });
+    const [formData, setFormData] = useState<FormData>({ allowances: [] });
+    const { user } = useSelector((state: RootState) => state.auth)
 
     useEffect(() => {
         if (initialData) {
@@ -113,32 +113,62 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg">
-                <h2 className="text-xl font-semibold mb-4">
-                    {initialData ? 'Update Salary' : 'Add Salary'}
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <input
-                        name="employeeId"
-                        value={formData.employeeId || ''}
-                        onChange={handleChange}
-                        placeholder="Employee ID"
-                        className="w-full border px-3 py-2 rounded"
-                        required={!initialData}
-                    />
-                    <input
-                        type="number"
-                        name="baseSalary"
-                        value={formData.baseSalary ?? ""}
-                        onChange={handleChange}
-                        placeholder="Base Salary"
-                        className="w-full border px-3 py-2 rounded"
-                    />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl w-full max-w-2xl p-6 transform transition-all scale-100">
+                {/* Header */}
+                <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                        {initialData ? 'Update Salary' : 'Add Salary'}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition"
+                    >
+                        ✕
+                    </button>
+                </div>
 
-                    {/* Allowances Section */}
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="font-medium">Allowances</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Employee ID
+                        </label>
+                        <input
+                            name="employeeId"
+                            value={formData.employeeId || ''}
+                            onChange={handleChange}
+                            placeholder="Enter Employee ID"
+                            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                            required={!initialData}
+                            disabled
+                        />
+                    </div>
+
+                    {/* Salary fields */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {['baseSalary', 'deductions', 'bonuses'].map(field => (
+                            <div key={field}>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                                </label>
+                                <input
+                                    type="number"
+                                    name={field}
+                                    value={(formData[field as keyof FormData] as number | string) ?? ""}
+                                    onChange={handleChange}
+                                    placeholder={`Enter ${field}`}
+                                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Allowances */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Allowances
+                        </label>
                         {(formData.allowances || []).map((allowance, idx) => (
                             <div key={idx} className="flex gap-2 mt-2">
                                 <input
@@ -146,74 +176,73 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
                                     value={allowance.type}
                                     onChange={(e) => handleAllowanceChange(idx, 'type', e.target.value)}
                                     placeholder="Type"
-                                    className="flex-1 border px-3 py-2 rounded"
+                                    className="flex-1 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                                 <input
                                     type="number"
                                     value={allowance.amount ?? ""}
                                     onChange={(e) => handleAllowanceChange(idx, 'amount', e.target.value)}
                                     placeholder="Amount"
-                                    className="w-32 border px-3 py-2 rounded"
+                                    className="w-32 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => removeAllowance(idx)}
-                                    className="px-3 py-2 bg-red-500 text-white rounded"
+                                    className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                                 >
-                                    X
+                                    ✕
                                 </button>
                             </div>
                         ))}
                         <button
                             type="button"
                             onClick={addAllowance}
-                            className="mt-2 px-3 py-2 bg-green-500 text-white rounded"
+                            className="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition"
                         >
                             + Add Allowance
                         </button>
                     </div>
 
-                    <input
-                        type="number"
-                        name="deductions"
-                        value={formData.deductions ?? ""}
-                        onChange={handleChange}
-                        placeholder="Deductions"
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                    <input
-                        type="number"
-                        name="bonuses"
-                        value={formData.bonuses ?? ""}
-                        onChange={handleChange}
-                        placeholder="Bonuses"
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                    <input
-                        type="date"
-                        name="effectiveFrom"
-                        value={formData.effectiveFrom || ''}
-                        onChange={handleChange}
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                    <input
-                        type="date"
-                        name="effectiveTo"
-                        value={formData.effectiveTo || ''}
-                        onChange={handleChange}
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                    <div className="flex justify-end gap-2 mt-4">
+                    {/* Dates */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Effective From
+                            </label>
+                            <input
+                                type="date"
+                                name="effectiveFrom"
+                                value={formData.effectiveFrom || ''}
+                                onChange={handleChange}
+                                className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Effective To
+                            </label>
+                            <input
+                                type="date"
+                                name="effectiveTo"
+                                value={formData.effectiveTo || ''}
+                                onChange={handleChange}
+                                className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
                         >
                             {initialData ? 'Update' : 'Add'}
                         </button>

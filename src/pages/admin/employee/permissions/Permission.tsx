@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Cog, Eye, Plus } from 'lucide-react';
+import { ArrowLeft, Cog, Eye, Plus, Shield } from 'lucide-react';
 import { getAllPermissions } from '../../../../services/permissionService';
 import type { Permission } from '../../../../services/permissionService';
 
@@ -57,7 +57,7 @@ const Permission = () => {
                     <ArrowLeft className="text-xl" />
                 </button>
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Cog className='text-2xl' /> Permission Management
+                    <Shield className='text-2xl' /> Permission Management
                 </h1>
             </div>
 

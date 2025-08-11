@@ -7,6 +7,7 @@ import { getEmployeeById } from '../services/employeeService';
 import { getDepartments, getAllSubDepartments } from '../services/departmentService';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable'; // still import to ensure plugin included for some bundlers; dynamic import used below too
+import { showInfo } from '../lib/toastUtils';
 
 interface Allowance {
   type: string;
@@ -222,7 +223,7 @@ const PayslipDetails: React.FC = () => {
       doc.text(`Salary Month: ${currentMonth || 'N/A'}`, 14, 88);
 
       // Earnings table
-      const earningsRows = earnings.map((e) => [e.title, `$${e.amount.toLocaleString()}`]);
+      const earningsRows = earnings.map((e) => [e.title, `Rs.${e.amount.toLocaleString()}`]);
       autoTable(doc, {
         startY: 95,
         head: [['Earnings', 'Amount']],
@@ -238,7 +239,7 @@ const PayslipDetails: React.FC = () => {
       autoTable(doc, {
         startY: lastY + 8,
         head: [['Deductions', 'Amount']],
-        body: [['Deductions', `-$${totalDeductions.toLocaleString()}`]],
+        body: [['Deductions', `-Rs.${totalDeductions.toLocaleString()}`]],
         styles: { fontSize: 10 },
         headStyles: { fillColor: [245, 245, 245] },
       });
@@ -248,11 +249,11 @@ const PayslipDetails: React.FC = () => {
       // Net Salary
       doc.setFontSize(14);
       doc.setTextColor(34, 139, 34);
-      doc.text(`Net Salary: $${netSalary.toLocaleString()}`, 14, lastY + 20);
+      doc.text(`Net Salary: Rs.${netSalary.toLocaleString()}`, 14, lastY + 20);
 
       // Filename - sanitize month
       const safeMonth = (currentMonth || new Date(salaryForMonth?.effectiveFrom || '').toLocaleString('default', { month: 'long', year: 'numeric' }) || 'latest').replace(/\s+/g, '_');
-      doc.save(`Payslip_${employeeNumber}_${safeMonth}.pdf`);
+      doc.save(`Payslip_${employeeName}_${safeMonth}.pdf`);
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Check console for details.');
@@ -389,12 +390,12 @@ const PayslipDetails: React.FC = () => {
                 {earnings.map((item, index) => (
                   <div key={index} className="flex justify-between items-center py-2 border-b border-dashed border-slate-100 dark:border-gray-700">
                     <span className="text-slate-700 dark:text-gray-200">{item.title}</span>
-                    <span className="font-medium text-slate-800 dark:text-gray-100">${item.amount.toLocaleString()}</span>
+                    <span className="font-medium text-slate-800 dark:text-gray-100">Rs.{item.amount.toLocaleString()}</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center py-2 text-[#255199] dark:text-indigo-400 font-semibold">
                   <span>Total Earnings</span>
-                  <span>${totalEarnings.toLocaleString()}</span>
+                  <span>Rs.{totalEarnings.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -405,11 +406,11 @@ const PayslipDetails: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-100 dark:border-gray-700">
                   <span className="text-slate-700 dark:text-gray-200">Deductions</span>
-                  <span className="font-medium text-slate-800 dark:text-gray-100">-${totalDeductions.toLocaleString()}</span>
+                  <span className="font-medium text-slate-800 dark:text-gray-100">-Rs.{totalDeductions.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 text-rose-600 dark:text-rose-400 font-semibold">
                   <span>Total Deductions</span>
-                  <span>-${totalDeductions.toLocaleString()}</span>
+                  <span>-Rs.{totalDeductions.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -422,7 +423,7 @@ const PayslipDetails: React.FC = () => {
                 <PieChart className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                 <span className="text-lg font-semibold text-slate-800 dark:text-gray-100">Net Salary</span>
               </div>
-              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">${netSalary.toLocaleString()}</span>
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Rs.{netSalary.toLocaleString()}</span>
             </div>
           </div>
         </div>

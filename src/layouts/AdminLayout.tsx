@@ -3,12 +3,11 @@ import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync, DollarSign } from 'lucide-react';
+import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync, DollarSign, Clock, Shield, Layers2, FileArchiveIcon } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { getVisibleNotificationsForUser, markNotificationAsRead, Notification, UserNotification } from '../services/notificationService';
-import socket from '../lib/socket';
-import { showInfo } from '../lib/toastUtils';
 import { useSocket } from '../store/SocketContext';
+import { FaUserClock, FaUserSlash } from 'react-icons/fa';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -214,7 +213,7 @@ const AdminLayout = () => {
                 onClick={handleAttendanceClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <ClockFading className="inline-block mr-2" /> Attendance
+                <FaUserClock className="inline-block mr-2" size={21}/> Attendance
               </li>
             )}
 
@@ -254,7 +253,7 @@ const AdminLayout = () => {
                 onClick={handlePermissionsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <Building2 className="inline-block mr-2" /> Manage Permissions
+                <Shield className="inline-block mr-2" /> Manage Permissions
               </li>
             )}
 
@@ -264,7 +263,7 @@ const AdminLayout = () => {
                 onClick={handleOnBoardingsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <Building2 className="inline-block mr-2" /> OnBoardings
+                <Layers2 className="inline-block mr-2" /> OnBoardings
               </li>
             )}
 
@@ -274,7 +273,7 @@ const AdminLayout = () => {
                 onClick={handleOnResignationsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <Building2 className="inline-block mr-2" /> Resignations
+                <FaUserSlash className="inline-block mr-2" /> Resignations
               </li>
             )}
             {hasPermission('Resignation:view') && (
@@ -282,7 +281,7 @@ const AdminLayout = () => {
                 onClick={handleOnUserResignationsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <Building2 className="inline-block mr-2" /> User-Resignations
+                <FileArchiveIcon className="inline-block mr-2" /> User-Resignations
               </li>
             )}
 

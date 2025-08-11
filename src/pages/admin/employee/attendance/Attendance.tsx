@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ClockFading, Plus, X } from 'lucide-react';
+import { ArrowLeft, Check, ClockFading, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLeaveRequest, getAllAdminLeaveRequests, updateLeaveStatus } from '../../../../services/attendanceService';
 import { EmployeeSummary, getEmployeeAttendanceSummary } from '../../../../services/userService';
@@ -8,6 +8,7 @@ import { RootState } from '../../../../store';
 import { showError, showInfo, showSuccess } from '../../../../lib/toastUtils';
 import FixAttendanceRequests from '../../../../components/FixAttendanceRequests';
 import { useSocket } from '../../../../store/SocketContext';
+import { FaUserClock } from 'react-icons/fa';
 
 interface LeaveRequest {
   id: string;
@@ -105,9 +106,18 @@ const Attendance: React.FC = () => {
   return (
     <div className="mt-10">
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-          <ClockFading /> Attendance
-        </h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            aria-label="Go Back"
+          >
+            <ArrowLeft className="text-xl" />
+          </button>
+          <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+            <FaUserClock /> Attendance
+          </h1>
+        </div>
         <button
           onClick={handleNavigateToAddLeaveType}
           className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"

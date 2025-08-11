@@ -3,6 +3,7 @@ import { createSalary } from '../../../services/salaryService';
 import { getEmployees } from '../../../services/employeeService';
 import { useNavigate } from 'react-router-dom';
 import { Banknote, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 
 interface Employee {
     id: string;
@@ -90,11 +91,11 @@ const AddSalary = () => {
 
             await createSalary(payload);
 
-            alert('Salary created successfully!');
+            showSuccess('Salary created successfully!');
             navigate('/salary');
         } catch (err) {
             console.error('Error creating salary:', err);
-            alert('Failed to create salary.');
+            showError('Failed to create salary.');
         } finally {
             setLoading(false);
         }
