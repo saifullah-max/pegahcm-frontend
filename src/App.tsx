@@ -43,6 +43,8 @@ import { useEffect } from 'react';
 import socket from './lib/socket';
 import { showInfo } from './lib/toastUtils';
 import { SocketProvider } from './store/SocketContext';
+import AddSalary from './pages/admin/salary/AddSalary';
+import SalaryDetails from './pages/admin/salary/Salary';
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -240,6 +242,18 @@ function App() {
                 <Route path='/notifications' element={
                   <ProtectedRoute requiredPermission='Notification:view'>
                     <Notification />
+                  </ProtectedRoute>
+                } />
+
+                <Route path='/salary' element={
+                  <ProtectedRoute requiredPermission='Salary:create'>
+                    < SalaryDetails />
+                  </ProtectedRoute>
+                } />
+
+                <Route path='/salary/create' element={
+                  <ProtectedRoute requiredPermission='Salary:create'>
+                    < AddSalary />
                   </ProtectedRoute>
                 } />
               </Route>

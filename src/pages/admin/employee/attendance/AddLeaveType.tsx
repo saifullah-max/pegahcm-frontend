@@ -15,6 +15,7 @@ const AddLeaveType: React.FC = () => {
         name: '',
         description: '',
         isPaid: true,
+        totalDays: 0,
     });
 
     const [error, setError] = useState<string | null>(null);
@@ -86,6 +87,18 @@ const AddLeaveType: React.FC = () => {
                                 type="text"
                                 name="name"
                                 value={formData.name}
+                                onChange={handleInputChange}
+                                required
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1">Total Leave*</label>
+                            <input
+                                type="number"
+                                name="totalDays"
+                                value={formData.totalDays}
                                 onChange={handleInputChange}
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"

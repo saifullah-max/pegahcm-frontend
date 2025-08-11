@@ -3,6 +3,7 @@ export interface LeaveType {
     name: string;
     description?: string;
     isPaid: boolean;
+    totalDays: number
 }
 
 interface CreateLeaveTypeData {
@@ -26,7 +27,11 @@ export interface LeaveRequest {
     reason: string;
     status: 'Pending' | 'Approved' | 'Rejected';
     leaveType: {
+        id: string;          // <-- this is critical
         name: string;
+        description?: string;
+        isPaid: boolean;
+        totalDays: number;
     };
 }
 

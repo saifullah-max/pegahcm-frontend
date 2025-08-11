@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync } from 'lucide-react';
+import { Bell, Building2, ClockFading, LayoutDashboard, UserRound, Moon, Sun, CalendarSync, DollarSign } from 'lucide-react';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { getVisibleNotificationsForUser, markNotificationAsRead, Notification, UserNotification } from '../services/notificationService';
 import socket from '../lib/socket';
@@ -142,6 +142,10 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/user/user-resignation' });
     navigate('/user/user-resignation');
   };
+  const handleOnSalaryClick = () => {
+    dispatch({ type: 'NAVIGATE', payload: '/salary' });
+    navigate('/salary');
+  };
   const handleViewAllNotificationsClick = () => {
     dispatch({ type: 'NAVIGATE', payload: '/notifications' });
     navigate('/notifications')
@@ -279,6 +283,15 @@ const AdminLayout = () => {
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
                 <Building2 className="inline-block mr-2" /> User-Resignations
+              </li>
+            )}
+
+            {hasPermission('Salary:create') && (
+              <li
+                onClick={handleOnSalaryClick}
+                className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
+              >
+                <DollarSign className="inline-block mr-2" /> Salary Details
               </li>
             )}
 
