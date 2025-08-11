@@ -354,7 +354,7 @@ const AddEmployee: React.FC = () => {
     { label: "Interviewer", value: "INTERVIEWER" },
     { label: "Trainer", value: "TRAINER" },
     { label: "Recruiter", value: "RECRUITER" },
-    { label: "Finance", value: "FINANCE" }
+    { label: "FINANCE", value: "FINANCE" }
   ];
 
   // Helper function to get field error message

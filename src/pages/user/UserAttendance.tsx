@@ -1,4 +1,4 @@
-import { ClockFading } from 'lucide-react';
+import { ArrowLeft, ClockFading } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getLeaveRequests, getLeaveTypes, submitLeaveRequest } from '../../services/attendanceService';
 import { getEmployeeHours } from '../../services/userService';
@@ -6,6 +6,7 @@ import { showError, showSuccess } from '../../lib/toastUtils';
 import { AttendanceFixFormData, FixAttendanceRequestPayload, FixRequest, getFixRequestsByEmployee, submitFixAttendanceRequest } from '../../services/fixAttendanceService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useNavigate } from 'react-router-dom';
 
 interface AttendanceRequest {
     key: string;
@@ -52,8 +53,7 @@ const UserAttendance: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fixRequests, setFixRequests] = useState<FixRequest[]>();
     const [loading, setLoading] = useState(true);
-
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLeaveTypes = async () => {
@@ -260,10 +260,20 @@ const UserAttendance: React.FC = () => {
     return (
         <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <ClockFading className="text-blue-600 dark:text-blue-400" />
-                    Attendance Requests
-                </h1>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                        aria-label="Go Back"
+                    >
+                        <ArrowLeft className="text-xl" />
+                    </button>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <ClockFading className="text-blue-600 dark:text-blue-400" />
+                        Attendance Requests
+                    </h1>
+                </div>
+
                 <div className="flex gap-3">
                     <button
                         onClick={() => setShowForm((prev) => !prev)}
@@ -279,6 +289,7 @@ const UserAttendance: React.FC = () => {
                     </button>
                 </div>
             </div>
+
 
             {/* Leave Requests */}
             <div className="mb-10">

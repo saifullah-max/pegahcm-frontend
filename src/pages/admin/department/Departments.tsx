@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Delete, Edit, Plus, TrashIcon } from "lucide-react";
+import { ArrowLeft, Building2, Delete, Edit, Plus, TrashIcon } from "lucide-react";
 import { getDepartments, deleteDepartment } from "../../../services/departmentService";
 import { RootState } from '../../../store';
 import { useSelector, useDispatch } from 'react-redux';
@@ -94,20 +94,28 @@ const Departments: React.FC = () => {
     return (
         <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Building2 /> Departments
-                </h1>
-                {
-                    canCreateDept && (
-                        <button
-                            onClick={handleNavigateToAddDepartment}
-                            className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-                        >
-                            <Plus /> Add Department
-                        </button>
-                    )
-                }
-
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                        aria-label="Go Back"
+                    >
+                        <ArrowLeft className="text-xl" />
+                    </button>
+                    <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                        <Building2 />
+                        Departments
+                    </h1>
+                </div>
+                {canCreateDept && (
+                    <button
+                        onClick={handleNavigateToAddDepartment}
+                        className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
+                    >
+                        <Plus />
+                        Add Department
+                    </button>
+                )}
             </div>
             {error && (
                 <div className="text-red-500 mt-2">
