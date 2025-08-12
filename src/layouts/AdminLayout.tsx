@@ -209,16 +209,17 @@ const AdminLayout = () => {
 
             {/* Attendance */}
             {hasPermission('Attendance:approve') && (
+
               <li
                 onClick={handleAttendanceClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
               >
-                <FaUserClock className="inline-block mr-2" size={21}/> Attendance
+                <FaUserClock className="inline-block mr-2" size={21} /> Attendance
               </li>
             )}
 
             {/* User Attendance */}
-            {hasPermission('Attendance:view') && (
+            {hasPermission('Attendance:view') && user?.role !== 'admin' && (
               <li
                 onClick={handleUserAttendanceClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
