@@ -123,7 +123,7 @@ const AddSalary = () => {
                     onChange={handleChange}
                     required
                     disabled={loadingEmployees}
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 >
                     <option value="">Select Employee</option>
                     {employees.map((emp) => (
@@ -140,7 +140,7 @@ const AddSalary = () => {
                     value={formData.baseSalary}
                     onChange={handleChange}
                     required
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 />
 
                 <input
@@ -149,7 +149,7 @@ const AddSalary = () => {
                     placeholder="Deductions"
                     value={formData.deductions}
                     onChange={handleChange}
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 />
                 <input
                     name="bonuses"
@@ -157,7 +157,7 @@ const AddSalary = () => {
                     placeholder="Bonuses"
                     value={formData.bonuses}
                     onChange={handleChange}
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 />
                 <input
                     name="effectiveFrom"
@@ -165,7 +165,7 @@ const AddSalary = () => {
                     value={formData.effectiveFrom}
                     onChange={handleChange}
                     required
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 />
                 <input
                     name="effectiveTo"
@@ -173,7 +173,7 @@ const AddSalary = () => {
                     value={formData.effectiveTo}
                     onChange={handleChange}
                     required
-                    className="border dark:border-gray-700 rounded px-3 py-2"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                 />
 
                 {/* Allowances Section */}
@@ -186,14 +186,14 @@ const AddSalary = () => {
                                 placeholder="Type (e.g. Housing)"
                                 value={a.type}
                                 onChange={(e) => handleAllowanceChange(index, 'type', e.target.value)}
-                                className="border dark:border-gray-700 rounded px-3 py-2 flex-1"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                             />
                             <input
                                 type="number"
                                 placeholder="Amount"
                                 value={a.amount}
                                 onChange={(e) => handleAllowanceChange(index, 'amount', e.target.value)}
-                                className="border dark:border-gray-700 rounded px-3 py-2 w-32"
+                        className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200"
                             />
                             <button
                                 type="button"
