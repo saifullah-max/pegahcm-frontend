@@ -57,6 +57,17 @@ interface EmployeeFormData {
     shift: string;
 }
 
+
+export const statusOptions = [
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "terminated", label: "Terminated" },
+    { value: "resigned", label: "Resigned" },
+    { value: "retired", label: "Retired" },
+    { value: "onLeave", label: "On Leave" },
+    { value: "probation", label: "Probation" },
+];
+
 const EditEmployee: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -69,7 +80,7 @@ const EditEmployee: React.FC = () => {
         department: '',
         subDepartment: '',
         designation: '',
-        status: '',
+        status: statusOptions[0].value,
         phone: 0,
         address: '',
         dateOfBirth: '',
@@ -101,6 +112,7 @@ const EditEmployee: React.FC = () => {
     const [rolesLoading, setRolesLoading] = useState(false);
     const [subRole, setSubRole] = useState<SubRole[]>();
     const [subRolesLoading, setSubRolesLoading] = useState(false);
+    const [userName, setUserName] = useState('');
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -167,11 +179,7 @@ const EditEmployee: React.FC = () => {
             const { user, employee } = response;
             const status = (employee as any)['status'];
             const shift = (employee as any)['shift'];
-            console.log(user);
-            console.log("User status from backend:", user.status);
-            console.log("Employee shiftId from backend:", employee);
-            console.log("Available shifts:", shift); // This will now have the current shifts
-
+            setUserName(user.fullName)
             setNewEmployee({
                 fullName: user.fullName || '',
                 email: user.email || '',
@@ -189,8 +197,7 @@ const EditEmployee: React.FC = () => {
                 salary: employee.salary?.toString() || '',
                 gender: employee.gender || '',
                 emergencyContactName: employee.emergencyContactName || '',
-                emergencyContactPhone: employee.emergencyContactPhone || '',
-                skills: employee.skills || [],
+                emergencyContactPhone: employee.emergencyContactPhone || '', skills: employee.skills || [],
                 workLocation: employee.workLocation || 'Onsite',
                 shiftId: employee.shiftId || '',
                 shift: shift,
@@ -332,7 +339,6 @@ const EditEmployee: React.FC = () => {
         }
     };
 
-
     const handleRemoveDocument = (index: number) => {
         setNewEmployee({
             ...newEmployee,
@@ -450,7 +456,7 @@ const EditEmployee: React.FC = () => {
                     <ArrowLeft className="text-xl" />
                 </button>
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <UserRound /> Add New Employee
+                    <UserRound /> Edit { userName }'s Information
                 </h1>
             </div>
 
@@ -710,7 +716,9 @@ const EditEmployee: React.FC = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1">Status*</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1">
+                                Status*
+                            </label>
                             <select
                                 name="status"
                                 value={newEmployee.status}
@@ -718,9 +726,11 @@ const EditEmployee: React.FC = () => {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                                 required
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="onLeave">On Leave</option>
+                                {statusOptions.map((status) => (
+                                    <option key={status.value} value={status.value}>
+                                        {status.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 

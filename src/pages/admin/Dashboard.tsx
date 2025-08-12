@@ -149,7 +149,26 @@ const Dashboard: React.FC = () => {
   const fetchLeaveRequests = async () => {
     try {
       const res = await getAllAdminLeaveRequests();
-      const totalAbsent = calculateAbsentEmployees(res);
+      // Map AdminLeaveRequest[] to LeaveRequest[]
+      const leaveRequests: LeaveRequest[] = res.map((leave: any) => ({
+        id: leave.id,
+        employeeId: leave.employeeId,
+        leaveType: {
+          id: leave.leaveType.id ?? "",
+          name: leave.leaveType.name,
+          description: leave.leaveType.description ?? "",
+          isPaid: leave.leaveType.isPaid,
+          totalDays: leave.leaveType.totalDays ?? 0,
+        },
+        startDate: leave.startDate,
+        endDate: leave.endDate,
+        status: leave.status,
+        reason: leave.reason,
+        createdAt: leave.createdAt,
+        updatedAt: leave.updatedAt,
+        // Add any other properties required by LeaveRequest here
+      }));
+      const totalAbsent = calculateAbsentEmployees(leaveRequests);
       console.log("Total absent employees today:", totalAbsent);
       setOnLeave(totalAbsent)
     } catch (error) {

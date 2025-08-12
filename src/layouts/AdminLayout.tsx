@@ -277,7 +277,7 @@ const AdminLayout = () => {
                 <FaUserSlash className="inline-block mr-2" /> Resignations
               </li>
             )}
-            {hasPermission('Resignation:view') && (
+            {hasPermission('Resignation:view') && user?.role !== 'admin' && (
               <li
                 onClick={handleOnUserResignationsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"

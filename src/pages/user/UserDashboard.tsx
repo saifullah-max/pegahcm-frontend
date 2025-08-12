@@ -6,6 +6,8 @@ import PayslipDetails from "../../components/PayslipDetails";
 import AttendanceMarker from "../../components/AttendanceMarker";
 import { UserRound } from "lucide-react";
 import AttendanceCard from "../../components/AttendanceCard";
+import AttendanceOverview from "../../components/AttendanceOverview";
+import AttendanceChart from "../../components/AttendanceChart";
 
 const UserDashboard: React.FC = () => {
   return (
@@ -17,17 +19,19 @@ const UserDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* First two columns: UserInfo + DailyAttendance */}
+        <AttendanceMarker />
+        <LeavesSummary />
+        <AttendanceOverview />
         <div className="md:col-span-2 space-y-6">
-          <UserInfo />
+          <AttendanceChart />
           {/* DailyAttendance is now inside AttendanceOverview below */}
         </div>
 
         {/* Third column: AttendanceProgress + DailyAttendance */}
-        <AttendanceCard />
+
 
         {/* Extra Cards (below if any space left) */}
-        <AttendanceMarker />
-        <LeavesSummary />
+
         <PayslipDetails />
       </div>
     </div>

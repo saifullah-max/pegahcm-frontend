@@ -1,4 +1,4 @@
-interface Shift {
+export interface Shift {
   id: string;
   name: string;
   startTime: string;

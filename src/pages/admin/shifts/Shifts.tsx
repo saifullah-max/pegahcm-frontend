@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarSync, Delete, Edit, Plus, TrashIcon } from "lucide-react";
+import { ArrowLeft, CalendarSync, Edit, Plus, TrashIcon } from "lucide-react";
 import { getShifts, deleteShift } from "../../../services/ShiftService";
 import { RootState } from '../../../store';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { showError, showSuccess } from "../../../lib/toastUtils";
-
 
 const Shifts: React.FC = () => {
     const { permissions } = useSelector((state: RootState) => state.auth);
@@ -15,7 +14,6 @@ const Shifts: React.FC = () => {
     const navigate = useNavigate();
 
     const canCreateShift = permissions.includes("Shift:create");
-
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -50,12 +48,38 @@ const Shifts: React.FC = () => {
         });
     };
 
+    // Calculate duration in whole hours (e.g. "9 hrs")
+    const getDuration = (startIso: string, endIso: string) => {
+        const startDate = new Date(startIso);
+        const endDate = new Date(endIso);
+
+        const startHours = startDate.getHours();
+        const startMinutes = startDate.getMinutes();
+
+        const endHours = endDate.getHours();
+        const endMinutes = endDate.getMinutes();
+
+        // Convert times to minutes from midnight
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+
+        // Calculate difference in minutes, handling overnight shifts
+        let diffMinutes = endTotalMinutes - startTotalMinutes;
+        if (diffMinutes <= 0) {
+            diffMinutes += 24 * 60; // add 24 hours in minutes
+        }
+
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+
+        // If you want just hours rounded:
+        // return `${hours} hrs`;
+
+        // Or, show hours and minutes:
+        return minutes === 0 ? `${hours} hrs` : `${hours} hrs ${minutes} mins`;
+    };
+
     const columns = [
-        {
-            title: "ID",
-            dataIndex: "id",
-            key: "id",
-        },
         {
             title: "Name",
             dataIndex: "name",
@@ -70,6 +94,11 @@ const Shifts: React.FC = () => {
             title: "End Time",
             dataIndex: "endTime",
             key: "endTime",
+        },
+        {
+            title: "Duration",
+            dataIndex: "duration",
+            key: "duration",
         },
         {
             title: "Valid Till",
@@ -92,27 +121,10 @@ const Shifts: React.FC = () => {
             : []),
     ];
 
-
-
-    // const handleDelete = async (id: string) => {
-    //     if (window.confirm("Are you sure you want to delete this shift?")) {
-    //         try {
-    //             await deleteShift(id);
-    //             // Refresh the list
-    //             showSuccess("Shift deleted successfully")
-    //             setShifts(shifts.filter(shift => shift.id !== id));
-    //         } catch (error) {
-    //             console.error("Error deleting shift:", error);
-    //         }
-    //     }
-    // };
-
     const handleDeleteClick = (id: string) => {
-        setDeleteId(id); // Opens modal
+        setDeleteId(id);
     };
 
-
-    // On Confirm
     const confirmDelete = async () => {
         if (!deleteId) return;
 
@@ -123,11 +135,10 @@ const Shifts: React.FC = () => {
         } catch (error) {
             showError('Failed to delete shift');
         } finally {
-            setDeleteId(null); // Close modal
+            setDeleteId(null);
         }
     };
 
-    // On Cancel
     const cancelDelete = () => {
         setDeleteId(null);
     };
@@ -193,9 +204,6 @@ const Shifts: React.FC = () => {
                                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
-                                        {data.id}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                                         {data.name}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
@@ -203,6 +211,9 @@ const Shifts: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                                         {formatTime(data.endTime)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
+                                        {getDuration(data.startTime, data.endTime)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
                                         {formatDate(data.endTime)} {/* Valid Till */}
@@ -228,7 +239,6 @@ const Shifts: React.FC = () => {
                                             </>
                                         )}
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
@@ -263,8 +273,6 @@ const Shifts: React.FC = () => {
                     </div>
                 </div>
             )}
-
-
         </div>
     );
 };

@@ -14,53 +14,111 @@ import {
 import { getEmployeeById } from '../services/userService';
 import { getShifts } from '../services/ShiftService';
 import { getDepartments } from '../services/departmentService';
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
 
-const statusColors = {
+import type { Shift } from '../services/ShiftService';
+import type { Department, SubDepartment } from '../services/departmentService';
+
+type StatusKey =
+  | 'active'
+  | 'inactive'
+  | 'terminated'
+  | 'resigned'
+  | 'retired'
+  | 'onLeave'
+  | 'probation';
+
+const statusColors: Record<StatusKey, string> = {
   active: 'bg-emerald-500',
-  onLeave: 'bg-amber-500',
   inactive: 'bg-red-500',
+  terminated: 'bg-gray-600',
+  resigned: 'bg-gray-600',
+  retired: 'bg-gray-600',
+  onLeave: 'bg-amber-500',
+  probation: 'bg-yellow-400',
 };
+const defaultStatusColor = 'bg-gray-400';
 
-type StatusKey = keyof typeof statusColors;
+interface EmployeeData {
+  id: string;
+  employeeNumber: string;
+  designation: string;
+  departmentId: string;
+  subDepartmentId?: string;
+  gender?: string;
+  address?: string;
+  salary?: string;
+  shiftId?: string;
+  shift?: string | null;
+  status: string; // from backend as string, will cast
+  dateOfBirth?: string;
+  hireDate?: string;
+  skills: string[];
+  workLocation?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  profileImageUrl?: string;
+}
+
+interface UserData {
+  id: string;
+  fullName: string;
+  email: string;
+  roleId: string;
+  subRoleId?: string;
+  status?: string;
+  dateJoined?: string;
+}
+
+interface EmployeeWithUser extends Omit<EmployeeData, 'status'> {
+  status: StatusKey;
+  user: UserData;
+}
 
 const UserInfo: React.FC = () => {
   const userId = useSelector((state: any) => state.auth?.user?.id);
-  const [employee, setEmployee] = useState<any>(null);
-  const [shifts, setShifts] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [employee, setEmployee] = useState<EmployeeWithUser | null>(null);
+  const [shifts, setShifts] = useState<Shift[]>([]);
   const [departmentName, setDepartmentName] = useState<string>('N/A');
   const [subDepartmentName, setSubDepartmentName] = useState<string>('N/A');
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        console.log(userId);
-        const { user, employee } = await getEmployeeById(userId);
+        if (!userId) return;
+
+        const { user, employee: emp } = await getEmployeeById(userId);
         const allShifts = await getShifts();
         const allDepartments = await getDepartments();
 
-        setEmployee({ ...employee, user });
-        setShifts(allShifts);
-        setDepartments(allDepartments);
+        const castStatus = (s: string): StatusKey =>
+          s && Object.keys(statusColors).includes(s) ? (s as StatusKey) : 'inactive';
 
-        const matchedDept = allDepartments.find((dept) => dept.id === employee.departmentId);
+        setEmployee({
+          ...emp,
+          user,
+          status: castStatus(emp.status ?? 'inactive'),
+        });
+
+        const matchedDept = allDepartments.find((dept) => dept.id === emp.departmentId);
         if (matchedDept) {
           setDepartmentName(matchedDept.name || 'N/A');
           const matchedSubDept = matchedDept.subDepartments?.find(
-            (sub: any) => sub.id === employee.subDepartmentId
+            (sub: SubDepartment) => sub.id === emp.subDepartmentId
           );
           if (matchedSubDept) {
             setSubDepartmentName(matchedSubDept.name || 'N/A');
           }
         }
+
+        setShifts(allShifts);
       } catch (err) {
         console.error('Error fetching employee/departments:', err);
       }
     };
 
     fetchAllData();
-  }, []);
+  }, [userId]);
 
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -72,15 +130,20 @@ const UserInfo: React.FC = () => {
   if (!employee) return <p>Loading user info...</p>;
 
   const fullName = employee.user?.fullName ?? 'Unknown';
-  const avatar = employee.user?.avatar || '/default-avatar.png';
-  const status: StatusKey = employee.status || 'inactive';
-  const matchedShift = shifts.find((s) => s.name === employee?.shift);
+
+  const avatar = employee.profileImageUrl ?? '/default-avatar.png';
+
+  const status: StatusKey = employee.status;
+
+  const matchedShift =
+    shifts.find((s) => s.name === employee.shift) ||
+    (employee.shiftId ? shifts.find((s) => s.id === employee.shiftId) : undefined);
 
   const details = [
     { label: 'Employee ID', icon: IdCard, value: employee.employeeNumber ?? 'N/A' },
     { label: 'Email', icon: Mail, value: employee.user?.email ?? 'N/A' },
     { label: 'Designation', icon: Briefcase, value: employee.designation ?? 'N/A' },
-    { label: 'Phone', icon: Phone, value: employee.phoneNumber ?? '-' },
+    { label: 'Phone', icon: Phone, value: employee.emergencyContactPhone ?? '-' },
     { label: 'Department', icon: Building2, value: departmentName },
     { label: 'Sub-Department', icon: Building2, value: subDepartmentName },
     { label: 'Location', icon: MapPin, value: employee.workLocation ?? 'N/A' },
@@ -89,7 +152,7 @@ const UserInfo: React.FC = () => {
       icon: Activity,
       value: (
         <div className="flex items-center space-x-2">
-          <span className={`h-2 w-2 rounded-full ${statusColors[status] || 'bg-gray-400'}`} />
+          <span className={`h-2 w-2 rounded-full ${statusColors[status] ?? defaultStatusColor}`} />
           <span className="capitalize">{status}</span>
         </div>
       ),
@@ -97,9 +160,7 @@ const UserInfo: React.FC = () => {
     {
       label: 'Join Date',
       icon: Calendar,
-      value: employee.hireDate
-        ? new Date(employee.hireDate).toUTCString().slice(0, 16)
-        : 'N/A',
+      value: employee.hireDate ? new Date(employee.hireDate).toUTCString().slice(0, 16) : 'N/A',
     },
     {
       label: 'Shift',
@@ -120,10 +181,14 @@ const UserInfo: React.FC = () => {
           <img
             src={avatar}
             alt={fullName}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/default-avatar.png';
+            }}
             className="w-16 h-16 rounded-full border-4 border-white shadow-md"
           />
           <div
-            className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[status] || 'bg-gray-400'}`}
+            className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${statusColors[status] ?? defaultStatusColor
+              }`}
           />
         </div>
         <div>
@@ -133,7 +198,7 @@ const UserInfo: React.FC = () => {
       </div>
 
       {/* Grid Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {details.map(({ label, icon: Icon, value }) => (
           <div
             key={label}
@@ -148,7 +213,7 @@ const UserInfo: React.FC = () => {
             </div>
           </div>
         ))}
-        {/* Skills full width */}
+
         <div className="md:col-span-2 flex items-start space-x-3 p-4 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-700">
             <User className="h-5 w-5 text-[#7d90b0]" />
@@ -156,13 +221,11 @@ const UserInfo: React.FC = () => {
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Skills</p>
             <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-              {Array.isArray(employee.skills) && employee.skills.length
-                ? employee.skills.join(' - ')
-                : 'N/A'}
+              {employee.skills && employee.skills.length > 0 ? employee.skills.join(' - ') : 'N/A'}
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

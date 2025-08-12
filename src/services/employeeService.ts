@@ -7,6 +7,7 @@ interface Document {
   name: string;
   url: string;
   type: string;
+  uploadedAt: string;
 }
 
 export interface Employee {
@@ -15,6 +16,8 @@ export interface Employee {
   employeeNumber: string;
   fullName: string;
   email: string;
+  role: string;
+  subRole: string;
   designation: string;
   department: string;
   subDepartment: string;
@@ -27,6 +30,7 @@ export interface Employee {
   salary: string;
   skills: string[];
   documents: Document[];
+  profileImageUrl?: string | null;
   hireDate: Date;
 }
 
