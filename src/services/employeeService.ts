@@ -365,6 +365,75 @@ export const deleteEmployee = async (id: string): Promise<void> => {
   }
 };
 
+
+export interface User {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  roleId: string;
+  status: string;
+  dateJoined: string;
+}
+
+interface InactiveUsersResponse {
+  success: boolean;
+  data: {
+    users: User[];
+  };
+}
+
+export const getInactiveUsers = async (): Promise<User[]> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/users/inactive`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (response.status === 401) {
+      throw new Error('Invalid or expired token');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch inactive users');
+    }
+
+    const data: InactiveUsersResponse = await response.json();
+    return data.data.users;
+  } catch (error) {
+    console.error('Error fetching inactive users:', error);
+    throw error;
+  }
+};
+
+// Delete a user only if linked employee is deleted
+export const deleteUserConditionally = async (userId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/user/delete/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (response.status === 401) {
+      throw new Error('invalid or expired token');
+    }
+
+    if (response.status === 400 || response.status === 409) {
+      // Read error message from response body if provided
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Cannot delete user due to linked employee');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to delete user conditionally');
+    }
+
+  } catch (error) {
+    console.error(`Error deleting user with ID ${userId} conditionally:`, error);
+    handleAuthError(error);
+  }
+};
+
 // upload image
 export const uploadProfileImage = async (employeeId: string, file: File) => {
   try {
