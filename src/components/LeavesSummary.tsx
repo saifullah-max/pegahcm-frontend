@@ -177,7 +177,7 @@ const LeavesSummary: React.FC = () => {
 
       {/* Modal */}
       {/* Modal */}
-      {showDetails && (
+      {showDetails && leaveRequests.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-lg">
             <div className="flex justify-between items-center mb-6">
