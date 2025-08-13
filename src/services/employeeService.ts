@@ -2,12 +2,18 @@ interface EmergencyContact {
   name: string;
   phone: string;
 }
-
-interface Document {
+export interface FileObject {
   name: string;
   url: string;
-  type: string;
-  uploadedAt: string;
+  mimeType: string;
+  uploadedAt: Date;
+}
+
+export interface Document {
+  name: string;
+  url: string;
+  mimeType: string;
+  uploadedAt: Date;
 }
 
 export interface Employee {
@@ -22,18 +28,18 @@ export interface Employee {
   department: string;
   subDepartment: string;
   status: string;
-  profileImage: string;
+  profileImage: string; // Keep if needed for DB mapping
+  profileImageUrl?: string | null; // Computed value
+  images?: FileObject[];
+  documents: Document[];
   workLocation: string;
   gender: string;
   address: string;
   emergencyContact: EmergencyContact;
   salary: string;
   skills: string[];
-  documents: Document[];
-  profileImageUrl?: string | null;
   hireDate: Date;
 }
-
 interface EmployeeResponse {
   data: {
     employees: Employee[];
@@ -83,6 +89,7 @@ export interface UpdateEmployeeData {
   subDepartmentId: string;
   workLocation: string;
   roleId: string;
+  subRoleId: string;
   address: string;
   salary: number;
   skills: string[];
@@ -118,13 +125,15 @@ export interface EmployeeData {
   salary: string;
   dateOfBirth: string;
   hireDate: string;
-  profileImage: string | null;
   skills: string[];
   workLocation: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
-  documents: any[];
   shiftId?: string;
+  profileImage: File | null;
+  profileImageUrl: string | null; // For preview
+  documents: File[];
+  existingDocuments: Document[]; // For already uploaded docs
 }
 
 export interface SingleEmployeeResponse {
@@ -218,62 +227,61 @@ export const getEmployeeById = async (id: string): Promise<SingleEmployeeRespons
 // Create a new employee
 export const createEmployee = async (employeeData: CreateEmployeeData): Promise<Employee> => {
   try {
-    // console.log('Creating employee with data:', employeeData);
+    const formData = new FormData();
 
-    // Try JSON approach first as the server might be expecting JSON
-    const useFormData = false; // Set to false to use JSON approach
+    // Append all text fields
+    formData.append('fullName', employeeData.fullName);
+    formData.append('email', employeeData.email);
+    formData.append('password', employeeData.password);
+    formData.append('designation', employeeData.designation);
+    formData.append('departmentId', employeeData.departmentId);
+    formData.append('subDepartmentId', employeeData.subDepartmentId);
+    formData.append('workLocation', employeeData.workLocation);
+    formData.append('gender', employeeData.gender);
+    formData.append('address', employeeData.address);
+    formData.append('emergencyContactName', employeeData.emergencyContactName);
+    formData.append('emergencyContactPhone', employeeData.emergencyContactPhone);
+    formData.append('salary', employeeData.salary.toString());
+    formData.append('status', employeeData.status);
+    formData.append('phoneNumber', employeeData.phoneNumber.toString());
+    formData.append('fatherName', employeeData.fatherName);
+    formData.append('dateOfBirth', employeeData.dateOfBirth.toISOString());
+    formData.append('joiningDate', employeeData.joiningDate.toISOString());
+    formData.append('roleId', employeeData.roleId);
+    formData.append('subRoleId', employeeData.subRoleId);
+    formData.append('roleTag', employeeData.roleTag);
+    if (employeeData.shiftId) formData.append('shiftId', employeeData.shiftId);
 
-    let response;
+    // Append skills array (as JSON)
+    formData.append('skills', JSON.stringify(employeeData.skills));
 
-    {
-
-      const jsonData = {
-        fullName: employeeData.fullName,
-        email: employeeData.email,
-        password: employeeData.password,
-        designation: employeeData.designation,
-        departmentId: employeeData.departmentId,
-        subDepartmentId: employeeData.subDepartmentId,
-        workLocation: employeeData.workLocation,
-        gender: employeeData.gender,
-        address: employeeData.address,
-        emergencyContactName: employeeData.emergencyContactName,
-        emergencyContactPhone: employeeData.emergencyContactPhone,
-        salary: employeeData.salary,
-        skills: employeeData.skills,
-        status: employeeData.status,
-        shiftId: employeeData.shiftId,
-        phoneNumber: employeeData.phoneNumber,
-        fatherName: employeeData.fatherName,
-        dateOfBirth: employeeData.dateOfBirth,
-        joiningDate: employeeData.joiningDate,
-        roleId: employeeData.roleId,
-        subRoleId: employeeData.subRoleId,
-        roleTag: employeeData.roleTag
-        // Only include these two if you're sending FormData or handling file uploads properly
-        // profileImage: employeeData.profileImage,
-        // documents: employeeData.documents,
-      };
-
-
-      const headers = getAuthHeaders();
-      console.log('Using JSON approach with data:', jsonData);
-
-      response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(jsonData)
+    // Append files
+    if (employeeData.profileImage) {
+      formData.append('profileImage', employeeData.profileImage);
+    }
+    if (employeeData.documents && employeeData.documents.length > 0) {
+      employeeData.documents.forEach((doc) => {
+        formData.append('documents', doc);
       });
     }
+
+    const headers = {
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      // DO NOT set Content-Type manually (browser sets it for multipart/form-data)
+    };
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
+      method: 'POST',
+      headers: headers,
+      body: formData,
+    });
 
     if (response.status === 401) {
       throw new Error('invalid or expired token');
     }
 
-    // Get detailed error information if available
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Server error response:', errorText);
       throw new Error(`Failed to create employee: ${response.status} ${response.statusText}. ${errorText}`);
     }
 
@@ -286,59 +294,65 @@ export const createEmployee = async (employeeData: CreateEmployeeData): Promise<
 };
 
 // Update an employee
-export const updateEmployee = async (id: string, employeeData: Partial<CreateEmployeeData>): Promise<Employee> => {
+export const updateEmployee = async (id: string, employeeData: Partial<CreateEmployeeData> & { documentsMetadata?: any[] }): Promise<Employee> => {
   try {
     const formData = new FormData();
 
-    // Add all basic employee data
+    // Append simple fields (excluding files, skills, emergencyContact)
     Object.entries(employeeData).forEach(([key, value]) => {
-      if (value !== undefined && key !== 'documents' && key !== 'profileImage' && key !== 'emergencyContact' && key !== 'skills') {
-        formData.append(key, value as string);
+      if (
+        value !== undefined &&
+        key !== 'documents' &&
+        key !== 'profileImage' &&
+        key !== 'emergencyContact' &&
+        key !== 'skills' &&
+        key !== 'documentsMetadata'
+      ) {
+        formData.append(key, String(value));
       }
     });
 
-    // // Handle emergency contact if provided
-    // if (employeeData.emergencyContact) {
-    //   formData.append('emergencyContact.name', employeeData.emergencyContact.name);
-    //   formData.append('emergencyContact.phone', employeeData.emergencyContact.phone);
-    // }
-
-    // Handle skills array if provided
-    if (employeeData.skills) {
-      employeeData.skills.forEach((skill, index) => {
-        formData.append(`skills[${index}]`, skill);
-      });
+    // Emergency contact
+    if (employeeData.emergencyContactName) {
+      formData.append('emergencyContact[name]', employeeData.emergencyContactName);
+      if (employeeData.emergencyContactPhone) {
+        formData.append('emergencyContact[phone]', employeeData.emergencyContactPhone);
+      }
     }
 
-    // Handle profile image if provided
-    if (employeeData.profileImage) {
+    // Skills
+    if (employeeData.skills && employeeData.skills.length > 0) {
+      employeeData.skills.forEach((skill, index) => formData.append(`skills[${index}]`, skill));
+    }
+
+    // Profile image
+    if (employeeData.profileImage instanceof File) {
       formData.append('profileImage', employeeData.profileImage);
     }
 
-    // Handle documents if provided
+    // New files
     if (employeeData.documents && employeeData.documents.length > 0) {
-      employeeData.documents.forEach((doc) => {
-        formData.append('documents', doc);
+      employeeData.documents.forEach(doc => {
+        if (doc instanceof File) formData.append('documents', doc);
       });
     }
 
+    // Remaining existing documents metadata as JSON string
+    if (employeeData.documentsMetadata) {
+      formData.append('documentsMetadata', JSON.stringify(employeeData.documentsMetadata));
+    }
+
     const headers: Record<string, string> = getAuthHeaders();
-    // Remove Content-Type as FormData will set it with the correct boundary
-    delete headers['Content-Type'];
+    delete headers['Content-Type']; // Let browser set boundary for FormData
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/${id}`, {
       method: 'PUT',
-      headers: headers,
+      headers,
       body: formData
     });
 
-    if (response.status === 401) {
-      throw new Error('invalid or expired token');
-    }
-
-    if (!response.ok) {
-      throw new Error('Failed to update employee');
-    }
+    if (response.status === 401) throw new Error('invalid or expired token');
+    if (!response.ok) throw new Error('Failed to update employee');
 
     const data = await response.json();
     return data.data.employee;
@@ -347,6 +361,7 @@ export const updateEmployee = async (id: string, employeeData: Partial<CreateEmp
     return handleAuthError(error);
   }
 };
+
 
 // Delete an employee
 export const deleteEmployee = async (id: string): Promise<void> => {

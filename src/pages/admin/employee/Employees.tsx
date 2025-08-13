@@ -391,7 +391,7 @@ const Employees: React.FC = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{doc.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {doc.type} - {new Date(doc.uploadedAt).toLocaleDateString()}
+                          {doc.mimeType} - {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex gap-3">
