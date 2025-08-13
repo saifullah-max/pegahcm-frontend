@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../../services/employeeService';
+import { createEmployee, CreateEmployeeData, Document, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../../services/employeeService';
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
@@ -49,8 +49,10 @@ interface EmployeeFormData {
     phone?: number;
     dateOfBirth?: string;
     dateOfJoining?: string;
-    documents?: File[];
-    profileImage?: File;
+    documents?: File[]; // for new uploads
+    existingDocuments?: Document[]; // for already uploaded docs
+    profileImage?: File; // new file if uploaded
+    profileImageUrl?: string | null; // preview of existing image
     shiftId?: string;
     role: string;
     subRole: string;
@@ -94,8 +96,13 @@ const EditEmployee: React.FC = () => {
         shiftId: '',
         role: 'employee',
         subRole: 'teamMember',
-        shift: ''
+        shift: '',
+        documents: [],
+        existingDocuments: [],
+        profileImage: undefined,
+        profileImageUrl: null,
     });
+
 
     const [loading, setLoading] = useState(false);
     const [skillInput, setSkillInput] = useState('');
@@ -155,6 +162,7 @@ const EditEmployee: React.FC = () => {
             try {
                 const rolesData = await getAllSubRoles();
                 setSubRole(rolesData);
+                console.log("Sub-roles:", rolesData);
             } catch (error) {
                 // Handle error appropriately
             } finally {
@@ -168,6 +176,31 @@ const EditEmployee: React.FC = () => {
         // fetchSingleEmployee();
     }, []);
 
+    function normalizeDocuments(docs: (Document | string | File)[] | undefined): Document[] {
+        if (!docs) return [];
+
+        return docs.map((doc) => {
+            if (typeof doc === 'string') {
+                return {
+                    name: doc.split('/').pop() || 'document',
+                    url: `${import.meta.env.VITE_API_URL}/${doc.replace(/\\/g, '/')}`,
+                    mimeType: 'application/octet-stream',
+                    uploadedAt: new Date(),
+                } as unknown as Document;
+            } else if (doc instanceof File) {
+                // convert File to Document-like object for frontend preview
+                return {
+                    name: doc.name,
+                    url: URL.createObjectURL(doc),
+                    mimeType: doc.type || 'application/octet-stream',
+                    uploadedAt: new Date(),
+                } as unknown as Document;
+            } else {
+                return doc as Document;
+            }
+        });
+    }
+
     const fetchSingleEmployee = useCallback(async () => {
         if (!id) return;
 
@@ -176,19 +209,36 @@ const EditEmployee: React.FC = () => {
             const response = await getEmployeeById(id);
             console.log("Fetched Single Employee:", response);
 
-            const { user, employee } = response;
-            const status = (employee as any)['status'];
-            const shift = (employee as any)['shift'];
-            setUserName(user.fullName)
+            const { user, employee } = response as { user: any; employee: EmployeeData };
+
+            // Normalize profile image & images array
+            const images: FileObject[] = Array.isArray(employee.profileImage) ? employee.profileImage : [];
+            const profileImageUrl =
+                images.length > 0 && typeof images[0] === 'object' && 'url' in images[0]
+                    ? (images[0] as FileObject).url
+                    : employee.profileImageUrl || null;
+            console.log("IMAGE", images);
+            console.log("PROFILE IMAGE URL", profileImageUrl);
+
+            // Normalize documents array
+            const existingDocuments: Document[] = normalizeDocuments(employee.documents);
+            console.log("EXISTING DOCS", existingDocuments);
+
+
+            const status = (employee as any).status || '';
+            const shift = employee.shiftId || '';
+
+            setUserName(user.fullName);
+
             setNewEmployee({
                 fullName: user.fullName || '',
                 email: user.email || '',
                 fatherName: employee.fatherName || '',
                 department: employee.departmentId || '',
-                password: '',
-                confirmPassword: '',
                 subDepartment: employee.subDepartmentId || '',
                 designation: employee.designation || '',
+                password: '',
+                confirmPassword: '',
                 status: status,
                 phone: user.phoneNumber || 0,
                 address: employee.address || '',
@@ -197,21 +247,29 @@ const EditEmployee: React.FC = () => {
                 salary: employee.salary?.toString() || '',
                 gender: employee.gender || '',
                 emergencyContactName: employee.emergencyContactName || '',
-                emergencyContactPhone: employee.emergencyContactPhone || '', skills: employee.skills || [],
+                emergencyContactPhone: employee.emergencyContactPhone || '',
+                skills: employee.skills || [],
                 workLocation: employee.workLocation || 'Onsite',
                 shiftId: employee.shiftId || '',
                 shift: shift,
                 role: user.roleId || 'employee',
-                subRole: user.subRoleId || 'teamMember'
+                subRole: user.subRoleId || 'teamMember',
 
+                // Images & documents
+                profileImage: undefined, // new upload if any
+                profileImageUrl,          // preview of existing image
+                documents: [],            // new uploads
+                existingDocuments,        // normalized existing docs
             });
 
+            console.log("Normalized profileImageUrl:", profileImageUrl);
+            console.log("Normalized existingDocuments:", existingDocuments);
         } catch (error) {
             console.error('Error fetching employee:', error);
         } finally {
             setLoading(false);
         }
-    }, [id]); // Add shifts as dependency
+    }, [id]);
 
     useEffect(() => {
         if (id) { // Remove the shifts.length > 0 check
@@ -257,25 +315,6 @@ const EditEmployee: React.FC = () => {
 
         // Clear validation errors when the user edits a field
         setValidationErrors(prev => prev.filter(error => error.field !== name));
-
-        // Check password confirmation
-        // if (name === 'confirmPassword') {
-        //     if (value !== newEmployee.password) {
-        //         setPasswordError('Passwords do not match');
-        //     } else {
-        //         setPasswordError('');
-        //     }
-        // }
-
-        // // If changing password, check if it matches confirmation
-        // if (name === 'password') {
-        //     if (newEmployee.confirmPassword && value !== newEmployee.confirmPassword) {
-        //         setPasswordError('Passwords do not match');
-        //     } else {
-        //         setPasswordError('');
-        //     }
-        // }
-
         setNewEmployee({
             ...newEmployee,
             [name]: value,
@@ -299,52 +338,20 @@ const EditEmployee: React.FC = () => {
         }
     };
 
-    // image upload handler
-    const handleImageUpload = async () => {
-        if (!newEmployee.profileImage) {
-            alert('Please select a profile image');
-            return;
-        }
-
-        try {
-            if (id === undefined) {
-                alert('Employee ID is undefined. Cannot upload image.');
-                return;
-            }
-            const result = await uploadProfileImage(id, newEmployee.profileImage);
-            console.log('Upload Success:', result);
-            alert('Image uploaded successfully!');
-        } catch (err) {
-            alert('Image upload failed');
+    const handleRemoveDocument = (index: number, type: 'existing' | 'new') => {
+        if (type === 'existing') {
+            setNewEmployee(prev => ({
+                ...prev,
+                existingDocuments: prev.existingDocuments?.filter((_, i) => i !== index),
+            }));
+        } else {
+            setNewEmployee(prev => ({
+                ...prev,
+                documents: prev.documents?.filter((_, i) => i !== index),
+            }));
         }
     };
 
-    // docs upload handler
-    const handleDocumentUpload = async () => {
-        if (!newEmployee.documents || newEmployee.documents.length === 0) {
-            alert('Please select one or more documents');
-            return;
-        }
-
-        try {
-            if (id === undefined) {
-                alert('Employee ID is undefined. Cannot upload image.');
-                return;
-            }
-            const uploaded = await uploadDocuments(id, newEmployee.documents);
-            console.log('Uploaded Documents:', uploaded);
-            alert('Documents uploaded successfully!');
-        } catch (err) {
-            alert('Failed to upload documents');
-        }
-    };
-
-    const handleRemoveDocument = (index: number) => {
-        setNewEmployee({
-            ...newEmployee,
-            documents: newEmployee.documents?.filter((_, i) => i !== index),
-        });
-    };
 
     const handleAddSkill = () => {
         if (skillInput.trim() && !newEmployee.skills?.includes(skillInput.trim())) {
@@ -377,57 +384,58 @@ const EditEmployee: React.FC = () => {
             return;
         }
 
-
-        const registerData: UpdateUserData = {
-            fullName: newEmployee.fullName,
-            email: newEmployee.email,
-            roleId: newEmployee.role,
-            password: newEmployee.password,
-        };
-
         try {
+            // Only new files go to `documents`
+            const newFiles = newEmployee.documents || [];
 
-            const apiData: UpdateEmployeeData = {
+            // Remaining existing documents metadata
+            const existingDocsMeta = (newEmployee.existingDocuments || []).map(doc => ({
+                name: doc.name,
+                url: doc.url,
+                mimeType: doc.mimeType,
+                uploadedAt: doc.uploadedAt,
+            }));
+
+            // Build partial employee data
+            const employeeData: Partial<CreateEmployeeData> & { documentsMetadata?: Document[] } = {
                 fullName: newEmployee.fullName,
                 email: newEmployee.email,
-                phoneNumber: Number(newEmployee.phone || 0),
-                password: newEmployee.password,
+                phoneNumber: newEmployee.phone,
                 gender: newEmployee.gender,
-                dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : new Date(),
+                dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : undefined,
                 emergencyContactName: newEmployee.emergencyContactName,
                 emergencyContactPhone: newEmployee.emergencyContactPhone,
                 address: newEmployee.address,
                 fatherName: newEmployee.fatherName,
-                roleId: newEmployee.role,
-                departmentId: newEmployee.department,
-                subDepartmentId: newEmployee.subDepartment,
+                roleId: String(newEmployee.role),
+                subRoleId: String(newEmployee.subRole),
+                departmentId: String(newEmployee.department),
+                subDepartmentId: String(newEmployee.subDepartment),
                 designation: newEmployee.designation,
-                joiningDate: newEmployee.dateOfJoining ? new Date(newEmployee.dateOfJoining) : new Date(),
+                joiningDate: newEmployee.dateOfJoining ? new Date(newEmployee.dateOfJoining) : undefined,
                 status: newEmployee.status,
-                salary: parseFloat(newEmployee.salary || '0'),
-                skills: newEmployee.skills,
+                salary: newEmployee.salary ? Number(newEmployee.salary) : undefined,
+                skills: newEmployee.skills || [],
                 workLocation: newEmployee.workLocation,
-                shiftId: newEmployee.shiftId,
-                shift: newEmployee.shift,
-                documents: newEmployee.documents,
+                shiftId: String(newEmployee.shiftId),
+                password: newEmployee.password || '',
                 profileImage: newEmployee.profileImage,
+                documents: newFiles, // Only new File uploads
+                documentsMetadata: existingDocsMeta, // Remaining existing docs metadata
             };
-            console.log("Creating employee");
-            if (newEmployee.password) {
-                apiData.password = newEmployee.password;
-            }
+
+            console.log("Submitting employee data for update...", employeeData);
 
             if (id) {
-                await updateEmployee(id, apiData);
+                await updateEmployee(id, employeeData);
                 console.log("Id", id, "Employee updated");
             }
-            console.log("New employee added");
-            showSuccess("Employee updated!")
+
+            showSuccess("Employee updated!");
             navigate('/admin/employees');
 
         } catch (error: any) {
             setRegistering(false);
-
             if (error instanceof RegistrationError && error.validationErrors) {
                 setValidationErrors(error.validationErrors);
             } else {
@@ -456,7 +464,7 @@ const EditEmployee: React.FC = () => {
                     <ArrowLeft className="text-xl" />
                 </button>
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <UserRound /> Edit { userName }'s Information
+                    <UserRound /> Edit {userName}'s Information
                 </h1>
             </div>
 
@@ -614,7 +622,7 @@ const EditEmployee: React.FC = () => {
                                 name="subRole"
                                 value={newEmployee.subRole}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                                className={`w-full px-3 py-2 border ${getFieldError('subRole') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
                                 required
                             >
                                 <option value="">Select Sub-Role</option>
@@ -838,8 +846,23 @@ const EditEmployee: React.FC = () => {
                                 Profile Image
                             </h2>
 
+                            {/* Show existing image if available */}
+                            {newEmployee.profileImageUrl && (
+                                <div className="mb-3">
+                                    <img
+                                        src={newEmployee.profileImageUrl!} // full URL from backend
+                                        alt="Current Profile"
+                                        className="w-32 h-32 object-cover rounded-md border mb-2"
+                                    />
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                        Current profile image
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Upload new image */}
                             <div className="mb-4">
-                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload Profile Image</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload New Profile Image</label>
                                 <input
                                     type="file"
                                     name="profileImage"
@@ -851,13 +874,6 @@ const EditEmployee: React.FC = () => {
                                     Supported formats: JPG, PNG, GIF, etc.
                                 </p>
                             </div>
-                            <button
-                                onClick={handleImageUpload}
-                                className="px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-                            >
-                                Upload Image
-                            </button>
-
                         </div>
 
                         {/* Documents Section */}
@@ -866,8 +882,40 @@ const EditEmployee: React.FC = () => {
                                 Documents
                             </h2>
 
+                            {/* Show existing documents */}
+                            {newEmployee.existingDocuments && newEmployee.existingDocuments.length > 0 && (
+                                <div className="mb-4">
+                                    <h3 className="text-gray-700 dark:text-gray-300 mb-2">Current Documents</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {newEmployee.existingDocuments.map((doc, index) => (
+                                            <div
+                                                key={index}
+                                                className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full flex items-center dark:bg-gray-700 dark:text-gray-200"
+                                            >
+                                                <a
+                                                    href={doc.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="underline text-blue-600 dark:text-blue-400"
+                                                >
+                                                    {doc.name}
+                                                </a>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveDocument(index, 'existing')}
+                                                    className="ml-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Upload new documents */}
                             <div className="mb-4">
-                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload Documents</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Upload New Documents</label>
                                 <input
                                     type="file"
                                     name="documents"
@@ -881,6 +929,7 @@ const EditEmployee: React.FC = () => {
                                 </p>
                             </div>
 
+                            {/* Show newly selected documents */}
                             <div className="flex flex-wrap gap-2 mt-3">
                                 {newEmployee.documents?.map((file, index) => (
                                     <div
@@ -890,7 +939,7 @@ const EditEmployee: React.FC = () => {
                                         {file.name}
                                         <button
                                             type="button"
-                                            onClick={() => handleRemoveDocument(index)}
+                                            onClick={() => handleRemoveDocument(index, 'new')}
                                             className="ml-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
                                         >
                                             &times;
@@ -899,12 +948,7 @@ const EditEmployee: React.FC = () => {
                                 ))}
                             </div>
                         </div>
-                        <button
-                            onClick={handleDocumentUpload}
-                            className="w-fit px-4 py-2 text-white rounded-md transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-                        >
-                            Upload Documents
-                        </button>
+
 
                     </div>
 

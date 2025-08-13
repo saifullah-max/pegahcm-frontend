@@ -61,14 +61,14 @@ const CreateSubRole = () => {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                     placeholder="Sub-role name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                 />
                 <textarea
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                     placeholder="Description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -76,7 +76,7 @@ const CreateSubRole = () => {
 
                 <input
                     type="number"
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                     placeholder="Level (e.g., 1)"
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}

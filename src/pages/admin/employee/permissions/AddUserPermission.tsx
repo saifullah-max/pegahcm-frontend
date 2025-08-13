@@ -100,7 +100,7 @@ const AssignSubRolePermissions = () => {
             <div className="mb-4">
                 <label className="block mb-1 font-semibold">Select SubRole:</label>
                 <select
-                    className="border p-2 rounded w-full"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                     value={selectedSubRole}
                     onChange={(e) => setSelectedSubRole(e.target.value)}
                 >

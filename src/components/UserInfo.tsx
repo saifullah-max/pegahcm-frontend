@@ -70,7 +70,7 @@ interface UserData {
   dateJoined?: string;
 }
 
-interface EmployeeWithUser extends Omit<EmployeeData, 'status'> {
+export interface EmployeeWithUser extends Omit<EmployeeData, 'status'> {
   status: StatusKey;
   user: UserData;
 }
