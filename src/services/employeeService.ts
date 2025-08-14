@@ -49,7 +49,7 @@ interface EmployeeResponse {
 export interface CreateEmployeeData {
   fullName: string;
   email: string;
-  phoneNumber: number;
+  phoneNumber: string;
   password: string;
   gender: string;
   dateOfBirth: Date;
@@ -118,6 +118,7 @@ export interface EmployeeData {
   employeeNumber: string;
   designation: string;
   departmentId: string;
+  phoneNumber: string;
   subDepartmentId: string;
   gender: string;
   fatherName: string;
@@ -362,7 +363,6 @@ export const updateEmployee = async (id: string, employeeData: Partial<CreateEmp
   }
 };
 
-
 // Delete an employee
 export const deleteEmployee = async (id: string): Promise<void> => {
   try {
@@ -453,65 +453,35 @@ export const deleteUserConditionally = async (userId: string): Promise<void> => 
   }
 };
 
-// upload image
-export const uploadProfileImage = async (employeeId: string, file: File) => {
+interface UpdateEmployeeContactData {
+  email?: string;
+  phoneNumber?: string;
+  profileImageFile?: File; // use file, not base64
+}
+
+export const updateEmployeeContact = async (data: UpdateEmployeeContactData) => {
   try {
     const formData = new FormData();
-    formData.append('profileImage', file);
-    formData.append('employeeId', employeeId);
+    if (data.email) formData.append("email", data.email);
+    if (data.phoneNumber) formData.append("phoneNumber", data.phoneNumber);
+    if (data.profileImageFile) formData.append("profileImage", data.profileImageFile);
 
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('Unauthorized');
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/employees/update-contact`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // or your auth method
+        },
+        body: formData,
+      }
+    );
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/image`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}` // Don't set 'Content-Type' — browser sets it automatically for FormData
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to upload image');
-    }
-
-    return data; // success message + saved DB record
+    if (!response.ok) throw new Error("Failed to update contact info");
+    const resData = await response.json();
+    return resData.data;
   } catch (error) {
-    console.error('Error uploading image:', error);
-    throw error;
-  }
-};
-
-// uplaod docs
-export const uploadDocuments = async (employeeId: string, files: File[]) => {
-  try {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('documents', file));
-    formData.append('employeeId', employeeId);
-
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('Unauthorized');
-
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/employees/documents`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Do NOT manually set Content-Type for FormData
-      },
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to upload documents');
-    }
-
-    return data.savedDocuments;
-  } catch (error) {
-    console.error('Error uploading documents:', error);
+    console.error("Error updating employee contact:", error);
     throw error;
   }
 };
