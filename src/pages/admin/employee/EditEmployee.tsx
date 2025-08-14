@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, Document, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, uploadDocuments, uploadProfileImage } from '../../../services/employeeService';
+import { createEmployee, CreateEmployeeData, Document, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, } from '../../../services/employeeService';
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
@@ -35,6 +35,7 @@ interface EmployeeFormData {
     password: string;
     confirmPassword: string;
     fatherName: string;
+    phoneNumber: string;
     designation: string;
     department: string;
     subDepartment: string;
@@ -79,6 +80,7 @@ const EditEmployee: React.FC = () => {
         fatherName: '',
         password: '',
         confirmPassword: '',
+        phoneNumber: '',
         department: '',
         subDepartment: '',
         designation: '',
@@ -235,6 +237,7 @@ const EditEmployee: React.FC = () => {
                 email: user.email || '',
                 fatherName: employee.fatherName || '',
                 department: employee.departmentId || '',
+                phoneNumber: employee.phoneNumber || '',
                 subDepartment: employee.subDepartmentId || '',
                 designation: employee.designation || '',
                 password: '',
@@ -400,7 +403,7 @@ const EditEmployee: React.FC = () => {
             const employeeData: Partial<CreateEmployeeData> & { documentsMetadata?: Document[] } = {
                 fullName: newEmployee.fullName,
                 email: newEmployee.email,
-                phoneNumber: newEmployee.phone,
+                phoneNumber: newEmployee.phoneNumber,
                 gender: newEmployee.gender,
                 dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : undefined,
                 emergencyContactName: newEmployee.emergencyContactName,
@@ -513,8 +516,8 @@ const EditEmployee: React.FC = () => {
                             <label className="block text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
                             <input
                                 type="tel"
-                                name="phone"
-                                value={newEmployee.phone || ''}
+                                name="phoneNumber"
+                                value={newEmployee.phoneNumber || ''}
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
                             />

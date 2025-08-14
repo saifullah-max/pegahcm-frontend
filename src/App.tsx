@@ -46,6 +46,7 @@ import { SocketProvider } from './store/SocketContext';
 import AddSalary from './pages/admin/salary/AddSalary';
 import SalaryDetails from './pages/admin/salary/Salary';
 import ResetPassword from './pages/auth/ResetPassword';
+import Profile from './pages/admin/profile/Profile';
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -101,6 +102,12 @@ function App() {
                 <Route path="/admin/dashboard" element={
                   <ProtectedRoute requiredPermission="Dashboard:view">
                     <Dashboard />
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/profile" element={
+                  <ProtectedRoute requiredPermission="Employee:view">
+                    <Profile />
                   </ProtectedRoute>
                 } />
 

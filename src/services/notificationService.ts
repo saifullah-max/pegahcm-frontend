@@ -67,7 +67,7 @@ const getAuthHeaders = () => {
 
 // Create a type for paginated response
 export interface PaginatedNotifications {
-    data: Notification[];
+    data: UserNotification[];
     totalPages: number;
 }
 
@@ -117,7 +117,7 @@ export const markGroupNotificationsAsRead = async (
 ): Promise<void> => {
     try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/mark-group`, {
-            method: 'POST',
+            method: 'PATCH',
             headers: getAuthHeaders(),
             body: JSON.stringify({ title, message, type }),
         });

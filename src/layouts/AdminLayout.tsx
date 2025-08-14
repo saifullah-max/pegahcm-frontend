@@ -83,26 +83,28 @@ const AdminLayout = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  const fetchEmployeeInfo = async () => {
+    if (!user?.id) return;
+    try {
+      const { user: userData, employee } = await getEmployeeById(user.id);
+
+      const emp = employee as unknown as EmployeeData; // <-- cast here
+
+      setEmployeeInfo({
+        ...emp,
+        user: userData,
+        status: (emp.status ?? 'inactive') as StatusKey,
+        profileImageUrl: emp.profileImageUrl ?? undefined, // normalize null
+      });
+    } catch (err) {
+      console.error("Failed to fetch user info", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchEmployeeInfo = async () => {
-      if (!user?.id) return;
-      try {
-        const { user: userData, employee } = await getEmployeeById(user.id);
-
-        const emp = employee as unknown as EmployeeData; // <-- cast here
-
-        setEmployeeInfo({
-          ...emp,
-          user: userData,
-          status: (emp.status ?? 'inactive') as StatusKey,
-          profileImageUrl: emp.profileImageUrl ?? undefined, // normalize null
-        });
-      } catch (err) {
-        console.error("Failed to fetch user info", err);
-      }
-    };
-
-    fetchEmployeeInfo();
+    if (user?.role !== "admin") {
+      fetchEmployeeInfo();
+    }
   }, [user?.id]);
 
 
@@ -215,7 +217,11 @@ const AdminLayout = () => {
     dispatch({ type: 'NAVIGATE', payload: '/notifications' });
     navigate('/notifications')
   }
+  const handleProfileClick = () => {
+    dispatch({ type: "NAVIGATE", payload: '/profile' })
+    navigate('/profile')
 
+  }
   const handleLogoutClick = () => {
     dispatch({ type: 'LOGOUT' });
     navigate('/login');
@@ -475,37 +481,29 @@ const AdminLayout = () => {
 
                 {/* User Profile Dropdown */}
                 <div className="relative">
-                  <button
-                    className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-
-                    onClick={() => {
-                      setIsUserDropdownOpen(!isUserDropdownOpen);
-                      setIsNotificationDropdownOpen(false);
-                    }}
-                  >
-                    {employeeInfo && (
-                      <button
-                        className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                        onClick={() => {
-                          setIsUserDropdownOpen(prev => !prev);
-                          setIsNotificationDropdownOpen(false);
-                        }}
-                      >
-                        <img
-                          src={employeeInfo.profileImageUrl ?? '/default-avatar.png'}
-                          alt={employeeInfo.user.fullName}
-                          onError={(e) => (e.currentTarget.src = '/default-avatar.png')}
-                          className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
-                        />
-                      </button>
-                    )}
-
-                  </button>
+                  {(employeeInfo || user?.role === 'admin') && (
+                    <button
+                      className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                      onClick={() => {
+                        setIsUserDropdownOpen(prev => !prev);
+                        setIsNotificationDropdownOpen(false);
+                      }}
+                    >
+                      <img
+                        src={employeeInfo?.profileImageUrl ?? '/default-avatar.png'}
+                        alt={employeeInfo?.user.fullName ?? 'Admin'}
+                        onError={(e) => (e.currentTarget.src = '/default-avatar.png')}
+                        className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
+                      />
+                    </button>
+                  )}
                   {isUserDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-800">
-                      <button className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
-                        Profile
-                      </button>
+                      {user?.role !== "admin" && (
+                        <button className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left" onClick={handleProfileClick}>
+                          Profile
+                        </button>
+                      )}
                       <button className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                         Settings
                       </button>
