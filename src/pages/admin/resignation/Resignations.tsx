@@ -6,10 +6,10 @@ import {
     Resignation,
     updateClearanceAndAssetStatus,
 } from '../../../services/resignationService';
-import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft, Plus, LogOut } from 'lucide-react';
+import { CheckCircle, XCircle, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
-import { FaSignOutAlt, FaUserSlash } from 'react-icons/fa';
+import { FaUserSlash } from 'react-icons/fa';
 
 const Resignations = () => {
     const navigate = useNavigate();
