@@ -7,7 +7,7 @@ import { getEmployeeById } from '../services/employeeService';
 import { getDepartments, getAllSubDepartments } from '../services/departmentService';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable'; // still import to ensure plugin included for some bundlers; dynamic import used below too
-import { showInfo } from '../lib/toastUtils';
+import { showError, showInfo } from '../lib/toastUtils';
 import { PDFDocument } from 'pdf-lib';
 
 interface Allowance {
@@ -202,7 +202,7 @@ const PayslipDetails: React.FC = () => {
 
   const generatePDF = async () => {
     if (!salaryForMonth || !employeeDetails?.employee) {
-      alert('No salary data available.');
+      showInfo('No salary data available.');
       return;
     }
 
@@ -211,7 +211,7 @@ const PayslipDetails: React.FC = () => {
       await downloadSalarySlip(employeeDetails.employee.id, salaryForMonth.effectiveFrom.slice(0, 7)); // YYYY-MM
     } catch (err) {
       console.error('Error downloading salary slip:', err);
-      alert('Failed to download salary slip. Check console for details.');
+      showError('Failed to download salary slip. Check console for details.');
     }
   };
 
