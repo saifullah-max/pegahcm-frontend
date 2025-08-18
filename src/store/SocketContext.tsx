@@ -1,6 +1,5 @@
 // src/context/SocketContext.tsx
-
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '.';
 import socket from '../lib/socket';
@@ -27,36 +26,45 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { user } = useSelector((state: RootState) => state.auth);
   const [notification, setNotification] = useState<NotificationType | null>(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
+  // ✅ Prevent duplicate initialization in Strict Mode
+  const isInitialized = useRef(false);
 
-    socket.connect();
+  useEffect(() => {
+    if (!user?.id || isInitialized.current) return;
+    isInitialized.current = true; // ✅ Runs only once per session
+
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     socket.on('connect', () => {
       console.log('✅ Socket connected:', socket.id);
       socket.emit('join', user.id);
     });
 
-    socket.on('new_notification', (notif: NotificationType) => {
+    const handleNotification = (notif: NotificationType) => {
       console.log('🔔 New Notification:', notif);
 
       if (notif.showPopup) {
-        // Show toast
         showInfo(`${notif.description || notif.message}`);
 
-        // 🔊 Play notification sound
         const audio = new Audio('/sounds/notification_sound.mp3');
         audio.volume = 0.8;
         audio.play().catch(console.error);
       }
 
       setNotification(notif);
-    });
+    };
+
+    // ✅ Remove previous listeners before adding
+    socket.off('new_notification', handleNotification);
+    socket.on('new_notification', handleNotification);
 
     return () => {
       socket.off('connect');
-      socket.off('new_notification');
+      socket.off('new_notification', handleNotification);
       socket.disconnect();
+      isInitialized.current = false; // Reset for next mount
     };
   }, [user?.id]);
 

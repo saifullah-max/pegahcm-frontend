@@ -25,6 +25,11 @@ const Resignations = () => {
     const [remarks, setRemarks] = useState('');
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
+    const [decisionModalOpen, setDecisionModalOpen] = useState(false);
+    const [decisionType, setDecisionType] = useState<'Approved' | 'Rejected' | null>(null);
+    const [decisionId, setDecisionId] = useState<string | null>(null);
+    const [decisionRemarks, setDecisionRemarks] = useState('');
+
     useEffect(() => {
         console.log("Resignations Component Rendered");
 
@@ -65,15 +70,23 @@ const Resignations = () => {
     }
 
     const handleDecision = async (id: string, status: 'Approved' | 'Rejected') => {
-        const remarks = prompt(`Enter remarks for ${status.toLowerCase()} resignation:`);
         if (!remarks) return showInfo('Remarks are required.');
 
         setProcessingId(id);
         try {
             await processResignation(id, status, storedProcessedById, remarks);
             await fetchResignations();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error processing resignation:', error);
+
+            if (
+                error.message &&
+                error.message.includes('You cannot approve/reject resignations of users at equal or higher sub-role level')
+            ) {
+                showInfo('You cannot approve or reject resignations of employees with equal or higher level.');
+            } else {
+                showError('Something went wrong while processing the resignation.');
+            }
         } finally {
             setProcessingId(null);
         }
@@ -126,6 +139,13 @@ const Resignations = () => {
 
     const cancelDelete = () => {
         setDeleteId(null);
+    };
+
+    const openDecisionModal = (id: string, status: 'Approved' | 'Rejected') => {
+        setDecisionId(id);
+        setDecisionType(status);
+        setDecisionRemarks('');
+        setDecisionModalOpen(true);
     };
 
 
@@ -211,18 +231,20 @@ const Resignations = () => {
                                 <div className="flex gap-3 mt-4">
                                     <button
                                         className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-100"
-                                        onClick={() => handleDecision(resignation.id, 'Approved')}
+                                        onClick={() => openDecisionModal(resignation.id, 'Approved')}
                                         disabled={processingId === resignation.id}
                                     >
                                         <CheckCircle size={18} /> Approve
                                     </button>
+
                                     <button
                                         className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-100"
-                                        onClick={() => handleDecision(resignation.id, 'Rejected')}
+                                        onClick={() => openDecisionModal(resignation.id, 'Rejected')}
                                         disabled={processingId === resignation.id}
                                     >
                                         <XCircle size={18} /> Reject
                                     </button>
+
                                 </div>
                             )}
                         </div>
@@ -322,6 +344,56 @@ const Resignations = () => {
                     </div>
                 </div>
             )}
+
+            {decisionModalOpen && decisionId && decisionType && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-md shadow-xl space-y-4">
+                        <h3 className="text-lg font-bold">
+                            {decisionType === 'Approved' ? 'Approve' : 'Reject'} Resignation
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Please provide remarks for {decisionType.toLowerCase()} resignation.
+                        </p>
+
+                        <textarea
+                            className="w-full border rounded px-3 py-2 resize-none bg-gray-100 dark:bg-gray-800 dark:border-gray-700"
+                            rows={4}
+                            value={decisionRemarks}
+                            onChange={(e) => setDecisionRemarks(e.target.value)}
+                        />
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600 px-4 py-2 rounded"
+                                onClick={() => setDecisionModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1]"
+                                onClick={async () => {
+                                    if (!decisionRemarks.trim()) {
+                                        showInfo('Remarks are required.');
+                                        return;
+                                    }
+
+                                    // Set remarks for handleDecision
+                                    setRemarks(decisionRemarks);
+
+                                    // Call the centralized logic
+                                    await handleDecision(decisionId, decisionType);
+
+                                    // Close modal after processing
+                                    setDecisionModalOpen(false);
+                                }}
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
         </div>
     );
