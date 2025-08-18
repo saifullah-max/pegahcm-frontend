@@ -1,5 +1,5 @@
 import { ArrowLeft, LogOut } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';// ⬅️ your API service
 import { submitResignation } from '../../../../services/resignationService';
 import { useSelector } from 'react-redux';
