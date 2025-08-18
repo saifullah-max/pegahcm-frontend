@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { RootState } from '../store';
 import { Calendar, PieChart, Download, Eye, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { getMySalary } from '../services/salaryService';
+import { downloadSalarySlip, getMySalary } from '../services/salaryService';
 import { getEmployeeById } from '../services/employeeService';
 import { getDepartments, getAllSubDepartments } from '../services/departmentService';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable'; // still import to ensure plugin included for some bundlers; dynamic import used below too
 import { showInfo } from '../lib/toastUtils';
+import { PDFDocument } from 'pdf-lib';
 
 interface Allowance {
   type: string;
@@ -198,67 +199,22 @@ const PayslipDetails: React.FC = () => {
   const workLocation = employeeDetails?.employee?.workLocation || 'N/A';
   const bankAccount = '•••• •••• •••• 4232';
 
-  // PDF generation (dynamic import of autoTable to avoid doc.autoTable issues)
+
   const generatePDF = async () => {
+    if (!salaryForMonth || !employeeDetails?.employee) {
+      alert('No salary data available.');
+      return;
+    }
+
     try {
-      // dynamic import ensures compatibility with different bundlers / versions
-      const autoTableModule = await import('jspdf-autotable');
-      const autoTable = (autoTableModule as any).default || (autoTableModule as any);
-
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text('Payslip', 14, 22);
-
-      // Employee Info
-      doc.setFontSize(12);
-      doc.text(`Employee: ${employeeName}`, 14, 32);
-      doc.text(`Employee No: ${employeeNumber}`, 14, 38);
-      doc.text(`Designation: ${designation}`, 14, 44);
-      doc.text(`Department: ${departmentName}`, 14, 50);
-      doc.text(`Sub Department: ${subDepartmentName}`, 14, 56);
-      doc.text(`Shift: ${shift}`, 14, 62);
-      doc.text(`Hire Date: ${hireDate}`, 14, 68);
-      doc.text(`Work Location: ${workLocation}`, 14, 74);
-      doc.text(`Bank Account: ${bankAccount}`, 14, 80);
-      doc.text(`Salary Month: ${currentMonth || 'N/A'}`, 14, 88);
-
-      // Earnings table
-      const earningsRows = earnings.map((e) => [e.title, `Rs.${e.amount.toLocaleString()}`]);
-      autoTable(doc, {
-        startY: 95,
-        head: [['Earnings', 'Amount']],
-        body: earningsRows,
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [245, 245, 245] },
-      });
-
-      // get last Y (safe)
-      let lastY = (doc as any).lastAutoTable?.finalY ?? 95 + earningsRows.length * 10 + 10;
-
-      // Deductions table
-      autoTable(doc, {
-        startY: lastY + 8,
-        head: [['Deductions', 'Amount']],
-        body: [['Deductions', `-Rs.${totalDeductions.toLocaleString()}`]],
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [245, 245, 245] },
-      });
-
-      lastY = (doc as any).lastAutoTable?.finalY ?? lastY + 40;
-
-      // Net Salary
-      doc.setFontSize(14);
-      doc.setTextColor(34, 139, 34);
-      doc.text(`Net Salary: Rs.${netSalary.toLocaleString()}`, 14, lastY + 20);
-
-      // Filename - sanitize month
-      const safeMonth = (currentMonth || new Date(salaryForMonth?.effectiveFrom || '').toLocaleString('default', { month: 'long', year: 'numeric' }) || 'latest').replace(/\s+/g, '_');
-      doc.save(`Payslip_${employeeName}_${safeMonth}.pdf`);
+      // Call backend to get password-protected PDF
+      await downloadSalarySlip(employeeDetails.employee.id, salaryForMonth.effectiveFrom.slice(0, 7)); // YYYY-MM
     } catch (err) {
-      console.error('Error generating PDF:', err);
-      alert('Failed to generate PDF. Check console for details.');
+      console.error('Error downloading salary slip:', err);
+      alert('Failed to download salary slip. Check console for details.');
     }
   };
+
 
   if (!salaryForMonth) {
     return <p className="text-center text-gray-500 p-6">No salary data found for selected month.</p>;

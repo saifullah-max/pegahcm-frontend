@@ -42,13 +42,13 @@ const AttendanceOverview: React.FC = () => {
         }
         return dots;
     };
-
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const attendanceRecords = await getAllMyAttendanceRecords();
                 const leaveRequests = await getLeaveRequests();
 
+                // Prepare approved leave dates
                 const approvedLeaves = leaveRequests.filter((l: any) => l.status === "Approved");
                 const leaveDates = new Set<string>();
                 approvedLeaves.forEach((leave: any) => {
@@ -59,53 +59,42 @@ const AttendanceOverview: React.FC = () => {
                     }
                 });
 
-                // Calculate last month start/end
                 const today = new Date();
-                const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-                // Filter records only for last month and weekdays
-                const filteredRecords = attendanceRecords.filter((r: any) => {
-                    const date = new Date(r.date);
-                    const day = date.getDay();
-                    return date >= lastMonthStart && date <= lastMonthEnd && day !== 0 && day !== 6;
-                });
-
-                // Calculate stats
-                let present = 0,
-                    late = 0,
-                    absent = 0,
-                    leave = 0;
-                const total = filteredRecords.length; // This might need adjustment to include leaves & absent days
-
-                // We should calculate total working days excluding weekends in last month:
+                // Calculate total working days (weekdays only)
                 let workingDays = 0;
-                for (
-                    let d = new Date(lastMonthStart);
-                    d <= lastMonthEnd;
-                    d.setDate(d.getDate() + 1)
-                ) {
+                for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
                     const day = d.getDay();
                     if (day !== 0 && day !== 6) workingDays++;
                 }
                 setTotalDays(workingDays);
 
-                // Count present, late, leaves, absent
+                let present = 0,
+                    late = 0,
+                    absent = 0,
+                    leave = 0;
+
+                // Filter attendance records for current month weekdays
+                const filteredRecords = attendanceRecords.filter((r: any) => {
+                    const date = new Date(r.date);
+                    const day = date.getDay();
+                    return date >= monthStart && date <= monthEnd && day !== 0 && day !== 6;
+                });
+
+                // Count present & late
                 filteredRecords.forEach((record: any) => {
                     const clockInHour = new Date(record.clockIn).getHours();
                     present++;
                     if (clockInHour > 10) late++;
                 });
 
-                // Count leaves
-                for (
-                    let d = new Date(lastMonthStart);
-                    d <= lastMonthEnd;
-                    d.setDate(d.getDate() + 1)
-                ) {
+                // Count leaves & absents for days without attendance
+                for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
                     const dateKey = d.toISOString().split("T")[0];
                     const day = d.getDay();
-                    if (day === 0 || day === 6) continue; // Skip weekends
+                    if (day === 0 || day === 6) continue; // skip weekends
                     if (!filteredRecords.some((r: any) => r.date.startsWith(dateKey))) {
                         if (leaveDates.has(dateKey)) leave++;
                         else absent++;
@@ -120,6 +109,7 @@ const AttendanceOverview: React.FC = () => {
 
         fetchData();
     }, []);
+
 
     const percentage = attendanceStats.total
         ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
