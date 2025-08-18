@@ -387,6 +387,30 @@ const EditEmployee: React.FC = () => {
             return;
         }
 
+        // Phone format check
+        const phoneRegex = /^\+92-\d{3}-\d{4}-\d{3}$/;
+        if (!phoneRegex.test(String(newEmployee.phoneNumber || ''))) {
+            setValidationErrors(prev => [
+                ...prev,
+                { field: "phoneNumber", message: "Phone must be in the format +92-111-2222-333" }
+            ]);
+            setLoading(false);
+            setRegistering(false);
+            return;
+        }
+
+        // Email format check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newEmployee.email)) {
+            setValidationErrors(prev => [
+                ...prev,
+                { field: "email", message: "Email must be a valid format (e.g., example@domain.com)" }
+            ]);
+            setLoading(false);
+            setRegistering(false);
+            return;
+        }
+
         try {
             // Only new files go to `documents`
             const newFiles = newEmployee.documents || [];
@@ -504,6 +528,8 @@ const EditEmployee: React.FC = () => {
                                 name="email"
                                 value={newEmployee.email}
                                 onChange={handleInputChange}
+                                pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                                placeholder="example@domain.com"
                                 className={`w-full px-3 py-2 border ${getFieldError('email') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
                                 required
                             />
@@ -519,8 +545,10 @@ const EditEmployee: React.FC = () => {
                                 name="phoneNumber"
                                 value={newEmployee.phoneNumber || ''}
                                 onChange={handleInputChange}
+                                pattern="\+92-\d{3}-\d{4}-\d{3}"
+                                placeholder="+92-111-2222-333"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-                            />
+                                required />
                         </div>
 
                         <div className="mb-4">

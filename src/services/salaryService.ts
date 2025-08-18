@@ -136,3 +136,37 @@ export const copyPreviousSalaryForEmployee = async (employeeId: string): Promise
         return handleAuthError(err);
     }
 };
+
+// salary Slip from backend
+export const downloadSalarySlip = async (employeeId: string, month?: string): Promise<void> => {
+    try {
+        const query = month ? `?month=${encodeURIComponent(month)}` : '';
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/salary/download/${employeeId}${query}`, {
+            method: 'GET',
+            headers: {
+                ...getAuthHeaders(),  // adds token
+                'Accept': 'application/pdf'
+            }
+        });
+
+        if (res.status === 401) throw new Error('invalid or expired token');
+        if (!res.ok) throw new Error('Failed to download salary slip');
+
+        // Convert response to Blob
+        const blob = await res.blob();
+
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Payslip_${employeeId}.pdf`; // you can pass employeeNumber if available
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+        console.error('Error downloading salary slip:', err);
+        handleAuthError(err);
+    }
+};

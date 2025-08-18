@@ -341,7 +341,7 @@ const AdminLayout = () => {
             )}
 
             {/* Resignations */}
-            {hasPermission('Resignation:approve') && (
+            {/* {hasPermission('Resignation:approve') && (
               <li
                 onClick={handleOnResignationsClick}
                 className="px-4 py-2 m-4 rounded-lg hover:bg-[#2F66C1] dark:hover:bg-gray-800 cursor-pointer flex items-center"
@@ -356,7 +356,7 @@ const AdminLayout = () => {
               >
                 <FileArchiveIcon className="inline-block mr-2" /> User-Resignations
               </li>
-            )}
+            )} */}
 
             {hasPermission('Salary:create') && (
               <li

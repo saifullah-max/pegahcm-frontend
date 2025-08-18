@@ -5,7 +5,6 @@ import { createEmployee, CreateEmployeeData } from '../../../services/employeeSe
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
-  registerUser,
   RegisterUserData,
   ValidationError,
   RegistrationError
@@ -275,6 +274,27 @@ const AddEmployee: React.FC = () => {
       return;
     }
 
+    // Phone format check
+    const phoneRegex = /^\+92-\d{3}-\d{4}-\d{3}$/;
+    if (!phoneRegex.test(String(newEmployee.phone || ''))) {
+      setValidationErrors(prev => [...prev, { field: "phone", message: "Phone must be in the format +92-111-2222-333" }]);
+      setLoading(false);
+      setRegistering(false);
+      return;
+    }
+
+    // Email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmployee.email)) {
+      setValidationErrors(prev => [
+        ...prev,
+        { field: "email", message: "Email must be a valid format (e.g., example@domain.com)" }
+      ]);
+      setLoading(false);
+      setRegistering(false);
+      return;
+    }
+
     const registerData: RegisterUserData = {
       fullName: newEmployee.fullName,
       email: newEmployee.email,
@@ -308,7 +328,7 @@ const AddEmployee: React.FC = () => {
       const apiData: CreateEmployeeData = {
         fullName: newEmployee.fullName,
         email: newEmployee.email,
-        phoneNumber: Number(newEmployee.phone || 0),
+        phoneNumber: String(newEmployee.phone || ''),
         password: newEmployee.password,
         gender: newEmployee.gender,
         dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : new Date(),
@@ -411,6 +431,8 @@ const AddEmployee: React.FC = () => {
                 name="email"
                 value={newEmployee.email}
                 onChange={handleInputChange}
+                pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                placeholder="example@domain.com"
                 className={`w-full px-3 py-2 border ${getFieldError('email') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
                 required
               />
@@ -426,7 +448,10 @@ const AddEmployee: React.FC = () => {
                 name="phone"
                 value={newEmployee.phone || ''}
                 onChange={handleInputChange}
+                pattern="\+92-\d{3}-\d{4}-\d{3}"
+                placeholder="+92-111-2222-333"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                required
               />
             </div>
 

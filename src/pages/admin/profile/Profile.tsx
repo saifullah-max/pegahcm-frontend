@@ -128,6 +128,21 @@ const Profile = () => {
     };
 
     const handleSave = async () => {
+
+        // Phone format check
+        const phoneRegex = /^\+92-\d{3}-\d{4}-\d{3}$/;
+        if (!phoneRegex.test(String(formData.phone || ''))) {
+            showError("Phone number must be in a format of: +92-111-2222-333")
+            return;
+        }
+
+        // Email format check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            showError("Email must be in a format of: example@domain.com")
+            return;
+        }
+
         try {
             const updatedData = await updateEmployeeContact({
                 email: formData.email,
@@ -202,6 +217,8 @@ const Profile = () => {
                             value={formData.email}
                             onChange={handleChange}
                             disabled={!editable}
+                            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                            placeholder="example@domain.com"
                             className={`w-full px-3 py-2 border rounded ${editable ? "border-blue-400" : "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
                                 }`}
                         />
@@ -215,6 +232,8 @@ const Profile = () => {
                             value={formData.phone}
                             onChange={handleChange}
                             disabled={!editable}
+                            pattern="\+92-\d{3}-\d{4}-\d{3}"
+                            placeholder="+92-111-2222-333"
                             className={`w-full px-3 py-2 border rounded ${editable ? "border-blue-400" : "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
                                 }`}
                         />
