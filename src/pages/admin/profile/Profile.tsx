@@ -4,6 +4,7 @@ import { RootState } from "../../../store";
 import { getEmployeeById, updateEmployeeContact } from "../../../services/employeeService";
 import { getAllSubDepartments, getDepartments } from "../../../services/departmentService";
 import { getShifts } from "../../../services/ShiftService";
+import { showError, showSuccess } from "../../../lib/toastUtils";
 
 interface EmployeeInfo {
     id: string;
@@ -121,7 +122,7 @@ const Profile = () => {
                     prev ? { ...prev, profileImageUrl: updatedData.profileImageUrl || prev.profileImageUrl } : prev
                 );
             } catch (err) {
-                alert("Failed to update profile image");
+                showError("Failed to update profile image");
             }
         }
     };
@@ -143,9 +144,9 @@ const Profile = () => {
                     : prev
             );
             setEditable(false);
-            alert("Profile updated successfully!");
+            showSuccess("Profile updated successfully!");
         } catch (err) {
-            alert("Failed to update profile");
+            showError("Failed to update profile");
         }
     };
 
