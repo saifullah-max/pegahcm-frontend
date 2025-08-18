@@ -14,7 +14,7 @@ const Notifications = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const { notification } = useSocket();
+    const { notification, setUnreadCount } = useSocket();
 
     // Fetch notifications for current page
     const fetchNotifications = async (pageNum = 1) => {
@@ -48,6 +48,8 @@ const Notifications = () => {
                 )
             );
         });
+        fetchNotifications(page)
+        setUnreadCount((prev) => Math.max(prev - 1, 0)); // ✅ Reduce count
     };
 
     // Mark all notifications as read
@@ -56,6 +58,7 @@ const Notifications = () => {
             await markAllNotificationsAsRead();
             setShowConfirmModal(false);
             fetchNotifications(page);
+            setUnreadCount
         } catch (err) {
             console.error('Error marking all notifications as read:', err);
         }
