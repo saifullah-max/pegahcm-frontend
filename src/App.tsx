@@ -57,14 +57,14 @@ function App() {
     socket.connect();
 
     socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
+      console.log('Socket connected:', socket.id);
 
       socket.emit('join', user.id);
       console.log(`Socket ${socket.id} joined room ${user.id}`);
     });
 
     socket.on('new_notification', (notif: any) => {
-      console.log('🔔 New Notification:', notif);
+      console.log('New Notification:', notif);
       if (notif.showPopup) {
         showInfo(`${notif.description}`);
       }
