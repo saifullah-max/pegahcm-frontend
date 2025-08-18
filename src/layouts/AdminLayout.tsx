@@ -64,9 +64,10 @@ const AdminLayout = () => {
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
   const [employeeInfo, setEmployeeInfo] = useState<EmployeeWithUser | null>(null);
-  const { notification } = useSocket();
+  const { notification, unreadCount, setUnreadCount } = useSocket();
 
   useEffect(() => {
+    console.log('Socket notification received:', notification);
     if (notification) {
       fetchNotifications(); // or just refetch the list
     }
@@ -129,6 +130,8 @@ const AdminLayout = () => {
       }));
 
       setNotifications(userNotifs);
+      const unread = res.data.filter((n) => !n.read).length;
+      setUnreadCount(unread);
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
@@ -149,7 +152,7 @@ const AdminLayout = () => {
     return null;
   }
 
-  const unreadCount = notifications.filter(notif => !notif.read).length;
+  // const unreadCount = notifications.filter(notif => !notif.read).length;
 
 
   const toggleSidebar = () => {
