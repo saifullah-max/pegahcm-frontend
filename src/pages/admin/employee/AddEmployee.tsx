@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData } from '../../../services/employeeService';
+import { createEmployee, CreateEmployeeData, Employee } from '../../../services/employeeService';
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
@@ -14,6 +14,8 @@ import { SubRole } from '../../../services/permissionService';
 import { getAllSubRoles } from '../../../services/subRoleService'
 import { showError, showSuccess } from '../../../lib/toastUtils';
 import { statusOptions } from './EditEmployee';
+import SalaryFormModal from '../salary/SalaryFormModal';
+import { Allowance, createSalary, Salary } from '../../../services/salaryService';
 
 interface Shift {
   id: string;
@@ -54,6 +56,10 @@ interface EmployeeFormData {
   role: string;
   subRole: string;
   roleTag: string;
+}
+interface AllowanceInterface {
+  type: string;
+  amount: string;
 }
 
 const AddEmployee: React.FC = () => {
@@ -100,6 +106,22 @@ const AddEmployee: React.FC = () => {
   const [subRole, setSubRole] = useState<SubRole[]>();
   const [rolesLoading, setRolesLoading] = useState(false);
   const [subRolesLoading, setSubRolesLoading] = useState(false);
+  const [salaryModal, setSalaryModal] = useState(false);
+  const [allowanceModalOpen, setAllowanceModalOpen] = useState(false);
+  const [selectedAllowances, setSelectedAllowances] = useState<Allowance[]>([]);
+  const [formData, setFormData] = useState({
+    employeeId: '',
+    baseSalary: '',
+    deductions: '',
+    bonuses: '',
+    effectiveFrom: '',
+    effectiveTo: ''
+  });
+  const [allowances, setAllowances] = useState<AllowanceInterface[]>([
+    { type: '', amount: '' }
+  ]);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
 
   useEffect(() => {
     const fetchShifts = async () => {
@@ -194,6 +216,8 @@ const AddEmployee: React.FC = () => {
 
     // Clear validation errors when the user edits a field
     setValidationErrors(prev => prev.filter(error => error.field !== name));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
 
     // Check password confirmation
     if (name === 'confirmPassword') {
@@ -351,10 +375,14 @@ const AddEmployee: React.FC = () => {
         documents: newEmployee.documents,
         profileImage: newEmployee.profileImage,
       };
-      await createEmployee(apiData);
+      const response = await createEmployee(apiData);
       showSuccess("Employee Added successfully")
-      navigate('/admin/employees');
 
+      if (response.success) {
+        const employee = response.data.employee;
+        setSelectedEmployee(employee); // ✅ employee object
+        setSalaryModal(true);
+      }
     } catch (error: any) {
       setRegistering(false);
 
@@ -368,6 +396,38 @@ const AddEmployee: React.FC = () => {
       setRegistering(false);
     }
   };
+
+  const handleSalarySubmit = async (data: Partial<Salary>) => {
+    try {
+      setLoading(true);
+      console.log("EMP ID:", selectedEmployee);
+      const payload = {
+        employeeId: selectedEmployee?.id,
+        baseSalary: Number(data.baseSalary),
+        deductions: Number(data.deductions) || 0,
+        bonuses: Number(data.bonuses) || 0,
+        effectiveFrom: new Date(data.effectiveFrom!).toISOString(),
+        effectiveTo: new Date(data.effectiveTo!).toISOString(),
+        allowances: (data.allowances || [])
+          .filter(a => a.type?.trim() && a.amount)
+          .map(a => ({
+            type: a.type!.trim(),
+            amount: Number(a.amount) || 0
+          }))
+      };
+
+      await createSalary(payload);
+
+      showSuccess('Salary created successfully!');
+      navigate('/salary');
+    } catch (err) {
+      console.error('Error creating salary:', err);
+      showError('Failed to create salary.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const roleTagOptions = [
     { label: "None", value: "" },
@@ -728,16 +788,16 @@ const AddEmployee: React.FC = () => {
               </select>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">Salary</label>
-              <input
-                type="text"
-                name="salary"
-                value={newEmployee.salary || ''}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-              />
-            </div>
+            {/* <div className="pt-4">
+              <button
+                type="button"
+                className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1] flex items-center gap-1"
+                onClick={() => setSalaryModal(true)}
+                disabled={loading}
+              >
+                {loading ? 'Opening...' : 'Add Salary details'}
+              </button>
+            </div> */}
 
             {/* Skills Section */}
             <div className="md:col-span-3 mt-4">
@@ -905,6 +965,14 @@ const AddEmployee: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Salary Create/Edit Modal */}
+      <SalaryFormModal
+        isOpen={salaryModal}
+        onClose={() => setSalaryModal(false)}
+        onSubmit={handleSalarySubmit}
+        selectedEmployee={selectedEmployee}
+      />
     </div>
   );
 };

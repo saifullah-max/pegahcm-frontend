@@ -40,6 +40,14 @@ export interface Employee {
   skills: string[];
   hireDate: Date;
 }
+
+interface CreateEmployeeApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    employee: Employee;
+  };
+}
 interface EmployeeResponse {
   data: {
     employees: Employee[];
@@ -100,8 +108,6 @@ export interface UpdateEmployeeData {
   shift: string;
   joiningDate: Date
 }
-
-
 interface UserData {
   id: string;
   fullName: string;
@@ -112,7 +118,6 @@ interface UserData {
   dateJoined: string;
   phoneNumber?: number;
 }
-
 export interface EmployeeData {
   id: string;
   employeeNumber: string;
@@ -136,7 +141,6 @@ export interface EmployeeData {
   documents: File[];
   existingDocuments: Document[]; // For already uploaded docs
 }
-
 export interface SingleEmployeeResponse {
   user: UserData;
   employee: EmployeeData;
@@ -226,70 +230,73 @@ export const getEmployeeById = async (id: string): Promise<SingleEmployeeRespons
 };
 
 // Create a new employee
-export const createEmployee = async (employeeData: CreateEmployeeData): Promise<Employee> => {
+export const createEmployee = async (
+  employeeData: CreateEmployeeData
+): Promise<CreateEmployeeApiResponse> => {
   try {
     const formData = new FormData();
 
     // Append all text fields
-    formData.append('fullName', employeeData.fullName);
-    formData.append('email', employeeData.email);
-    formData.append('password', employeeData.password);
-    formData.append('designation', employeeData.designation);
-    formData.append('departmentId', employeeData.departmentId);
-    formData.append('subDepartmentId', employeeData.subDepartmentId);
-    formData.append('workLocation', employeeData.workLocation);
-    formData.append('gender', employeeData.gender);
-    formData.append('address', employeeData.address);
-    formData.append('emergencyContactName', employeeData.emergencyContactName);
-    formData.append('emergencyContactPhone', employeeData.emergencyContactPhone);
-    formData.append('salary', employeeData.salary.toString());
-    formData.append('status', employeeData.status);
-    formData.append('phoneNumber', employeeData.phoneNumber.toString());
-    formData.append('fatherName', employeeData.fatherName);
-    formData.append('dateOfBirth', employeeData.dateOfBirth.toISOString());
-    formData.append('joiningDate', employeeData.joiningDate.toISOString());
-    formData.append('roleId', employeeData.roleId);
-    formData.append('subRoleId', employeeData.subRoleId);
-    formData.append('roleTag', employeeData.roleTag);
-    if (employeeData.shiftId) formData.append('shiftId', employeeData.shiftId);
+    formData.append("fullName", employeeData.fullName);
+    formData.append("email", employeeData.email);
+    formData.append("password", employeeData.password);
+    formData.append("designation", employeeData.designation);
+    formData.append("departmentId", employeeData.departmentId);
+    formData.append("subDepartmentId", employeeData.subDepartmentId);
+    formData.append("workLocation", employeeData.workLocation);
+    formData.append("gender", employeeData.gender);
+    formData.append("address", employeeData.address);
+    formData.append("emergencyContactName", employeeData.emergencyContactName);
+    formData.append("emergencyContactPhone", employeeData.emergencyContactPhone);
+    formData.append("salary", employeeData.salary.toString());
+    formData.append("status", employeeData.status);
+    formData.append("phoneNumber", employeeData.phoneNumber.toString());
+    formData.append("fatherName", employeeData.fatherName);
+    formData.append("dateOfBirth", employeeData.dateOfBirth.toISOString());
+    formData.append("joiningDate", employeeData.joiningDate.toISOString());
+    formData.append("roleId", employeeData.roleId);
+    formData.append("subRoleId", employeeData.subRoleId);
+    formData.append("roleTag", employeeData.roleTag);
+    if (employeeData.shiftId) formData.append("shiftId", employeeData.shiftId);
 
-    // Append skills array (as JSON)
-    formData.append('skills', JSON.stringify(employeeData.skills));
+    // Append skills array
+    formData.append("skills", JSON.stringify(employeeData.skills));
 
     // Append files
     if (employeeData.profileImage) {
-      formData.append('profileImage', employeeData.profileImage);
+      formData.append("profileImage", employeeData.profileImage);
     }
     if (employeeData.documents && employeeData.documents.length > 0) {
       employeeData.documents.forEach((doc) => {
-        formData.append('documents', doc);
+        formData.append("documents", doc);
       });
     }
 
     const headers = {
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-      // DO NOT set Content-Type manually (browser sets it for multipart/form-data)
+      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
     };
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
-      method: 'POST',
-      headers: headers,
+      method: "POST",
+      headers,
       body: formData,
     });
 
     if (response.status === 401) {
-      throw new Error('invalid or expired token');
+      throw new Error("invalid or expired token");
     }
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to create employee: ${response.status} ${response.statusText}. ${errorText}`);
+      throw new Error(
+        `Failed to create employee: ${response.status} ${response.statusText}. ${errorText}`
+      );
     }
 
-    const data = await response.json();
-    return data.data.employee;
+    const data: CreateEmployeeApiResponse = await response.json();
+    return data; // ✅ full structured response
   } catch (error) {
-    console.error('Error creating employee:', error);
+    console.error("Error creating employee:", error);
     return handleAuthError(error);
   }
 };

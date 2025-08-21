@@ -5,7 +5,9 @@ import { createOnboardingProcess, CreateOnboardingPayload, fetchAllHREmployees, 
 import { Employee, getEmployees } from '../../../services/employeeService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { showError, showSuccess } from '../../../lib/toastUtils';
+import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
+import SalaryFormModal from '../salary/SalaryFormModal';
+import { Allowance, createSalary, Salary } from '../../../services/salaryService';
 // import { getHRs } from '../../services/hrService'; // You’ll need this to fetch HRs
 
 interface HR {
@@ -20,6 +22,12 @@ const OnboardingForm = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [hrList, setHrList] = useState<HREmployee[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [salaryModal, setSalaryModal] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [selectedAllowances, setSelectedAllowances] = useState<Allowance[]>([]);
+    const [allowanceModalOpen, setAllowanceModalOpen] = useState(false);
+
+
 
     const [formData, setFormData] = useState<CreateOnboardingPayload>({
         employeeId: '',
@@ -41,7 +49,6 @@ const OnboardingForm = () => {
             }, 2000);
         }
     }, [isAuthenticated, token, navigate]);
-    console.log("FORM");
 
     useEffect(() => {
         const fetchHREmployees = async () => {
@@ -93,6 +100,22 @@ const OnboardingForm = () => {
         }
     };
 
+    const handleViewAllAllowances = (allowances: Allowance[] = []) => {
+        setSelectedAllowances(allowances);
+        setAllowanceModalOpen(true);
+    };
+
+    const handleSubmitSalary = async (data: Partial<Salary>) => {
+        try {
+            await createSalary(data);
+            showInfo('Salary created successfully');
+
+            setSalaryModal(false);
+        } catch (error) {
+            console.error(error);
+            showError('Failed to save salary');
+        }
+    };
 
     return (
         <div className="max-w-5xl mx-auto bg-white dark:bg-slate-900 p-6 rounded-lg shadow-md">
@@ -114,9 +137,12 @@ const OnboardingForm = () => {
                         id="employeeId"
                         name="employeeId"
                         value={formData.employeeId}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const emp = employees.find(emp => emp.id === e.target.value);
+                            setSelectedEmployee(emp || null);
+                            handleChange(e);
+                        }}
                         className="w-full border rounded-md px-3 py-2 mt-1 bg-white text-black dark:bg-slate-800 dark:text-white dark:border-gray-600"
-
                         required
                     >
                         <option value="">Select employee</option>
@@ -126,6 +152,7 @@ const OnboardingForm = () => {
                             </option>
                         ))}
                     </select>
+
                 </div>
 
                 {/* Assigned HR Dropdown */}
@@ -170,6 +197,17 @@ const OnboardingForm = () => {
 
                         required
                     />
+                </div>
+
+                <div className="pt-4">
+                    <button
+                        type="button"
+                        className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1] flex items-center gap-1"
+                        onClick={() => setSalaryModal(true)}
+                        disabled={loading}
+                    >
+                        {loading ? 'Opening...' : 'Add Salary details'}
+                    </button>
                 </div>
 
                 {/* Notes */}
@@ -217,6 +255,44 @@ const OnboardingForm = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Salary Create/Edit Modal */}
+            <SalaryFormModal
+                isOpen={salaryModal}
+                onClose={() => setSalaryModal(false)}
+                onSubmit={handleSubmitSalary}
+                selectedEmployee={selectedEmployee}
+            />
+
+            {/* Allowances Modal */}
+            {allowanceModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 max-w-sm w-full">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                            Allowances
+                        </h2>
+                        <ul className="space-y-2">
+                            {selectedAllowances.map((a, idx) => (
+                                <li
+                                    key={idx}
+                                    className="flex justify-between border-b pb-1 dark:border-gray-700"
+                                >
+                                    <span>{a.type}</span>
+                                    <span>{a.amount}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setAllowanceModalOpen(false)}
+                                className="px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

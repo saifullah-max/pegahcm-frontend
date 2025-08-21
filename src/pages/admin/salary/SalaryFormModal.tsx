@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Salary, Allowance } from '../../../services/salaryService';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { Employee, getEmployees } from '../../../services/employeeService';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: Partial<Salary>) => Promise<void>;
     initialData?: Salary | null;
+    componentType?: 'edit' | 'add';
+    selectedEmployee?: Employee | null;
 }
 
 interface FormAllowance {
@@ -20,11 +23,13 @@ interface FormData extends Omit<Partial<Salary>, 'allowances' | 'baseSalary' | '
     deductions?: number | "";
     bonuses?: number | "";
     allowances?: FormAllowance[];
+    employeeId?: string;
 }
 
-const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialData, componentType, selectedEmployee }) => {
     const [formData, setFormData] = useState<FormData>({ allowances: [] });
     const { user } = useSelector((state: RootState) => state.auth)
+    const [employees, setEmployees] = useState<Employee[]>();
 
     useEffect(() => {
         if (initialData) {
@@ -53,16 +58,48 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
         }
     }, [initialData]);
 
-    if (!isOpen) return null;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        const fetchHREmployees = async () => {
+            const data = await getEmployees(); // <-- your service function
+            console.log("Fetched Employees:", data); // Add this
+            setEmployees(data)
+            setFormData(prev => ({
+                ...prev,
+                employeeId: prev.employeeId || (data.length > 0 ? data[0].id : '') // Set first employee as default if none selected
+            }))
+        };
+
+        fetchHREmployees();
+    }, [])
+
+    useEffect(() => {
+        if (!initialData && selectedEmployee) {
+            setFormData(prev => ({
+                ...prev,
+                employeeId: selectedEmployee.id
+            }));
+        }
+    }, [selectedEmployee, initialData]);
+
+    if (!isOpen) return null;
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
         const { name, value, type } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'number'
-                ? value === "" ? "" : Number(value)
-                : value
-        }));
+
+        setFormData(prev => {
+            let newValue: string | number = value;
+
+            if (type === "number") {
+                newValue = value === "" ? "" : isNaN(Number(value)) ? "" : Number(value);
+            }
+
+            return {
+                ...prev,
+                [name]: newValue
+            };
+        });
     };
 
     const handleAllowanceChange = (index: number, field: keyof FormAllowance, value: string | number) => {
@@ -100,6 +137,7 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
             amount: a.amount === "" ? 0 : Number(a.amount)
         }));
 
+        console.log("EMP ID:", selectedEmployee?.id);
         const payload: Partial<Salary> = {
             ...formData,
             baseSalary: formData.baseSalary === "" ? undefined : Number(formData.baseSalary),
@@ -134,15 +172,26 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Employee ID
                         </label>
-                        <input
-                            name="employeeId"
-                            value={formData.employeeId || ''}
-                            onChange={handleChange}
-                            placeholder="Enter Employee ID"
-                            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
-                            required={!initialData}
-                            disabled
-                        />
+                        {
+                            componentType === 'edit' ? (
+                                <input
+                                    name="employeeId"
+                                    value={formData.employeeId || ''}
+                                    onChange={handleChange}
+                                    placeholder="Enter Employee ID"
+                                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required={!initialData}
+                                    disabled
+                                />
+                            ) : (
+                                <input
+                                    value={selectedEmployee ? `${selectedEmployee.fullName} (${selectedEmployee.id})` : ''}
+                                    disabled
+                                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                />
+                            )
+                        }
+
                     </div>
 
                     {/* Salary fields */}

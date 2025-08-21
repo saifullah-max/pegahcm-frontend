@@ -51,6 +51,7 @@ const Profile = () => {
         phone: "",
         profileImageUrl: undefined,
     });
+    const [originalData, setOriginalData] = useState<FormDataState | null>(null);
 
     const formatDate = (dateStr?: string) => {
         if (!dateStr) return "-";
@@ -171,40 +172,39 @@ const Profile = () => {
         <div className="max-w-6xl mx-auto p-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row items-center md:items-start mb-6">
-                    <div className="flex flex-col items-center md:items-start">
-                        <div className="relative w-24 h-24">
-                            <img
-                                src={formData.profileImageUrl || "/default-avatar.png"}
-                                alt={user?.fullName || "Profile"}
-                                className="w-24 h-24 rounded-full border border-gray-300 dark:border-gray-600 object-cover"
-                                onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
-                            />
-                        </div>
-                        <label className="mt-2 text-blue-500 text-sm cursor-pointer hover:underline">
-                            Change profile image
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleProfileImageChange}
-                            />
-                        </label>
+                <div className="flex-1 md:ml-6 mt-4 md:mt-0 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">{user?.fullName}</h2>
+                        <p className="text-gray-500 dark:text-gray-400">{employeeInfo.designation}</p>
                     </div>
-
-                    <div className="flex-1 md:ml-6 mt-4 md:mt-0 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">{user?.fullName}</h2>
-                            <p className="text-gray-500 dark:text-gray-400">{employeeInfo.designation}</p>
-                        </div>
+                    <div className="flex">
                         <button
                             className="mt-4 md:mt-0 ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            onClick={() => (editable ? handleSave() : setEditable(true))}
+                            onClick={() => {
+                                if (editable) {
+                                    handleSave();
+                                } else {
+                                    setOriginalData({ ...formData }); // Save before edit
+                                    setEditable(true);
+                                }
+                            }}
                         >
                             {editable ? "Save" : "Edit Info"}
                         </button>
+                        {editable && (
+                            <button
+                                className="mt-4 md:mt-0 ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                                onClick={() => {
+                                    if (originalData) setFormData(originalData); // Restore original
+                                    setEditable(false);
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
                     </div>
                 </div>
+
 
                 {/* Info Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
