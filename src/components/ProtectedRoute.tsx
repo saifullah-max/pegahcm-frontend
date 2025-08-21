@@ -23,7 +23,8 @@ const ProtectedRoute = ({
     allowedRoles.length === 0 ||
     allowedRoles.includes(user.role) ||
     allowedRoles.includes(user.subRole?.name || '');
-  console.log("USER role:", user.subRole?.name);
+  console.log("USER sub-role:", user.subRole?.name);
+  console.log("USER role:", user.role);
   console.log("ROLE ALLOWED?", roleAllowed);
 
 
