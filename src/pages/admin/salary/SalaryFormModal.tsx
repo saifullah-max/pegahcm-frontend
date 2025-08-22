@@ -26,15 +26,24 @@ interface FormData extends Omit<Partial<Salary>, 'allowances' | 'baseSalary' | '
     employeeId?: string;
 }
 
-const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialData, componentType, selectedEmployee }) => {
+const SalaryFormModal: React.FC<Props> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialData,
+    componentType,
+    selectedEmployee
+}) => {
     const [formData, setFormData] = useState<FormData>({ allowances: [] });
-    const { user } = useSelector((state: RootState) => state.auth)
-    const [employees, setEmployees] = useState<Employee[]>();
+    const { user } = useSelector((state: RootState) => state.auth);
+    const [employees, setEmployees] = useState<Employee[]>([]);
 
+    // Prefill form when salary or selectedEmployee changes
     useEffect(() => {
         if (initialData) {
             setFormData({
                 ...initialData,
+                employeeId: selectedEmployee?.id || initialData.employeeId,
                 baseSalary: initialData.baseSalary ?? "",
                 deductions: initialData.deductions ?? "",
                 bonuses: initialData.bonuses ?? "",
@@ -47,7 +56,7 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
             });
         } else {
             setFormData({
-                employeeId: '',
+                employeeId: selectedEmployee?.id || '',
                 baseSalary: "",
                 allowances: [],
                 deductions: "",
@@ -56,49 +65,27 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
                 effectiveTo: ''
             });
         }
-    }, [initialData]);
+    }, [initialData, selectedEmployee]);
 
-
+    // Fetch employees for dropdown if needed
     useEffect(() => {
         const fetchHREmployees = async () => {
-            const data = await getEmployees(); // <-- your service function
-            console.log("Fetched Employees:", data); // Add this
-            setEmployees(data)
-            setFormData(prev => ({
-                ...prev,
-                employeeId: prev.employeeId || (data.length > 0 ? data[0].id : '') // Set first employee as default if none selected
-            }))
+            const data = await getEmployees();
+            setEmployees(data);
         };
-
         fetchHREmployees();
-    }, [])
-
-    useEffect(() => {
-        if (!initialData && selectedEmployee) {
-            setFormData(prev => ({
-                ...prev,
-                employeeId: selectedEmployee.id
-            }));
-        }
-    }, [selectedEmployee, initialData]);
+    }, []);
 
     if (!isOpen) return null;
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
-        const { name, value, type } = e.target;
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
         setFormData(prev => {
             let newValue: string | number = value;
-
             if (type === "number") {
                 newValue = value === "" ? "" : isNaN(Number(value)) ? "" : Number(value);
             }
-
-            return {
-                ...prev,
-                [name]: newValue
-            };
+            return { ...prev, [name]: newValue };
         });
     };
 
@@ -107,9 +94,7 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
             const updatedAllowances = [...(prev.allowances || [])];
             updatedAllowances[index] = {
                 ...updatedAllowances[index],
-                [field]: field === 'amount'
-                    ? value === "" ? "" : Number(value)
-                    : value
+                [field]: field === 'amount' ? (value === "" ? "" : Number(value)) : value
             };
             return { ...prev, allowances: updatedAllowances };
         });
@@ -131,13 +116,10 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         const cleanedAllowances: Allowance[] = (formData.allowances || []).map(a => ({
             type: a.type,
             amount: a.amount === "" ? 0 : Number(a.amount)
         }));
-
-        console.log("EMP ID:", selectedEmployee?.id);
         const payload: Partial<Salary> = {
             ...formData,
             baseSalary: formData.baseSalary === "" ? undefined : Number(formData.baseSalary),
@@ -145,7 +127,6 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
             bonuses: formData.bonuses === "" ? undefined : Number(formData.bonuses),
             allowances: cleanedAllowances
         };
-
         await onSubmit(payload);
         onClose();
     };
@@ -158,41 +139,34 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                         {initialData ? 'Update Salary' : 'Add Salary'}
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition"
-                    >
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition">
                         ✕
                     </button>
                 </div>
 
+                {/* Display Selected Employee Info */}
+                {selectedEmployee && (
+                    <div className="mb-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <p><strong>Name:</strong> {selectedEmployee.fullName}</p>
+                        <p><strong>Email:</strong> {selectedEmployee.email}</p>
+                        <p><strong>Department:</strong> {selectedEmployee.department}</p>
+                        <p><strong>Designation:</strong> {selectedEmployee.designation}</p>
+                    </div>
+                )}
+
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
+                    {/* <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Employee ID
                         </label>
-                        {
-                            componentType === 'edit' ? (
-                                <input
-                                    name="employeeId"
-                                    value={formData.employeeId || ''}
-                                    onChange={handleChange}
-                                    placeholder="Enter Employee ID"
-                                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required={!initialData}
-                                    disabled
-                                />
-                            ) : (
-                                <input
-                                    value={selectedEmployee ? `${selectedEmployee.fullName} (${selectedEmployee.id})` : ''}
-                                    disabled
-                                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                />
-                            )
-                        }
-
-                    </div>
+                        <input
+                            name="employeeId"
+                            value={formData.employeeId || ''}
+                            disabled
+                            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        />
+                    </div> */}
 
                     {/* Salary fields */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -215,9 +189,7 @@ const SalaryFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialDa
 
                     {/* Allowances */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Allowances
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Allowances</label>
                         {(formData.allowances || []).map((allowance, idx) => (
                             <div key={idx} className="flex gap-2 mt-2">
                                 <input

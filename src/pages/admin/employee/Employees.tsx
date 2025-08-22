@@ -6,6 +6,10 @@ import { getEmployeeHours } from "../../../services/userService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import { statusOptions } from "./EditEmployee";
+import { title } from "process";
+import { copyPreviousSalaryForEmployee, createSalary, getAllSalaries, Salary, updateSalary } from "../../../services/salaryService";
+import { showError, showInfo } from "../../../lib/toastUtils";
+import SalaryFormModal from "../salary/SalaryFormModal";
 
 export interface DecodedUser {
   userId: string;
@@ -31,6 +35,12 @@ const Employees: React.FC = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Employee | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [salary, setSalary] = useState<Salary[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedSalary, setSelectedSalary] = useState<Salary | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+
 
   const navigate = useNavigate();
 
@@ -43,6 +53,7 @@ const Employees: React.FC = () => {
     { title: "Status", key: "status" },
     { title: "Hours / Week", key: "weeklyHours" },
     { title: "Hours / Month", key: "monthlyHours" },
+    { title: "Salary status", key: "salaryStatus" },
     { title: "Actions", key: "actions" },
     { title: "Permissions", key: "permissions" },
   ];
@@ -54,26 +65,28 @@ const Employees: React.FC = () => {
     { title: "Actions", key: "actions" },
   ];
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [empData, hoursData, salary] = await Promise.all([
+        getEmployees(),
+        getEmployeeHours(),
+        getAllSalaries()
+      ]);
+      setEmployees(empData);
+      setEmployeeHours(hoursData);
+      setSalary(salary);
+      console.log("Salary:", salary);
+      setHasFetched(true);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (hasFetched) return;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [empData, hoursData] = await Promise.all([
-          getEmployees(),
-          getEmployeeHours(),
-        ]);
-        setEmployees(empData);
-        setEmployeeHours(hoursData);
-        setHasFetched(true);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [hasFetched]);
 
@@ -108,28 +121,75 @@ const Employees: React.FC = () => {
     navigate(`/admin/edit-employee/${id}`);
   };
 
+  const handleEditSalary = ({
+    salary,
+    employee,
+  }: {
+    salary: Salary;
+    employee: Employee;
+  }) => {
+    setSelectedSalary(salary);
+    setModalOpen(true);
+  };
+
+
+  const handleSubmitSalary = async (data: Partial<Salary>) => {
+    try {
+      if (selectedSalary) {
+        await updateSalary(selectedSalary.id, data);
+        showInfo('Salary updated successfully');
+      } else {
+        await createSalary(data);
+        showInfo('Salary created successfully');
+      }
+      fetchData();
+      setModalOpen(false);
+      setSelectedSalary(null);
+    } catch (error) {
+      console.error(error);
+      showError('Failed to save salary');
+    }
+  };
+
+  // Helper to get "Month Year" string from date
+  const getMonthYear = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  };
+
+  const salariesByMonth = salary.reduce((acc: Record<string, Salary[]>, sal) => {
+    const monthYear = getMonthYear(sal.effectiveFrom);
+    if (!acc[monthYear]) acc[monthYear] = [];
+    acc[monthYear].push(sal);
+    return acc;
+  }, {});
+
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/admin/dashboard")}
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              aria-label="Go Back"
+            >
+              <ArrowLeft className="text-xl" />
+            </button>
+            <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
+              <UserRound /> Employees
+            </h1>
+          </div>
           <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            aria-label="Go Back"
+            onClick={handleNavigateToAddEmployee}
+            className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
           >
-            <ArrowLeft className="text-xl" />
+            <Plus /> Add Employee
           </button>
-          <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
-            <UserRound /> Employees
-          </h1>
         </div>
-        <button
-          onClick={handleNavigateToAddEmployee}
-          className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
-        >
-          <Plus /> Add Employee
-        </button>
+
       </div>
+
 
       {loading ? (
         <div className="text-center text-gray-700 dark:text-gray-300">Loading...</div>
@@ -202,6 +262,34 @@ const Employees: React.FC = () => {
                       {employeeHours[employee.id]?.monthly?.toFixed(1) || "0"} hrs
                     </td>
 
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-200">
+                      {(() => {
+                        const empSalary = salary.find(
+                          (sal) =>
+                            sal.employeeId === employee.id &&
+                            new Date(sal.effectiveFrom).getMonth() === new Date().getMonth() &&
+                            new Date(sal.effectiveFrom).getFullYear() === new Date().getFullYear()
+                        );
+                        console.log("Employee Salary:", empSalary);
+
+                        return empSalary ? (
+                          <button
+                            onClick={() => {
+                              handleEditSalary({ salary: empSalary, employee }); // Pass both together
+                              setSelectedEmployee(employee); // set selected employee here
+                              setModalOpen(true);
+                            }}
+                            className="text-blue-600 hover:underline"
+                          >
+                            Update Salary
+                          </button>
+                        ) : (
+                          <span className="text-gray-500">No salary added - <button onClick={() => navigate(`/admin/edit-employee/${employee.id}#salaryButton`)} className="text-blue-600 hover:underline">Add</button></span>
+                        );
+                      })()}
+                    </td>
+
+
                     <td>
                       <div className="flex items-center gap-3 mx-5">
                         <button
@@ -234,6 +322,16 @@ const Employees: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+                <SalaryFormModal
+                  isOpen={modalOpen}
+                  onClose={() => {
+                    setModalOpen(false);
+                    setSelectedSalary(null);
+                  }}
+                  onSubmit={handleSubmitSalary}
+                  initialData={selectedSalary}
+                  selectedEmployee={selectedEmployee}
+                />
               </tbody>
             </table>
           </div>

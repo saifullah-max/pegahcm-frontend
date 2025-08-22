@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, Document, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, } from '../../../services/employeeService';
+import { createEmployee, CreateEmployeeData, Document, Employee, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, } from '../../../services/employeeService';
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
@@ -14,7 +14,9 @@ import {
 import { getRoles, Role } from '../../../services/roleService';
 import { SubRole } from '../../../services/permissionService';
 import { getAllSubRoles } from '../../../services/subRoleService';
-import { showError, showSuccess } from '../../../lib/toastUtils';
+import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
+import SalaryFormModal from '../salary/SalaryFormModal';
+import { createSalary, Salary } from '../../../services/salaryService';
 
 interface Shift {
     id: string;
@@ -30,6 +32,7 @@ interface EmergencyContact {
 }
 
 interface EmployeeFormData {
+    id: string;
     fullName: string;
     email: string;
     password: string;
@@ -75,6 +78,7 @@ const EditEmployee: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const [newEmployee, setNewEmployee] = useState<EmployeeFormData>({
+        id: '',
         fullName: '',
         email: '',
         fatherName: '',
@@ -122,6 +126,10 @@ const EditEmployee: React.FC = () => {
     const [subRole, setSubRole] = useState<SubRole[]>();
     const [subRolesLoading, setSubRolesLoading] = useState(false);
     const [userName, setUserName] = useState('');
+    const [salaryModal, setSalaryModal] = useState(false);
+    const location = useLocation();
+
+
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -233,6 +241,7 @@ const EditEmployee: React.FC = () => {
             setUserName(user.fullName);
 
             setNewEmployee({
+                id: employee.id || '',
                 fullName: user.fullName || '',
                 email: user.email || '',
                 fatherName: employee.fatherName || '',
@@ -310,6 +319,25 @@ const EditEmployee: React.FC = () => {
 
         fetchSubDepartments();
     }, [newEmployee.department, departments]);
+
+    useEffect(() => {
+        if (location.hash === "#salaryButton") {
+            const element = document.getElementById("salaryButton");
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                // Add highlight class
+                element.classList.add("highlight-temp");
+
+                // Remove class after 2s (optional if using animation keyframes)
+                const timer = setTimeout(() => {
+                    element.classList.remove("highlight-temp");
+                }, 2000);
+
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [location]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -471,6 +499,36 @@ const EditEmployee: React.FC = () => {
         } finally {
             setLoading(false);
             setRegistering(false);
+        }
+    };
+
+    const handleSalarySubmit = async (data: Partial<Salary>) => {
+        try {
+            setLoading(true);
+            const payload = {
+                employeeId: newEmployee.id,
+                baseSalary: Number(data.baseSalary),
+                deductions: Number(data.deductions) || 0,
+                bonuses: Number(data.bonuses) || 0,
+                effectiveFrom: new Date(data.effectiveFrom!).toISOString(),
+                effectiveTo: new Date(data.effectiveTo!).toISOString(),
+                allowances: (data.allowances || [])
+                    .filter(a => a.type?.trim() && a.amount)
+                    .map(a => ({
+                        type: a.type!.trim(),
+                        amount: Number(a.amount) || 0
+                    }))
+            };
+
+            await createSalary(payload);
+
+            showSuccess('Salary created successfully!');
+            navigate('/salary');
+        } catch (err) {
+            console.error('Error creating salary:', err);
+            showError('Failed to create salary.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -706,28 +764,30 @@ const EditEmployee: React.FC = () => {
                                     </select>
                                 </div>
 
-                                <div className="mb-4">
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-1">Sub Department*</label>
-                                    <select
-                                        name="subDepartment"
-                                        value={newEmployee.subDepartment}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-                                        required
-                                        disabled={!newEmployee.department || subDepartmentsLoading}
-                                    >
-                                        <option value="">Select Sub Department</option>
-                                        {subDepartmentsLoading ? (
-                                            <option disabled>Loading sub-departments...</option>
-                                        ) : (
-                                            subDepartments && subDepartments.length > 0 ? subDepartments.map((subDepartment) => (
-                                                <option key={subDepartment.id} value={subDepartment.id}>
-                                                    {subDepartment.name}
-                                                </option>
-                                            )) : <option disabled>No sub-departments available</option>
-                                        )}
-                                    </select>
-                                </div>
+                                {subRole?.find(sr => sr.id === newEmployee.subRole)?.name.toLowerCase() !== "manager" && (
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 dark:text-gray-300 mb-1">Sub Department*</label>
+                                        <select
+                                            name="subDepartment"
+                                            value={newEmployee.subDepartment}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
+                                            required
+                                            disabled={!newEmployee.department || subDepartmentsLoading}
+                                        >
+                                            <option value="">Select Sub Department</option>
+                                            {subDepartmentsLoading ? (
+                                                <option disabled>Loading sub-departments...</option>
+                                            ) : (
+                                                subDepartments && subDepartments.length > 0 ? subDepartments.map((subDepartment) => (
+                                                    <option key={subDepartment.id} value={subDepartment.id}>
+                                                        {subDepartment.name}
+                                                    </option>
+                                                )) : <option disabled>No sub-departments available</option>
+                                            )}
+                                        </select>
+                                    </div>
+                                )}
                             </>
                         )}
 
@@ -773,15 +833,16 @@ const EditEmployee: React.FC = () => {
                             </select>
                         </div>
 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1">Salary</label>
-                            <input
-                                type="text"
-                                name="salary"
-                                value={newEmployee.salary || ''}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200"
-                            />
+                        <div className="pt-4">
+                            <button
+                                id="salaryButton"
+                                type="button"
+                                className="px-4 py-2 text-white rounded-md bg-[#255199] hover:bg-[#2F66C1] flex items-center gap-1"
+                                onClick={() => setSalaryModal(true)}
+                                disabled={loading}
+                            >
+                                {loading ? "Opening..." : "Add Salary details"}
+                            </button>
                         </div>
 
                         {/* Skills Section */}
@@ -1001,6 +1062,13 @@ const EditEmployee: React.FC = () => {
                     </div>
                 </form>
             </div>
+
+            <SalaryFormModal
+                isOpen={salaryModal}
+                onClose={() => setSalaryModal(false)}
+                onSubmit={handleSalarySubmit}
+                selectedEmployee={newEmployee as unknown as Employee}
+            />
         </div>
     );
 };
