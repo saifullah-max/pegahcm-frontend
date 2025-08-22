@@ -31,7 +31,6 @@ const SalaryFormModal: React.FC<Props> = ({
     onClose,
     onSubmit,
     initialData,
-    componentType,
     selectedEmployee
 }) => {
     const [formData, setFormData] = useState<FormData>({ allowances: [] });
