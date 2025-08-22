@@ -142,12 +142,12 @@ const SalaryDetails = () => {
                 <h1 className="text-2xl text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <Banknote /> Salary Details
                 </h1>
-                <button
+                {/* <button
                     onClick={handleAddSalary}
                     className="text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors duration-200 bg-[#255199] hover:bg-[#2F66C1]"
                 >
                     <Plus /> Add Salary
-                </button>
+                </button> */}
             </div>
 
             {loading ? (

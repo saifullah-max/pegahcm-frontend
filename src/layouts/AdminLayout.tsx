@@ -333,7 +333,7 @@ const AdminLayout = () => {
               </li>
             )}
 
-            {/* OnBoardings */}
+            {/* OnBoardings
             {hasPermission('Onboarding:create') && (
               <li
                 onClick={handleOnBoardingsClick}
@@ -341,7 +341,7 @@ const AdminLayout = () => {
               >
                 <Layers2 className="inline-block mr-2" /> OnBoardings
               </li>
-            )}
+            )} */}
 
             {/* Resignations */}
             {/* {hasPermission('Resignation:approve') && (
