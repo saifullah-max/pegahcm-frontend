@@ -5,7 +5,6 @@ import { createEmployee, CreateEmployeeData, Employee } from '../../../services/
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
-  RegisterUserData,
   ValidationError,
   RegistrationError
 } from '../../../services/registerService';
@@ -15,7 +14,7 @@ import { getAllSubRoles } from '../../../services/subRoleService'
 import { showError, showSuccess } from '../../../lib/toastUtils';
 import { statusOptions } from './EditEmployee';
 import SalaryFormModal from '../salary/SalaryFormModal';
-import { Allowance, createSalary, Salary } from '../../../services/salaryService';
+import { createSalary, Salary } from '../../../services/salaryService';
 
 interface Shift {
   id: string;
@@ -57,10 +56,10 @@ interface EmployeeFormData {
   subRole: string;
   roleTag: string;
 }
-interface AllowanceInterface {
-  type: string;
-  amount: string;
-}
+// interface AllowanceInterface {
+//   type: string;
+//   amount: string;
+// }
 
 const AddEmployee: React.FC = () => {
   const navigate = useNavigate();
@@ -107,19 +106,14 @@ const AddEmployee: React.FC = () => {
   const [rolesLoading, setRolesLoading] = useState(false);
   const [subRolesLoading, setSubRolesLoading] = useState(false);
   const [salaryModal, setSalaryModal] = useState(false);
-  const [allowanceModalOpen, setAllowanceModalOpen] = useState(false);
-  const [selectedAllowances, setSelectedAllowances] = useState<Allowance[]>([]);
-  const [formData, setFormData] = useState({
-    employeeId: '',
-    baseSalary: '',
-    deductions: '',
-    bonuses: '',
-    effectiveFrom: '',
-    effectiveTo: ''
-  });
-  const [allowances, setAllowances] = useState<AllowanceInterface[]>([
-    { type: '', amount: '' }
-  ]);
+  // const [formData, setFormData] = useState({
+  //   employeeId: '',
+  //   baseSalary: '',
+  //   deductions: '',
+  //   bonuses: '',
+  //   effectiveFrom: '',
+  //   effectiveTo: ''
+  // });
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
 
@@ -216,7 +210,7 @@ const AddEmployee: React.FC = () => {
 
     // Clear validation errors when the user edits a field
     setValidationErrors(prev => prev.filter(error => error.field !== name));
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // setFormData((prev) => ({ ...prev, [name]: value }));
 
 
     // Check password confirmation
@@ -319,12 +313,12 @@ const AddEmployee: React.FC = () => {
       return;
     }
 
-    const registerData: RegisterUserData = {
-      fullName: newEmployee.fullName,
-      email: newEmployee.email,
-      password: newEmployee.password,
-      roleId: newEmployee.role,
-    };
+    // const registerData: RegisterUserData = {
+    //   fullName: newEmployee.fullName,
+    //   email: newEmployee.email,
+    //   password: newEmployee.password,
+    //   roleId: newEmployee.role,
+    // };
 
     // Conditional validation based on subRole
     if (newEmployee.subRole !== 'director') {
@@ -638,33 +632,35 @@ const AddEmployee: React.FC = () => {
               </p>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
-              <select
-                name="subRole"
-                value={newEmployee.subRole}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
-                required
-              >
-                <option value="">Select Sub-Role</option>
-                {rolesLoading ? (
-                  <option disabled>Loading sub-roles...</option>
-                ) : (
-                  subRole && subRole.length > 0 ? subRole.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}
-                    </option>
-                  )) : <option value="teamMember">Team-Member</option>
+            {subRolesLoading ? (<p>Loading...</p>) :
+              (<div className="mb-4">
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
+                <select
+                  name="subRole"
+                  value={newEmployee.subRole}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border ${getFieldError('role') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                  required
+                >
+                  <option value="">Select Sub-Role</option>
+                  {rolesLoading ? (
+                    <option disabled>Loading sub-roles...</option>
+                  ) : (
+                    subRole && subRole.length > 0 ? subRole.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    )) : <option value="teamMember">Team-Member</option>
+                  )}
+                </select>
+                {getFieldError('subRole') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
                 )}
-              </select>
-              {getFieldError('subRole') && (
-                <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
-              )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                This will determine what permissions the sub-user has in the system.
-              </p>
-            </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  This will determine what permissions the sub-user has in the system.
+                </p>
+              </div>)
+            }
 
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-1">Role Tag*</label>
