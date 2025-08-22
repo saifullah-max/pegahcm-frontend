@@ -1,20 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, UserRound } from 'lucide-react';
-import { createEmployee, CreateEmployeeData, Document, Employee, EmployeeData, FileObject, getEmployeeById, updateEmployee, UpdateEmployeeData, } from '../../../services/employeeService';
+import { CreateEmployeeData, Document, Employee, EmployeeData, FileObject, getEmployeeById, updateEmployee } from '../../../services/employeeService';
 import { getShifts } from '../../../services/ShiftService';
 import { getDepartments, Department, SubDepartment } from '../../../services/departmentService';
 import {
-    registerUser,
-    RegisterUserData,
     ValidationError,
     RegistrationError,
-    UpdateUserData
 } from '../../../services/registerService';
 import { getRoles, Role } from '../../../services/roleService';
 import { SubRole } from '../../../services/permissionService';
 import { getAllSubRoles } from '../../../services/subRoleService';
-import { showError, showInfo, showSuccess } from '../../../lib/toastUtils';
+import { showError, showSuccess } from '../../../lib/toastUtils';
 import SalaryFormModal from '../salary/SalaryFormModal';
 import { createSalary, Salary } from '../../../services/salaryService';
 
@@ -113,7 +110,6 @@ const EditEmployee: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [skillInput, setSkillInput] = useState('');
     const [shifts, setShifts] = useState<Shift[]>([]);
-    const [passwordError, setPasswordError] = useState('');
     const [shiftsLoading, setShiftsLoading] = useState(false);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [subDepartments, setSubDepartments] = useState<SubDepartment[]>([]);
@@ -404,16 +400,15 @@ const EditEmployee: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setValidationErrors([]);
-        setPasswordError('');
         setLoading(true);
         setRegistering(true);
 
-        if (newEmployee.password !== newEmployee.confirmPassword) {
-            setPasswordError('Passwords do not match');
-            setLoading(false);
-            setRegistering(false);
-            return;
-        }
+        // if (newEmployee.password !== newEmployee.confirmPassword) {
+        //     setPasswordError('Passwords do not match');
+        //     setLoading(false);
+        //     setRegistering(false);
+        //     return;
+        // }
 
         // Phone format check
         const phoneRegex = /^\+92-\d{3}-\d{4}-\d{3}$/;
@@ -705,33 +700,35 @@ const EditEmployee: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
-                            <select
-                                name="subRole"
-                                value={newEmployee.subRole}
-                                onChange={handleInputChange}
-                                className={`w-full px-3 py-2 border ${getFieldError('subRole') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
-                                required
-                            >
-                                <option value="">Select Sub-Role</option>
-                                {rolesLoading ? (
-                                    <option disabled>Loading sub-roles...</option>
-                                ) : (
-                                    subRole && subRole.length > 0 ? subRole.map((role) => (
-                                        <option key={role.id} value={role.id}>
-                                            {role.name}
-                                        </option>
-                                    )) : <option value="teamMember">Team-Member</option>
+                        {subRolesLoading ? (<p>Loading...</p>) : (
+                            <div className="mb-4">
+                                <label className="block text-gray-700 dark:text-gray-300 mb-1">sub-Role*</label>
+                                <select
+                                    name="subRole"
+                                    value={newEmployee.subRole}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-2 border ${getFieldError('subRole') ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200`}
+                                    required
+                                >
+                                    <option value="">Select Sub-Role</option>
+                                    {rolesLoading ? (
+                                        <option disabled>Loading sub-roles...</option>
+                                    ) : (
+                                        subRole && subRole.length > 0 ? subRole.map((role) => (
+                                            <option key={role.id} value={role.id}>
+                                                {role.name}
+                                            </option>
+                                        )) : <option value="teamMember">Team-Member</option>
+                                    )}
+                                </select>
+                                {getFieldError('subRole') && (
+                                    <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
                                 )}
-                            </select>
-                            {getFieldError('subRole') && (
-                                <p className="text-red-500 text-sm mt-1">{getFieldError('subRole')}</p>
-                            )}
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                This will determine what permissions the sub-user has in the system.
-                            </p>
-                        </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    This will determine what permissions the sub-user has in the system.
+                                </p>
+                            </div>
+                        )}
 
                         {/* Employment Information Section */}
                         <div className="md:col-span-3 mt-4">

@@ -6,8 +6,7 @@ import { getEmployeeHours } from "../../../services/userService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import { statusOptions } from "./EditEmployee";
-import { title } from "process";
-import { copyPreviousSalaryForEmployee, createSalary, getAllSalaries, Salary, updateSalary } from "../../../services/salaryService";
+import { createSalary, getAllSalaries, Salary, updateSalary } from "../../../services/salaryService";
 import { showError, showInfo } from "../../../lib/toastUtils";
 import SalaryFormModal from "../salary/SalaryFormModal";
 
@@ -123,7 +122,7 @@ const Employees: React.FC = () => {
 
   const handleEditSalary = ({
     salary,
-    employee,
+
   }: {
     salary: Salary;
     employee: Employee;
@@ -150,19 +149,6 @@ const Employees: React.FC = () => {
       showError('Failed to save salary');
     }
   };
-
-  // Helper to get "Month Year" string from date
-  const getMonthYear = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-  };
-
-  const salariesByMonth = salary.reduce((acc: Record<string, Salary[]>, sal) => {
-    const monthYear = getMonthYear(sal.effectiveFrom);
-    if (!acc[monthYear]) acc[monthYear] = [];
-    acc[monthYear].push(sal);
-    return acc;
-  }, {});
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
