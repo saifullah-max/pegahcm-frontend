@@ -172,37 +172,37 @@ const Profile = () => {
         <div className="max-w-6xl mx-auto p-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                 {/* Header */}
-                {/* Header */}
                 <div className="flex items-center justify-between">
                     {/* Left side with profile picture + info */}
                     <div className="flex items-center space-x-4">
-                        <div className="relative">
+                        <div className="relative flex flex-col items-center">
                             <img
                                 src={formData.profileImageUrl || "/default-avatar.png"}
                                 alt="Profile"
                                 className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
                             />
 
-                            {/* Edit button, if editable */}
+                            {/* Hidden input for file selection */}
+                            <input
+                                id="profileImageInput"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleProfileImageChange}
+                                className="hidden"
+                            />
+
+                            {/* Text link to trigger file input */}
                             {editable && (
-                                <label className="absolute bottom-0 right-0 bg-blue-500 p-1 rounded-full cursor-pointer hover:bg-blue-600">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleProfileImageChange}
-                                        className="hidden"
-                                    />
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4 text-white"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path d="M17.414 2.586a2 2 0 00-2.828 0L6 11.172V14h2.828l8.586-8.586a2 2 0 000-2.828z" />
-                                    </svg>
-                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById("profileImageInput")?.click()}
+                                    className="mt-2 text-sm text-blue-600 hover:underline"
+                                >
+                                    Change profile image
+                                </button>
                             )}
                         </div>
+
 
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
@@ -242,8 +242,6 @@ const Profile = () => {
                         )}
                     </div>
                 </div>
-
-
 
                 {/* Info Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
