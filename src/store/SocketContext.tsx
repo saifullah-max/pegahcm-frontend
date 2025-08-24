@@ -39,32 +39,38 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   useEffect(() => {
-    if (!user?.id || isInitialized.current) return;
+    console.log("[SOCKET INIT] User:", user?.id);
+
+    if (!user?.id || isInitialized.current) {
+      console.log("[SOCKET INIT] Skipped (user or already init)");
+      return;
+    }
     isInitialized.current = true;
 
     if (!socket.connected) {
+      console.log("[SOCKET] Connecting...");
       socket.connect();
     }
 
     socket.on('connect', () => {
-      console.log('Socket connected:', socket.id);
+      console.log('[SOCKET CONNECTED] ID:', socket.id);
       socket.emit('join', user.id);
     });
 
-    const handleNotification = (notif: NotificationType) => {
-      console.log('New Notification:', notif);
+    socket.on('connect_error', (err) => {
+      console.error('[SOCKET CONNECT ERROR]:', err);
+    });
 
+    const handleNotification = (notif: NotificationType) => {
+      console.log('[SOCKET EVENT] New Notification:', notif);
       if (notif.showPopup) {
         showInfo(`${notif.description || notif.message}`);
         const audio = new Audio('/sounds/notification_sound.mp3');
         audio.volume = 0.8;
         audio.play().catch(console.error);
       }
-
       setNotification(notif);
-      setUnreadCount((prev) => prev + 1); // ✅ Increment unread count on new notif
-
-      // Notify subscribers (like Notifications page)
+      setUnreadCount((prev) => prev + 1);
       subscribers.current.forEach((cb) => cb(notif));
     };
 
@@ -72,12 +78,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     socket.on('new_notification', handleNotification);
 
     return () => {
+      console.log("[SOCKET CLEANUP] Disconnecting...");
       socket.off('connect');
       socket.off('new_notification', handleNotification);
       socket.disconnect();
       isInitialized.current = false;
     };
   }, [user?.id]);
+
 
   return (
     <SocketContext.Provider value={{ notification, unreadCount, setUnreadCount, subscribeToNotifications }}>
