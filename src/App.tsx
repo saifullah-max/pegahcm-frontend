@@ -83,7 +83,7 @@ function App() {
       <SocketProvider>
         <ThemeProvider>
           <AuthInitializer />
-          <Router>
+          <Router basename="/projects/pegahcm">
             <Routes>
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
