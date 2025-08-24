@@ -5,6 +5,8 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL; // Replace with your backend
 
 const socket: Socket = io(SOCKET_URL, {
   autoConnect: false, // You’ll manually connect
+  withCredentials: true,
+  transports: ["websocket"],
 });
 
 export default socket;
