@@ -183,7 +183,7 @@ const Profile = () => {
                                 className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
                             />
 
-                            {/* Edit button only if editable */}
+                            {/* Edit button, if editable */}
                             {editable && (
                                 <label className="absolute bottom-0 right-0 bg-blue-500 p-1 rounded-full cursor-pointer hover:bg-blue-600">
                                     <input
