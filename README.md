@@ -1,54 +1,125 @@
-# React + TypeScript + Vite
+**PegaHCM:**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Human Capital Management (HCM) system built with Node.js, Prisma, MySQL, and React, designed for HR operations, employee management, payroll, attendance tracking, and role-based access control (RBAC).
 
-Currently, two official plugins are available:
+**📌 Features:**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1-Role-Based Access Control (RBAC)
+    -Admin and Sub-Roles with custom permissions.
+    -Permission-based route access (view, create, update, delete).
+    -Hierarchical approval system for sub-roles.
 
-## Expanding the ESLint configuration
+2-Employee Management
+    -Add, edit, delete employees with full details.
+    -Profile management (image, phone, email updates).
+    -Salary management with password-protected salary slips.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3-Attendance Management
+    -Check-in, check-out system.
+    -Attendance overview dashboard with charts.
+    -Break management and attendance summaries (daily, monthly).
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+4-Leave Management
+    -Apply for leave, view leave history.
+    -Admin approval/rejection with role-based permissions.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+5-Payroll Management
+    -Monthly salary slips generation with security.
+    -Salary auto-copy feature for next month.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+6-Notifications System
+    =Real-time notifications using Socket.IO.
+    -Notification history with read/unread status.
+    -Auto-delete old notifications using node-cron.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+7-Assets & Document Management
+    -Upload employee documents & images.
+    -Assets assignment to employees with CRUD operations.
+
+8-Dashboard & Analytics
+    -HR and Admin dashboards with attendance stats.
+    -Department-wise and overall analytics with charts.
+
+9-Other Features
+    -Onboarding process (simplified later).
+    -Reset/forgot password implementation.
+    -Multi-theme UI improvements.
+
+**🛠 Tech Stack:**
+
+**Backend:**
+Node.js (Express)
+Prisma ORM
+MySQL Database
+
+**Frontend:**
+React.js (with role-based navigation)
+
+**Other Integrations:**
+Socket.IO → Real-time notifications
+Node-cron → Automated cleanup tasks
+Bcrypt → Password hashing
+JWT → Authentication
+
+**📂 Project Structure**
+pegahcm-backend/
+├── prisma/                 # Prisma schema & migrations
+├── src/
+│   ├── controllers/        # API Controllers
+│   ├── middlewares/        # Auth & permission checks
+│   ├── routes/             # API routes
+│   ├── utils/              # Notification, prisma helper, etc.
+│   ├── models/             # Prisma models
+│   └── index.ts            # Entry point
+└── package.json
+
+🚀 Setup Instructions
+1. Clone the Repository
+git clone <repo-url>
+cd pegahcm-backend
+
+2. Install Dependencies
+npm install
+
+3. Configure Environment Variables
+4. 
+Create a .env file in the root directory with:
+DATABASE_URL="mysql://username:password@host:port/dbname"
+JWT_SECRET="your-secret"
+FRONTEND_URl="localhost or deployed frontend URL"
+
+5. Run Prisma Migrations
+npx prisma migrate deploy
+
+6. Seed Database (Admin Role, User & Permissions)
+npx prisma db seed
+
+This will:
+Create Admin role
+Create Admin user (email: admin@example.com, password: admin123)
+Assign default permissions
+
+6. Start Server
+npm run dev
+
+🌐 Key Modules
+
+/auth → Login, signup, reset password
+/employees → Employee CRUD
+/attendance → Check-in, check-out
+/leaves → Leave request & approval
+/payroll → Salary management & slips
+/notifications → Real-time notifications via Socket.IO
+/permissions → Role & permission management
+
+📊 Future Enhancements
+
+Multi-tenancy support
+Performance optimization
+Complete audit logging
+Advanced analytics with AI insights
+
+👨‍💻 Author
+
+Developed by: Saifullah Ahmed
+Role: Full Stack Developer
